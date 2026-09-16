@@ -1,0 +1,21 @@
+# Python
+.venv/
+__pycache__/
+*/__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# Generated artifacts -- regenerate with:  make data && make train && make eval
+# (kept out of git so the repo stays code-only and small)
+data/
+data_sealed/
+models/
+reports/
+
+# OS / editor
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
