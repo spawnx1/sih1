@@ -127,29 +127,58 @@ def make_recommendation(cashout, location, tainted_amount: float,
 
     if p10 >= config.TIER_RED_P and tainted_amount >= config.TIER_RED_AMOUNT:
         return Recommendation(
-            tier="RED", action="FREEZE",
-            reason=(f"P(cash-out<=10m)={p10:.2f} >= {config.TIER_RED_P} AND tainted "
-                    f"Rs{tainted_amount:,.0f} >= Rs{config.TIER_RED_AMOUNT:,} -> "
-                    f"freeze first; alert {sho.get('station','SHO')} covering cell "
-                    f"{top_cell.cell if top_cell else '?'}"),
+            tier="RED",
+            action="FREEZE",
+            reason=(
+                f"P(cash-out<=10m)={p10:.2f} >= {config.TIER_RED_P} AND tainted "
+                f"Rs{tainted_amount:,.0f} >= Rs{config.TIER_RED_AMOUNT:,} -> "
+                f"freeze first; alert {sho.get('station', 'SHO')} covering cell "
+                f"{top_cell.cell if top_cell else '?'}"
+            ),
             freeze_account=account,
             freeze_deadline=as_of + timedelta(minutes=10),
-            target_station=sho.get("station"), target_district=district,
+            target_station=sho.get("station"),
+            target_district=district,
             target_cell=top_cell.cell if top_cell else None,
-            tainted_amount=tainted_amount, p_cashout_10m=p10)
+            tainted_amount=tainted_amount,
+            p_cashout_10m=p10
+        )
+
     if p10 >= config.TIER_AMBER_P:
+        if p10 >= config.TIER_RED_P:
+            reason = (
+                f"P(cash-out<=10m)={p10:.2f} >= {config.TIER_RED_P}, "
+                f"but tainted Rs{tainted_amount:,.0f} < "
+                f"Rs{config.TIER_RED_AMOUNT:,} -> "
+                f"AMBER monitoring; email brief to {district} desk, "
+                f"no dispatch yet"
+            )
+        else:
+            reason = (
+                f"P(cash-out<=10m)={p10:.2f} in "
+                f"[{config.TIER_AMBER_P},{config.TIER_RED_P}) -> "
+                f"email brief to {district} desk, no dispatch yet"
+            )
+
         return Recommendation(
-            tier="AMBER", action="MONITOR",
-            reason=(f"P(cash-out<=10m)={p10:.2f} in [{config.TIER_AMBER_P},"
-                    f"{config.TIER_RED_P}) -> email brief to {district} desk, "
-                    f"no dispatch yet"),
-            target_station=sho.get("station"), target_district=district,
+            tier="AMBER",
+            action="MONITOR",
+            reason=reason,
+            target_station=sho.get("station"),
+            target_district=district,
             target_cell=top_cell.cell if top_cell else None,
-            tainted_amount=tainted_amount, p_cashout_10m=p10)
+            tainted_amount=tainted_amount,
+            p_cashout_10m=p10
+        )
+
     return Recommendation(
-        tier="GREY", action="MONITOR",
+        tier="GREY",
+        action="MONITOR",
         reason=f"P(cash-out<=10m)={p10:.2f} < {config.TIER_AMBER_P} -> keep tracing",
-        target_district=district, tainted_amount=tainted_amount, p_cashout_10m=p10)
+        target_district=district,
+        tainted_amount=tainted_amount,
+        p_cashout_10m=p10
+    )
 
 
 def _predict(ack_no: str, as_of: datetime, account: str | None) -> Prediction:
@@ -352,9 +381,17 @@ def _mk_alert(pred, channel, recipient, subject, body) -> Alert:
 
 
 @app.get("/alerts")
-def get_alerts():
-    return STATE["alerts"]
+def get_alerts(district: str | None = None):
+    alerts = STATE["alerts"]
 
+    if district:
+        district = district.strip()
+        alerts = [
+            alert for alert in alerts
+            if alert.district and alert.district.lower() == district.lower()
+        ]
+
+    return alerts
 
 @app.get("/replay/state")
 def replay_state(case: str, t: float = 0.0):
