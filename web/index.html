@@ -6,144 +6,236 @@
 <title>Cash-out Forecast Console -- SIH26184</title>
 <style>
   :root{
-    --bg:#070a0f; --panel:#0e141d; --panel2:#121a25; --line:#1d2735;
-    --ink:#e9eff6; --dim:#808ea3; --faint:#586377;
-    --red:#ff5d6c; --amber:#ffb84d; --green:#38dd9a; --cyan:#33d3d9; --accent:#33d3d9;
-    --mono:ui-monospace,"Cascadia Mono",Consolas,monospace;
+    --bg:#05070d; --panel:rgba(12,18,28,.66); --panel2:rgba(16,24,36,.7);
+    --solid:#0a0f18; --line:rgba(84,150,180,.20); --line2:rgba(84,150,180,.34);
+    --ink:#e2edf5; --dim:#8598ab; --faint:#5b6d80;
+    --red:#ff5a6e; --amber:#ffbe4d; --green:#37e6a6; --cyan:#35e0e6; --accent:#35e0e6;
+    --violet:#8a7bff;
+    --mono:ui-monospace,"Cascadia Mono","JetBrains Mono",Consolas,monospace;
+    --glow:0 0 18px rgba(53,224,230,.16);
   }
   *{box-sizing:border-box}
-  body{margin:0;background:
-     radial-gradient(1200px 400px at 80% -10%,rgba(51,211,217,.08),transparent 60%),var(--bg);
-    color:var(--ink);font:13.5px/1.5 system-ui,"Segoe UI",Roboto,sans-serif}
-  .mono{font-family:var(--mono)}
-  .lbl{font-family:var(--mono);font-size:10px;letter-spacing:1.4px;text-transform:uppercase;color:var(--faint)}
+  html,body{height:100%}
+  body{margin:0;background:var(--bg);color:var(--ink);position:relative;overflow:hidden;
+    font:13.5px/1.5 system-ui,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
 
-  header{display:flex;align-items:center;gap:14px;padding:12px 18px;border-bottom:1px solid var(--line);
-    background:linear-gradient(180deg,#0b1119,#080b11)}
-  .brand{display:flex;align-items:center;gap:10px;font-weight:750;letter-spacing:.4px}
-  .brand .dotlogo{width:10px;height:10px;border-radius:50%;background:var(--cyan);
-    box-shadow:0 0 10px var(--cyan)}
-  .brand small{color:var(--faint);font-weight:400;letter-spacing:0}
-  .chips{margin-left:auto;display:flex;gap:16px;align-items:center;font-family:var(--mono);font-size:12px}
+  body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
+    background:
+      radial-gradient(900px 520px at 86% -10%, rgba(53,224,230,.10), transparent 60%),
+      radial-gradient(760px 520px at -6% 112%, rgba(138,123,255,.09), transparent 60%),
+      linear-gradient(rgba(53,224,230,.035) 1px, transparent 1px) 0 0/42px 42px,
+      linear-gradient(90deg, rgba(53,224,230,.035) 1px, transparent 1px) 0 0/42px 42px;
+    animation:breathe 9s ease-in-out infinite alternate}
+  @keyframes breathe{from{opacity:.72}to{opacity:1}}
+  body::after{content:"";position:fixed;inset:0;z-index:6;pointer-events:none;opacity:.5;
+    background:repeating-linear-gradient(0deg, transparent 0 2px, rgba(0,10,14,.16) 3px)}
+  .scanbar{position:fixed;left:0;right:0;height:140px;z-index:5;pointer-events:none;opacity:.05;
+    background:linear-gradient(180deg,transparent,rgba(53,224,230,.9),transparent);animation:sweep 7.5s linear infinite}
+  @keyframes sweep{0%{top:-20%}100%{top:120%}}
+  .hud{position:fixed;inset:0;pointer-events:none;z-index:7}
+  .hud i{position:absolute;width:24px;height:24px;border:2px solid rgba(53,224,230,.45);filter:drop-shadow(0 0 4px rgba(53,224,230,.5))}
+  .hud i:nth-child(1){top:9px;left:9px;border-right:0;border-bottom:0}
+  .hud i:nth-child(2){top:9px;right:9px;border-left:0;border-bottom:0}
+  .hud i:nth-child(3){bottom:9px;left:9px;border-right:0;border-top:0}
+  .hud i:nth-child(4){bottom:9px;right:9px;border-left:0;border-top:0}
+
+  ::-webkit-scrollbar{width:9px;height:9px}
+  ::-webkit-scrollbar-track{background:transparent}
+  ::-webkit-scrollbar-thumb{background:rgba(53,224,230,.22);border-radius:6px}
+  ::-webkit-scrollbar-thumb:hover{background:rgba(53,224,230,.42)}
+
+  .mono{font-family:var(--mono)}
+  .lbl{font-family:var(--mono);font-size:10px;letter-spacing:1.6px;text-transform:uppercase;color:var(--faint)}
+
+  header{position:relative;z-index:3;display:flex;align-items:center;gap:14px;padding:12px 20px;
+    border-bottom:1px solid var(--line);background:linear-gradient(180deg,rgba(10,16,25,.9),rgba(6,9,15,.7));
+    backdrop-filter:blur(10px);overflow:hidden}
+  header::after{content:"";position:absolute;left:-40%;bottom:0;width:40%;height:2px;
+    background:linear-gradient(90deg,transparent,var(--cyan),transparent);filter:drop-shadow(0 0 6px var(--cyan));animation:hscan 5.5s linear infinite}
+  @keyframes hscan{0%{left:-40%}100%{left:100%}}
+  .brand{display:flex;align-items:center;gap:11px;font-weight:750;letter-spacing:1.5px;
+    font-family:var(--mono);font-size:15px;text-shadow:0 0 14px rgba(53,224,230,.35)}
+  .brand .dotlogo{width:11px;height:11px;border-radius:50%;background:var(--cyan);
+    box-shadow:0 0 12px var(--cyan),0 0 24px rgba(53,224,230,.6);animation:blink 2.4s ease-in-out infinite}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:.45}}
+  .brand small{color:var(--faint);font-weight:400;letter-spacing:.5px;font-family:system-ui}
+  .chips{margin-left:auto;display:flex;gap:18px;align-items:center;font-family:var(--mono);font-size:12px}
   .chip{display:flex;align-items:center;gap:6px;color:var(--dim)}
   .chip b{color:var(--ink)}
   .sw{width:9px;height:9px;border-radius:50%}
-  .sw.RED{background:var(--red)} .sw.AMBER{background:var(--amber)} .sw.GREY{background:var(--faint)}
+  .sw.RED{background:var(--red);box-shadow:0 0 8px var(--red)}
+  .sw.AMBER{background:var(--amber);box-shadow:0 0 8px var(--amber)}
+  .sw.GREY{background:var(--faint)}
 
-  .app{display:grid;grid-template-columns:288px 1fr;height:calc(100vh - 53px)}
+  .app{position:relative;z-index:3;display:grid;grid-template-columns:290px 1fr;height:calc(100vh - 54px)}
 
-  /* ---- left: cases ---- */
-  .rail{border-right:1px solid var(--line);display:flex;flex-direction:column;min-height:0;background:#0a0f16}
-  .rail .head{display:flex;align-items:center;justify-content:space-between;padding:12px 14px 8px}
-  .rail select{background:#0c131c;color:var(--ink);border:1px solid var(--line);border-radius:7px;
-    padding:4px 6px;font-size:11px;font-family:var(--mono)}
+  .rail{border-right:1px solid var(--line);display:flex;flex-direction:column;min-height:0;background:rgba(8,12,19,.55);backdrop-filter:blur(8px)}
+  .rail .head{display:flex;align-items:center;justify-content:space-between;padding:13px 14px 9px}
+  .rail select{background:var(--solid);color:var(--ink);border:1px solid var(--line);border-radius:7px;padding:5px 7px;font-size:11px;font-family:var(--mono)}
   .cases{overflow:auto;padding:6px 10px 14px;min-height:0}
-  .case{display:grid;grid-template-columns:8px 1fr auto;gap:10px;align-items:center;
-    padding:11px 12px;border:1px solid var(--line);border-radius:11px;margin-bottom:8px;
-    cursor:pointer;background:#0c131c;transition:.12s}
-  .case:hover{border-color:var(--cyan);transform:translateY(-1px)}
-  .case.sel{border-color:var(--cyan);background:#0e1a24;box-shadow:0 0 0 1px rgba(51,211,217,.25) inset}
-  .case .bar{width:8px;height:38px;border-radius:5px}
+  .case{position:relative;display:grid;grid-template-columns:6px 1fr auto;gap:11px;align-items:center;
+    padding:11px 13px;border:1px solid var(--line);border-radius:12px;margin-bottom:9px;overflow:hidden;
+    cursor:pointer;background:rgba(12,18,28,.5);transition:transform .15s,border-color .15s,box-shadow .15s}
+  .case::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(53,224,230,.08));opacity:0;transition:.15s}
+  .case:hover{border-color:var(--line2);transform:translateY(-1px)}
+  .case:hover::after{opacity:1}
+  .case.sel{border-color:var(--cyan);background:rgba(14,26,34,.8);box-shadow:var(--glow),0 0 0 1px rgba(53,224,230,.3) inset}
+  .case .bar{width:6px;height:40px;border-radius:6px}
   .case .cid{font-family:var(--mono);font-weight:650;font-size:13px}
   .case .ftype{color:var(--faint);font-size:11px;font-family:var(--mono)}
   .case .cmeta{color:var(--dim);font-size:11.5px;margin-top:2px}
-  .case .risk{font-family:var(--mono);font-weight:700;font-size:15px;text-align:right}
-  .case .risk small{display:block;font-size:9px;color:var(--faint);font-weight:400;letter-spacing:.5px}
+  .case .risk{font-family:var(--mono);font-weight:750;font-size:16px;text-align:right;text-shadow:0 0 12px currentColor}
+  .case .risk small{display:block;font-size:9px;color:var(--faint);font-weight:400;letter-spacing:1px;text-shadow:none}
 
-  /* ---- main stage ---- */
-  .stage{overflow:auto;min-height:0;padding:16px 18px 26px}
-  .stagehead{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:12px}
-  .stagehead .cid{font-family:var(--mono);font-size:17px;font-weight:700}
+  .stage{overflow:auto;min-height:0;padding:18px 20px 28px}
+  .stagehead{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:14px}
+  .stagehead .cid{font-family:var(--mono);font-size:18px;font-weight:700;letter-spacing:1px}
   .stagehead .ftype{color:var(--faint);font-family:var(--mono);font-size:12px}
-  .tier{font-family:var(--mono);font-size:11px;font-weight:800;padding:4px 10px;border-radius:20px;letter-spacing:1px}
-  .tier.RED{background:rgba(255,93,108,.16);color:var(--red);box-shadow:0 0 0 1px rgba(255,93,108,.35) inset}
-  .tier.AMBER{background:rgba(255,184,77,.15);color:var(--amber);box-shadow:0 0 0 1px rgba(255,184,77,.35) inset}
-  .tier.GREY{background:rgba(88,99,119,.18);color:#9aa7bb;box-shadow:0 0 0 1px rgba(88,99,119,.35) inset}
+  .tier{font-family:var(--mono);font-size:11px;font-weight:800;padding:5px 11px;border-radius:6px;letter-spacing:2px}
+  .tier.RED{background:rgba(255,90,110,.14);color:var(--red);box-shadow:0 0 0 1px rgba(255,90,110,.5) inset,0 0 16px rgba(255,90,110,.25)}
+  .tier.AMBER{background:rgba(255,190,77,.13);color:var(--amber);box-shadow:0 0 0 1px rgba(255,190,77,.5) inset,0 0 16px rgba(255,190,77,.2)}
+  .tier.GREY{background:rgba(91,109,128,.18);color:#9fb0c2;box-shadow:0 0 0 1px rgba(91,109,128,.45) inset}
 
-  /* replay control */
-  .replay{margin-left:auto;display:flex;align-items:center;gap:10px}
-  .replay .clock{font-family:var(--mono);font-size:15px;font-weight:700;min-width:86px;text-align:right}
+  .replay{margin-left:auto;display:flex;align-items:center;gap:11px}
+  .replay .clock{font-family:var(--mono);font-size:15px;font-weight:700;min-width:88px;text-align:right;color:var(--cyan);text-shadow:0 0 12px rgba(53,224,230,.5)}
   .replay input[type=range]{width:150px;accent-color:var(--cyan)}
-  .btn{background:var(--cyan);color:#041316;border:0;border-radius:8px;padding:8px 13px;font-weight:750;
-    cursor:pointer;font-size:12px;font-family:var(--mono);letter-spacing:.3px}
-  .btn:hover{filter:brightness(1.08)} .btn:disabled{opacity:.45;cursor:default}
-  .btn.ghost{background:#101a24;color:var(--ink);border:1px solid var(--line)}
+  .btn{background:linear-gradient(180deg,#3ff0f6,#22c3c9);color:#04181a;border:0;border-radius:8px;padding:9px 14px;
+    font-weight:750;cursor:pointer;font-size:12px;font-family:var(--mono);letter-spacing:.5px;box-shadow:0 0 16px rgba(53,224,230,.3);transition:.15s}
+  .btn:hover{filter:brightness(1.1);box-shadow:0 0 22px rgba(53,224,230,.5)}
+  .btn:disabled{opacity:.45;cursor:default;box-shadow:none}
+  .btn.ghost{background:rgba(16,26,36,.8);color:var(--ink);border:1px solid var(--line2);box-shadow:none}
 
-  /* action banner */
-  .action{border-radius:14px;padding:14px 16px;margin-bottom:14px;display:flex;align-items:center;gap:16px}
-  .action.RED{background:linear-gradient(90deg,rgba(255,93,108,.16),transparent);border:1px solid rgba(255,93,108,.4)}
-  .action.AMBER{background:linear-gradient(90deg,rgba(255,184,77,.14),transparent);border:1px solid rgba(255,184,77,.4)}
-  .action.GREY{background:linear-gradient(90deg,rgba(88,99,119,.14),transparent);border:1px solid var(--line)}
-  .action .big{font-size:22px;font-weight:800;letter-spacing:.5px;font-family:var(--mono)}
-  .action .why{color:var(--dim);font-size:12px;margin-top:3px}
+  /* JARVIS briefing */
+  .jarvis{position:relative;border:1px solid var(--line2);border-radius:14px;padding:14px 16px 15px 18px;margin-bottom:16px;
+    background:linear-gradient(180deg,rgba(14,26,34,.7),rgba(10,16,24,.55));backdrop-filter:blur(6px);
+    box-shadow:var(--glow);animation:fadeUp .3s ease both;overflow:hidden}
+  .jarvis::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--cyan);box-shadow:0 0 14px var(--cyan)}
+  .jhead{display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--cyan);margin-bottom:9px}
+  .jhead .rc{width:8px;height:8px;border-radius:50%;background:var(--cyan);box-shadow:0 0 8px var(--cyan);animation:blink 1.6s ease-in-out infinite}
+  .jhead .sp{margin-left:auto;cursor:pointer;background:rgba(16,26,36,.85);border:1px solid var(--line2);border-radius:6px;padding:2px 9px;font-size:14px;line-height:1.4}
+  .jhead .sp:hover{border-color:var(--cyan)}
+  .jtext{font-size:14px;line-height:1.6;color:var(--ink);min-height:46px}
+  .jtext .cur{color:var(--cyan);animation:blink 1s step-end infinite;font-weight:700}
+  .jlive{font-family:var(--mono);font-size:11px;color:var(--amber);margin-top:7px;min-height:14px;letter-spacing:.5px}
+  .jsteps{margin-top:11px;display:grid;gap:7px}
+  .jstep{display:flex;gap:10px;align-items:flex-start;font-size:12.5px;color:var(--dim);line-height:1.45}
+  .jstep b{font-family:var(--mono);color:#04181a;background:var(--cyan);min-width:20px;height:20px;border-radius:5px;
+    display:flex;align-items:center;justify-content:center;font-size:11px;box-shadow:0 0 10px rgba(53,224,230,.45);flex:0 0 auto;margin-top:1px}
+  .jstep.red b{background:var(--red);box-shadow:0 0 10px var(--red);color:#1a0206}
 
-  /* kpi tiles */
-  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:14px}
-  .kpi{background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:13px 14px;position:relative;overflow:hidden}
-  .kpi::before{content:"";position:absolute;left:0;top:0;height:2px;width:100%;background:var(--cyan);opacity:.5}
-  .kpi .v{font-family:var(--mono);font-size:26px;font-weight:750;line-height:1.1;margin-top:6px}
-  .kpi .s{color:var(--dim);font-size:11.5px;margin-top:4px}
+  .action{position:relative;border-radius:14px;padding:16px 18px;margin-bottom:16px;overflow:hidden;display:flex;align-items:center;gap:16px;animation:fadeUp .28s ease both}
+  .action::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px}
+  .action.RED{background:linear-gradient(90deg,rgba(255,90,110,.16),transparent 70%);border:1px solid rgba(255,90,110,.4)}
+  .action.RED::before{background:var(--red);box-shadow:0 0 18px var(--red)}
+  .action.AMBER{background:linear-gradient(90deg,rgba(255,190,77,.14),transparent 70%);border:1px solid rgba(255,190,77,.4)}
+  .action.AMBER::before{background:var(--amber);box-shadow:0 0 18px var(--amber)}
+  .action.GREY{background:linear-gradient(90deg,rgba(91,109,128,.14),transparent 70%);border:1px solid var(--line2)}
+  .action.GREY::before{background:var(--faint)}
+  .action .big{font-size:23px;font-weight:800;letter-spacing:1px;font-family:var(--mono);text-shadow:0 0 16px currentColor}
+  .action .why{color:var(--dim);font-size:12px;margin-top:4px}
+
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:13px;margin-bottom:16px}
+  .kpi{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:14px 15px;overflow:hidden;backdrop-filter:blur(6px);animation:fadeUp .28s ease both}
+  .kpi:nth-child(2){animation-delay:.05s}.kpi:nth-child(3){animation-delay:.1s}.kpi:nth-child(4){animation-delay:.15s}
+  .kpi::before{content:"";position:absolute;left:0;top:0;height:2px;width:100%;background:linear-gradient(90deg,var(--cyan),transparent);box-shadow:0 0 10px var(--cyan)}
+  .kpi .v{font-family:var(--mono);font-size:27px;font-weight:750;line-height:1.05;margin-top:8px;text-shadow:0 0 14px currentColor;transition:color .25s}
+  .kpi .s{color:var(--dim);font-size:11.5px;margin-top:5px}
 
   .cols{display:grid;grid-template-columns:1fr 360px;gap:14px}
-  .card{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px}
-  .card h3{margin:0 0 4px;font-family:var(--mono);font-size:11px;letter-spacing:1px;
-    text-transform:uppercase;color:var(--dim);font-weight:600}
+  .card{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:15px;backdrop-filter:blur(6px);animation:fadeUp .3s ease both}
+  .card h3{margin:0 0 4px;font-family:var(--mono);font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:var(--dim);font-weight:600}
   .card .cap{color:var(--faint);font-size:11px;margin-bottom:8px}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 
-  /* map */
-  .maphold{position:relative;height:360px;border-radius:10px;overflow:hidden;background:#0a0f16}
+  .maphold{position:relative;height:400px;border-radius:11px;overflow:hidden;background:#070b12;border:1px solid var(--line)}
+  .maphold::before{content:"";position:absolute;inset:0;z-index:0;
+    background:linear-gradient(rgba(53,224,230,.055) 1px,transparent 1px) 0 0/30px 30px,linear-gradient(90deg,rgba(53,224,230,.055) 1px,transparent 1px) 0 0/30px 30px}
+  .maphold::after{content:"";position:absolute;top:50%;left:50%;width:150%;height:150%;z-index:0;transform-origin:top left;
+    transform:translate(-50%,-50%);border-radius:50%;background:conic-gradient(from 0deg,rgba(53,224,230,.12),transparent 22%);animation:radar 7s linear infinite}
+  @keyframes radar{to{transform:translate(-50%,-50%) rotate(360deg)}}
+  .maphold>svg{position:relative;z-index:1}
+  #mapg{transition:transform .6s cubic-bezier(.4,.1,.2,1)}
+  #map circle.hot{animation:cellpulse 1.5s ease-in-out infinite}
+  @keyframes cellpulse{0%,100%{filter:drop-shadow(0 0 2px rgba(255,255,255,.6))}50%{filter:drop-shadow(0 0 9px rgba(255,255,255,.95))}}
   svg{width:100%;height:100%;display:block}
-  .legend{position:absolute;right:10px;bottom:10px;background:rgba(8,11,17,.9);border:1px solid var(--line);
-    border-radius:9px;padding:9px 11px;font-size:10px;color:var(--dim)}
-  .legend .ramp{height:9px;width:120px;border-radius:5px;margin:3px 0;
-    background:linear-gradient(90deg,#38dd9a,#ffb84d,#ff5d6c)}
+  .mapbtn{position:absolute;right:11px;top:11px;z-index:4;background:rgba(6,10,16,.85);border:1px solid var(--line2);
+    color:var(--ink);border-radius:7px;padding:5px 10px;font-size:10px;font-family:var(--mono);letter-spacing:1px;cursor:pointer}
+  .mapbtn:hover{border-color:var(--cyan);color:var(--cyan)}
+  .legend{position:absolute;right:11px;bottom:11px;z-index:3;background:rgba(6,10,16,.82);border:1px solid var(--line);border-radius:9px;padding:9px 11px;font-size:10px;color:var(--dim);backdrop-filter:blur(4px)}
+  .legend .ramp{height:9px;width:120px;border-radius:5px;margin:3px 0;background:linear-gradient(90deg,#37e6a6,#ffbe4d,#ff5a6e)}
   .legend .ramp-l{display:flex;justify-content:space-between;width:120px;font-family:var(--mono)}
-  .maplist{position:absolute;left:10px;top:10px;background:rgba(8,11,17,.92);border:1px solid var(--line);
-    border-radius:9px;padding:8px 10px;font-size:11px;width:190px}
-  .maplist .mlh{font-family:var(--mono);font-size:10px;letter-spacing:1px;color:var(--dim);margin-bottom:5px}
+  .maplist{position:absolute;left:11px;top:11px;z-index:3;background:rgba(6,10,16,.85);border:1px solid var(--line);border-radius:9px;padding:9px 11px;font-size:11px;width:196px;backdrop-filter:blur(4px)}
+  .maplist .mlh{font-family:var(--mono);font-size:10px;letter-spacing:1.4px;color:var(--dim);margin-bottom:6px}
   .mlrow{display:flex;align-items:center;gap:7px;padding:2px 0;color:var(--dim)}
-  .mlrow b{font-family:var(--mono);color:var(--ink);width:14px;text-align:center}
-  .mlrow i{margin-left:auto;width:12px;height:12px;border-radius:3px}
+  .mlrow b{font-family:var(--mono);color:var(--cyan);width:14px;text-align:center}
+  .mlrow i{margin-left:auto;width:12px;height:12px;border-radius:3px;box-shadow:0 0 6px currentColor}
 
-  /* location list */
-  .loc{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid #172230}
+  .loc{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(84,150,180,.12)}
   .loc:last-child{border:0}
-  .loc .p{font-family:var(--mono);font-weight:700}
+  .loc .p{font-family:var(--mono);font-weight:700;color:var(--cyan);text-shadow:0 0 10px rgba(53,224,230,.4)}
   .loc small{color:var(--faint)}
-  .abstain{font-size:11.5px;color:var(--amber);background:rgba(255,184,77,.08);
-    border:1px solid rgba(255,184,77,.25);border-radius:9px;padding:9px 11px;margin-top:10px;line-height:1.45}
+  .abstain{font-size:11.5px;color:var(--amber);background:rgba(255,190,77,.08);border:1px solid rgba(255,190,77,.28);border-radius:9px;padding:9px 11px;margin-top:10px;line-height:1.45}
   .ok{font-size:11.5px;color:var(--green);margin-top:8px}
 
-  /* channel bars */
-  .chan{display:flex;align-items:center;gap:8px;margin:5px 0}
+  .chan{display:flex;align-items:center;gap:8px;margin:6px 0}
   .chan .nm{width:110px;color:var(--dim);font-size:12px}
-  .chan .track{flex:1;height:7px;background:#141d29;border-radius:5px;overflow:hidden}
-  .chan .track>i{display:block;height:100%;background:var(--cyan)}
+  .chan .track{flex:1;height:7px;background:rgba(20,29,41,.9);border-radius:5px;overflow:hidden}
+  .chan .track>i{display:block;height:100%;background:linear-gradient(90deg,var(--violet),var(--cyan));box-shadow:0 0 10px rgba(53,224,230,.5);transition:width .3s ease}
   .chan .pc{width:38px;text-align:right;font-family:var(--mono);font-size:12px}
 
-  details{margin-top:14px;border:1px solid var(--line);border-radius:12px;background:var(--panel)}
-  summary{cursor:pointer;padding:12px 14px;font-family:var(--mono);font-size:11px;letter-spacing:1px;
-    text-transform:uppercase;color:var(--dim)}
-  details .inner{padding:0 14px 14px}
+  details{margin-top:14px;border:1px solid var(--line);border-radius:12px;background:var(--panel);backdrop-filter:blur(6px)}
+  summary{cursor:pointer;padding:13px 15px;font-family:var(--mono);font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:var(--dim)}
+  summary:hover{color:var(--cyan)}
+  details .inner{padding:0 15px 15px}
   .kv{display:flex;justify-content:space-between;padding:3px 0;color:var(--dim)}
   .kv b{color:var(--ink);font-family:var(--mono)}
-  .flash{color:var(--green);font-size:12px;margin-top:8px;font-family:var(--mono)}
-  .empty{color:var(--faint);padding:40px;text-align:center}
+  .flash{color:var(--green);font-size:12px;margin-top:8px;font-family:var(--mono);text-shadow:0 0 10px rgba(55,230,166,.4)}
+  .empty{color:var(--faint);padding:60px;text-align:center;font-family:var(--mono);letter-spacing:1px}
   @media(max-width:1050px){.kpis{grid-template-columns:repeat(2,1fr)}.cols{grid-template-columns:1fr}}
+  @media(prefers-reduced-motion:reduce){*{animation:none!important}}
+
+  /* ---- real map (Leaflet) ---- */
+  #lmap{position:absolute;inset:0;z-index:1;background:#070b12}
+  .leaflet-container{background:#070b12!important;font-family:var(--mono)}
+  .leaflet-tile{filter:brightness(.9) saturate(.85) contrast(1.03)}
+  .leaflet-control-zoom a{background:rgba(10,16,24,.92)!important;color:var(--cyan)!important;
+    border-color:var(--line)!important;text-shadow:0 0 6px rgba(53,224,230,.5)}
+  .leaflet-tooltip{background:rgba(6,10,16,.92);border:1px solid var(--line2);color:var(--ink);
+    font-family:var(--mono);font-size:10px;box-shadow:0 0 10px rgba(0,0,0,.6)}
+  .leaflet-tooltip-top:before{border-top-color:var(--line2)}
+  .numpin{width:20px;height:20px;border-radius:6px;background:var(--cyan);color:#04181a;
+    font:800 11px var(--mono);display:flex;align-items:center;justify-content:center;
+    box-shadow:0 0 10px rgba(53,224,230,.8);border:1px solid #04181a}
+  .ret{width:46px;height:46px;position:relative}
+  .ret::before{content:"";position:absolute;left:50%;top:50%;width:14px;height:14px;transform:translate(-50%,-50%);
+    border:2px solid #fff;border-radius:50%;box-shadow:0 0 12px #fff}
+  .ret span{position:absolute;left:50%;top:50%;width:14px;height:14px;transform:translate(-50%,-50%);
+    border:2px solid #fff;border-radius:50%;animation:retping 1.7s ease-out infinite}
+  @keyframes retping{0%{width:14px;height:14px;opacity:.9}100%{width:46px;height:46px;opacity:0}}
+  .mapfx{position:absolute;inset:0;z-index:2;pointer-events:none;
+    background:radial-gradient(130% 130% at 50% 45%,transparent 58%,rgba(0,6,12,.6) 100%),
+      repeating-linear-gradient(0deg,transparent 0 2px,rgba(0,12,16,.09) 3px);
+    box-shadow:inset 0 0 70px rgba(53,224,230,.07)}
+  .maphold .mapbtn,.maphold .maplist,.maphold .legend{z-index:6}
 </style>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.heat/0.2.0/leaflet-heat.js"></script>
 </head>
 <body>
+<div class="scanbar"></div>
+<div class="hud"><i></i><i></i><i></i><i></i></div>
+
 <header>
   <div class="brand"><span class="dotlogo"></span> CASHOUT&nbsp;FORECAST
-    <small>&nbsp;/ SIH26184 &middot; I4C-MHA</small></div>
-  <div class="chips" id="chips"><span class="chip">loading&hellip;</span></div>
+    <small>&nbsp;// SIH26184 &middot; I4C-MHA</small></div>
+  <div class="chips" id="chips"><span class="chip">initialising&hellip;</span></div>
 </header>
 
 <div class="app">
-  <!-- LEFT: cases -->
   <aside class="rail">
     <div class="head">
-      <span class="lbl">Active cases</span>
+      <span class="lbl">&#9670; Active cases</span>
       <select id="qsort" onchange="loadQueue()">
         <option value="imminence">most urgent</option>
         <option value="p">highest risk</option>
@@ -154,25 +246,24 @@
     <div class="cases" id="cases"></div>
   </aside>
 
-  <!-- MAIN: briefing -->
   <main class="stage" id="stage">
-    <div class="empty">Select a case on the left to see the forecast.</div>
+    <div class="empty">&#9678; SELECT A CASE TO BEGIN FORECAST</div>
   </main>
 </div>
 
 <script>
 const API = location.protocol==='file:' ? 'http://127.0.0.1:8000' : '';
-let HOT=null, PROJ=null, SEL=null, PLAY=null, REPLAY_T=0;
+let HOT=null, PROJ=null, SEL=null, PLAY=null, REPLAY_T=0, LASTHL=null, SELMETA=null;
+let CURDIST=null, FOCUSON=true, SOUND=true, TYPETOK=0, VOICES=[], JVOICE=null, CURAUDIO=null;
+let MAP=null, HEATL=null, ATML=null, MKL=null, RETL=null;
 const $=id=>document.getElementById(id);
 const money=v=>'₹'+Math.round(v).toLocaleString('en-IN');
 const pct=v=>Math.round(v*100)+'%';
 async function jget(u){return (await fetch(API+u)).json();}
 async function jpost(u){return (await fetch(API+u,{method:'POST'})).json();}
-
-// ---------- colours ----------
 function tierColor(t){return t==='RED'?'var(--red)':t==='AMBER'?'var(--amber)':'var(--faint)';}
 function riskColor(t){t=Math.max(0,Math.min(1,t||0));
-  const g=[56,221,154],y=[255,184,77],r=[255,93,108];let a,b,f;
+  const g=[55,230,166],y=[255,190,77],r=[255,90,110];let a,b,f;
   if(t<0.5){a=g;b=y;f=t/0.5;}else{a=y;b=r;f=(t-0.5)/0.5;}
   const c=a.map((v,i)=>Math.round(v+(b[i]-v)*f));return `rgb(${c[0]},${c[1]},${c[2]})`;}
 function convexHull(pts){if(pts.length<3)return pts;
@@ -191,159 +282,368 @@ async function loadQueue(){
     <span class="chip"><span class="sw AMBER"></span><b>${A}</b> watch</span>`;
   $('cases').innerHTML=items.map(i=>`
     <div class="case ${SEL===i.ack_no?'sel':''}" onclick="selectCase('${i.ack_no}')">
-      <div class="bar" style="background:${tierColor(i.tier)}"></div>
+      <div class="bar" style="background:${tierColor(i.tier)};box-shadow:0 0 10px ${tierColor(i.tier)}"></div>
       <div><div class="cid">#${i.ack_no.slice(0,6)} <span class="ftype">${i.fraud_category}</span></div>
         <div class="cmeta">${money(i.disputed_amount)} &middot; ${i.golden_hour_remaining_min}m left</div></div>
       <div class="risk" style="color:${tierColor(i.tier)}">${pct(i.p_cashout_10m)}<small>RISK</small></div>
     </div>`).join('');
 }
 
-// ---------- map ----------
+// ---------- map projection (returns extents for scale) ----------
 function buildProj(m){const la=m.map(x=>x.lat),lo=m.map(x=>x.lon);
   const mla=Math.min(...la),Mla=Math.max(...la),mlo=Math.min(...lo),Mlo=Math.max(...lo);
   const W=800,H=560,p=46;
-  return {x:v=>p+(v-mlo)/(Mlo-mlo)*(W-2*p), y:v=>H-p-(v-mla)/(Mla-mla)*(H-2*p)};}
+  return {x:v=>p+(v-mlo)/(Mlo-mlo)*(W-2*p), y:v=>H-p-(v-mla)/(Mla-mla)*(H-2*p),
+    mlo,Mlo,mla,Mla,W,H,p};}
 async function loadHotspots(){HOT=await jget('/hotspots?min_amt=0');PROJ=buildProj(HOT.atm_markers);}
-function renderMap(highlight){
-  if(!HOT||!$('map'))return; const P=PROJ;
+
+function renderMapSVG(highlight, focusDistrict){
+  if(!HOT||!$('map'))return; const P=PROJ,W=P.W,H=P.H;
   const byd={};
-  for(const m of HOT.atm_markers)(byd[m.district]=byd[m.district]||{atms:[],risk:0}).atms.push(m);
-  for(const c of HOT.cells)(byd[c.district]=byd[c.district]||{atms:[],risk:0}).risk+=c.risk;
+  for(const m of HOT.atm_markers)(byd[m.district]=byd[m.district]||{atms:[],risk:0,pts:[]}).atms.push(m);
+  for(const c of HOT.cells)(byd[c.district]=byd[c.district]||{atms:[],risk:0,pts:[]}).risk+=c.risk;
   const maxDR=Math.max(...Object.values(byd).map(d=>d.risk),1);
   const top=HOT.cells.slice(0,10);
-  let reg='',atm='',mk='';
+
+  // ---- heat field (blurred colored blobs) ----
+  let heat='';
+  HOT.cells.forEach(c=>{const t=c.risk_norm||0;if(t<0.04)return;
+    heat+=`<circle cx="${P.x(c.lon).toFixed(1)}" cy="${P.y(c.lat).toFixed(1)}" r="${(9+34*t).toFixed(1)}" fill="${riskColor(t)}"/>`;});
+
+  // ---- district outlines + labels ----
+  let reg='';
   for(const[d,info]of Object.entries(byd)){
     const pts=info.atms.map(m=>({x:P.x(m.lon),y:P.y(m.lat)}));if(pts.length<3)continue;
     let h=convexHull(pts);const cx=h.reduce((s,p)=>s+p.x,0)/h.length,cy=h.reduce((s,p)=>s+p.y,0)/h.length;
-    h=h.map(p=>({x:cx+(p.x-cx)*1.16,y:cy+(p.y-cy)*1.16}));
-    const t=info.risk/maxDR;
-    reg+=`<polygon points="${h.map(p=>p.x.toFixed(1)+','+p.y.toFixed(1)).join(' ')}"
-      fill="${riskColor(t)}" fill-opacity="0.12" stroke="${riskColor(t)}" stroke-opacity="0.5"
-      stroke-width="1.4" stroke-linejoin="round"/>
-      <text x="${cx.toFixed(0)}" y="${(cy-3).toFixed(0)}" text-anchor="middle" fill="#e9eff6"
-        font-size="14" font-weight="700">${d}</text>`;
+    const hh=h.map(p=>({x:cx+(p.x-cx)*1.15,y:cy+(p.y-cy)*1.15}));
+    reg+=`<polygon points="${hh.map(p=>p.x.toFixed(1)+','+p.y.toFixed(1)).join(' ')}" fill="none"
+      stroke="rgba(120,190,220,.45)" stroke-width="1" stroke-dasharray="5 4" stroke-linejoin="round"/>
+      <text x="${cx.toFixed(0)}" y="${(cy).toFixed(0)}" text-anchor="middle" fill="#cfe6f2"
+        font-size="13" font-weight="700" letter-spacing="1" opacity=".85">${d}</text>`;
   }
+  // ---- ATM markers (with tooltip) ----
+  let atm='';
   for(const m of HOT.atm_markers)
-    atm+=`<circle cx="${P.x(m.lon).toFixed(1)}" cy="${P.y(m.lat).toFixed(1)}" r="1" fill="#33415a" fill-opacity=".5"/>`;
-  HOT.cells.forEach(c=>{const t=c.risk_norm||0,hot=(highlight&&c.cell===highlight),r=top.indexOf(c);
-    mk+=`<circle cx="${P.x(c.lon).toFixed(1)}" cy="${P.y(c.lat).toFixed(1)}" r="${(5+16*t).toFixed(1)}"
-      fill="${riskColor(t)}" fill-opacity="${hot?.95:.6}" stroke="${hot?'#fff':'#070a0f'}"
-      stroke-width="${hot?2.5:.6}"><title>${c.district} risk ${c.risk}</title></circle>`;
-    if(r>=0&&r<6)mk+=`<text x="${P.x(c.lon).toFixed(1)}" y="${(P.y(c.lat)+3).toFixed(1)}" text-anchor="middle"
-      font-size="9" font-weight="800" fill="#06121a" pointer-events="none">${r+1}</text>`;});
-  $('map').innerHTML=reg+atm+mk;
-  $('legend').innerHTML=`<div style="color:#cdd6e2;font-family:var(--mono);font-size:10px;letter-spacing:1px">RISK</div>
+    atm+=`<circle cx="${P.x(m.lon).toFixed(1)}" cy="${P.y(m.lat).toFixed(1)}" r="1.4" fill="#4a6a86" fill-opacity=".7">
+      <title>${m.atm_id} · ${m.operator} · ${m.district} · fraud rate ${m.fraud_rate}</title></circle>`;
+  // ---- numbered top markers ----
+  let mk='';
+  top.slice(0,6).forEach((c,i)=>{const t=c.risk_norm||0;
+    mk+=`<circle cx="${P.x(c.lon).toFixed(1)}" cy="${P.y(c.lat).toFixed(1)}" r="${(5+9*t).toFixed(1)}"
+      fill="${riskColor(t)}" fill-opacity=".9" stroke="#04121a" stroke-width=".8"><title>${c.district} · risk ${c.risk}</title></circle>
+      <text x="${P.x(c.lon).toFixed(1)}" y="${(P.y(c.lat)+3).toFixed(1)}" text-anchor="middle" font-size="9" font-weight="800" fill="#04121a" pointer-events="none">${i+1}</text>`;});
+  // ---- target-lock reticle on the highlighted cell ----
+  let ret='';
+  const hc=highlight?HOT.cells.find(c=>c.cell===highlight):null;
+  if(hc){const hx=P.x(hc.lon),hy=P.y(hc.lat);
+    ret=`<g pointer-events="none">
+      <circle class="hot" cx="${hx.toFixed(1)}" cy="${hy.toFixed(1)}" r="7" fill="none" stroke="#fff" stroke-width="1.6"/>
+      <circle cx="${hx.toFixed(1)}" cy="${hy.toFixed(1)}" r="7" fill="none" stroke="#fff" stroke-width="1.2" opacity=".9">
+        <animate attributeName="r" values="7;24" dur="1.7s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values=".9;0" dur="1.7s" repeatCount="indefinite"/></circle>
+      <line x1="${(hx-13).toFixed(1)}" y1="${hy}" x2="${(hx-5).toFixed(1)}" y2="${hy}" stroke="#fff" stroke-width="1.4"/>
+      <line x1="${(hx+5).toFixed(1)}" y1="${hy}" x2="${(hx+13).toFixed(1)}" y2="${hy}" stroke="#fff" stroke-width="1.4"/>
+      <line x1="${hx}" y1="${(hy-13).toFixed(1)}" x2="${hx}" y2="${(hy-5).toFixed(1)}" stroke="#fff" stroke-width="1.4"/>
+      <line x1="${hx}" y1="${(hy+5).toFixed(1)}" x2="${hx}" y2="${(hy+13).toFixed(1)}" stroke="#fff" stroke-width="1.4"/></g>`;}
+
+  // ---- focus transform (zoom to district) ----
+  let tf='', s=1;
+  if(focusDistrict && byd[focusDistrict]){
+    const pts=byd[focusDistrict].atms.map(m=>({x:P.x(m.lon),y:P.y(m.lat)}));
+    const xs=pts.map(p=>p.x),ys=pts.map(p=>p.y);
+    const x0=Math.min(...xs),x1=Math.max(...xs),y0=Math.min(...ys),y1=Math.max(...ys);
+    const bw=Math.max(x1-x0,40),bh=Math.max(y1-y0,40),cx=(x0+x1)/2,cy=(y0+y1)/2;
+    s=Math.min(W/(bw*1.5),H/(bh*1.5)); s=Math.max(1,Math.min(s,3.6));
+    tf=`translate(${(W/2-s*cx).toFixed(1)},${(H/2-s*cy).toFixed(1)}) scale(${s.toFixed(3)})`;
+  }
+  // ---- scale bar (screen space) ----
+  const latc=(P.mla+P.Mla)/2;
+  const kmPerUnit=(P.Mlo-P.mlo)/(P.W-2*P.p)*111.32*Math.cos(latc*Math.PI/180);
+  let km=focusDistrict?5:25, Lu=km/kmPerUnit*s;
+  while(Lu>260){km/=2;Lu=km/kmPerUnit*s;} while(Lu<45){km*=2;Lu=km/kmPerUnit*s;}
+  const sb=`<g transform="translate(20,${H-24})" font-family="monospace">
+    <line x1="0" y1="0" x2="${Lu.toFixed(1)}" y2="0" stroke="#9fb6c8" stroke-width="2"/>
+    <line x1="0" y1="-4" x2="0" y2="4" stroke="#9fb6c8" stroke-width="2"/>
+    <line x1="${Lu.toFixed(1)}" y1="-4" x2="${Lu.toFixed(1)}" y2="4" stroke="#9fb6c8" stroke-width="2"/>
+    <text x="${(Lu/2).toFixed(1)}" y="-8" text-anchor="middle" fill="#9fb6c8" font-size="11">${km} km</text></g>`;
+  const north=`<g transform="translate(${W-34},34)" font-family="monospace">
+    <path d="M0,-13 L5,6 L0,1 L-5,6 Z" fill="#9fb6c8"/><text x="0" y="20" text-anchor="middle" fill="#9fb6c8" font-size="10">N</text></g>`;
+  const cc=(HOT.district_centroids&&focusDistrict&&HOT.district_centroids[focusDistrict])||null;
+  const coord=cc?`<text x="20" y="26" fill="#6d8296" font-family="monospace" font-size="10.5">◎ ${focusDistrict} ${cc.lat.toFixed(3)}°N ${cc.lon.toFixed(3)}°E</text>`:'';
+
+  $('map').innerHTML=`<defs><filter id="heatf" x="-40%" y="-40%" width="180%" height="180%">
+      <feGaussianBlur stdDeviation="9"/></filter></defs>
+    <g id="mapg" transform="${tf}">
+      <g filter="url(#heatf)" opacity="0.5">${heat}</g>${reg}${atm}${mk}${ret}</g>
+    <g pointer-events="none">${sb}${north}${coord}</g>`;
+  $('legend').innerHTML=`<div style="color:#cdd6e2;font-family:var(--mono);font-size:10px;letter-spacing:1.4px">RISK FIELD</div>
     <div class="ramp"></div><div class="ramp-l"><span>low</span><span>high</span></div>`;
-  $('maplist').innerHTML=`<div class="mlh">Top areas</div>`+top.slice(0,6).map((c,i)=>
-    `<div class="mlrow"><b>${i+1}</b><span>${c.district}</span>
-     <i style="background:${riskColor(c.risk_norm||0)}"></i></div>`).join('');
+  $('maplist').innerHTML=`<div class="mlh">&#9673; TOP AREAS</div>`+top.slice(0,6).map((c,i)=>
+    `<div class="mlrow"><b>${i+1}</b><span>${c.district}</span><i style="background:${riskColor(c.risk_norm||0)};color:${riskColor(c.risk_norm||0)}"></i></div>`).join('');
 }
+function toggleMapFocus(){FOCUSON=!FOCUSON;const b=$('mapToggle');if(b)b.textContent=FOCUSON?'◎ LOCKED':'⊕ WIDE VIEW';
+  if(MAP) lockOn(LASTHL, FOCUSON?CURDIST:null); else renderMapSVG(LASTHL, FOCUSON?CURDIST:null);}
+
+// choose the real (Leaflet) map when online, else the offline SVG map
+function setupMap(){const svg=$('map'),lm=$('lmap');
+  if(typeof L!=='undefined' && lm){
+    try{ if(MAP){MAP.remove();MAP=null;}
+      if(svg)svg.style.display='none'; lm.style.display='block';
+      MAP=L.map('lmap',{zoomControl:false,attributionControl:false,preferCanvas:true});
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{maxZoom:19,subdomains:'abcd'}).addTo(MAP);
+      L.control.zoom({position:'bottomleft'}).addTo(MAP);
+      ATML=L.layerGroup().addTo(MAP);MKL=L.layerGroup().addTo(MAP);RETL=L.layerGroup().addTo(MAP);
+      MAP.setView([23.9,86.2],8); return;
+    }catch(e){MAP=null;}
+  }
+  if(lm)lm.style.display='none'; if(svg)svg.style.display='block';  // offline fallback
+}
+function renderMap(hl,focus){ if(MAP) updateLeaflet(hl,focus); else renderMapSVG(hl,focus); }
+const LOCK_ZOOM=12;                 // how close we zoom when locking onto a cell
+// full rebuild of the static layers (ATMs, heat, hotspots) -- on case select
+function updateLeaflet(highlight, focusDistrict){
+  if(!MAP||!HOT)return;
+  ATML.clearLayers();MKL.clearLayers();
+  if(HEATL){MAP.removeLayer(HEATL);HEATL=null;}
+  HOT.atm_markers.forEach(m=>L.circleMarker([m.lat,m.lon],{radius:2,weight:0,fillColor:'#5aa0c8',fillOpacity:.5})
+    .bindTooltip(`${m.atm_id} · ${m.operator} · fraud ${m.fraud_rate}`,{direction:'top'}).addTo(ATML));
+  const cells=HOT.cells;
+  if(typeof L.heatLayer==='function'){
+    HEATL=L.heatLayer(cells.map(c=>[c.lat,c.lon,Math.max(.08,c.risk_norm||0)]),
+      {radius:26,blur:20,minOpacity:.28,max:1,gradient:{0.0:'#37e6a6',0.5:'#ffbe4d',1.0:'#ff5a6e'}}).addTo(MAP);
+  } else {
+    cells.forEach(c=>{const t=c.risk_norm||0;L.circleMarker([c.lat,c.lon],
+      {radius:6+18*t,weight:0,fillColor:riskColor(t),fillOpacity:.35}).addTo(MKL);});
+  }
+  cells.slice(0,6).forEach((c,i)=>L.marker([c.lat,c.lon],
+    {icon:L.divIcon({className:'',html:`<div class="numpin">${i+1}</div>`,iconSize:[20,20],iconAnchor:[10,10]})}).addTo(MKL));
+  setTimeout(()=>{try{MAP.invalidateSize()}catch(e){}},60);
+  $('legend').innerHTML=`<div style="color:#cdd6e2;font-family:var(--mono);font-size:10px;letter-spacing:1.4px">RISK FIELD</div><div class="ramp"></div><div class="ramp-l"><span>low</span><span>high</span></div>`;
+  $('maplist').innerHTML=`<div class="mlh">&#9673; TOP AREAS</div>`+cells.slice(0,6).map((c,i)=>
+    `<div class="mlrow"><b>${i+1}</b><span>${c.district}</span><i style="background:${riskColor(c.risk_norm||0)};color:${riskColor(c.risk_norm||0)}"></i></div>`).join('');
+  lockOn(highlight, focusDistrict);           // then fly-zoom onto the locked cell
+}
+// move the reticle + smoothly fly to the currently locked cell (cheap; used on lock changes)
+function lockOn(highlight, focusDistrict){
+  if(!MAP||!HOT)return;
+  RETL.clearLayers();
+  const hc=highlight?HOT.cells.find(c=>c.cell===highlight):null;
+  if(hc)L.marker([hc.lat,hc.lon],{zIndexOffset:1000,
+    icon:L.divIcon({className:'',html:'<div class="ret"><span></span></div>',iconSize:[46,46],iconAnchor:[23,23]})}).addTo(RETL);
+  try{
+    if(focusDistrict && hc){ MAP.flyTo([hc.lat,hc.lon], LOCK_ZOOM, {duration:1.0}); }        // zoom in / lock on
+    else if(focusDistrict){ const ll=HOT.atm_markers.filter(m=>m.district===focusDistrict).map(m=>[m.lat,m.lon]);
+      if(ll.length)MAP.flyToBounds(L.latLngBounds(ll).pad(0.35),{duration:1.0}); }
+    else{ const ll=HOT.atm_markers.map(m=>[m.lat,m.lon]); if(ll.length)MAP.flyToBounds(L.latLngBounds(ll).pad(0.12),{duration:1.0}); }  // wide view
+  }catch(e){}
+}
+// light update used during replay: just move the lock (fly to the new cell), no full rebuild
+function mapLock(hl){ if(MAP) lockOn(hl, FOCUSON?CURDIST:null); else renderMapSVG(hl, FOCUSON?CURDIST:null); }
 
 // ---------- charts ----------
 function hazardSVG(c){const hs=c.hazard,W=330,H=120,pad=26;
   const xs=hs.map((h,i)=>pad+i*(W-2*pad)/(hs.length-1)), ys=hs.map(h=>H-pad-h.p_cumulative*(H-2*pad));
   const line=xs.map((x,i)=>`${i?'L':'M'}${x.toFixed(1)},${ys[i].toFixed(1)}`).join(' ');
   const area=`M${xs[0]},${H-pad} `+xs.map((x,i)=>`L${x.toFixed(1)},${ys[i].toFixed(1)}`).join(' ')+` L${xs.at(-1)},${H-pad}Z`;
-  const dots=xs.map((x,i)=>`<circle cx="${x.toFixed(1)}" cy="${ys[i].toFixed(1)}" r="3" fill="#33d3d9"/>
-    <text x="${x.toFixed(1)}" y="${H-9}" font-size="9" fill="#586377" text-anchor="middle">${hs[i].horizon_min}m</text>
+  const dots=xs.map((x,i)=>`<circle cx="${x.toFixed(1)}" cy="${ys[i].toFixed(1)}" r="3" fill="#35e0e6"/>
+    <text x="${x.toFixed(1)}" y="${H-9}" font-size="9" fill="#5b6d80" text-anchor="middle">${hs[i].horizon_min}m</text>
     <text x="${x.toFixed(1)}" y="${(ys[i]-8).toFixed(1)}" font-size="9" fill="#cdd6e2" text-anchor="middle">${pct(hs[i].p_cumulative)}</text>`).join('');
   return `<svg viewBox="0 0 ${W} ${H}" style="height:126px">
-    <path d="${area}" fill="rgba(51,211,217,.13)"/><path d="${line}" fill="none" stroke="#33d3d9" stroke-width="2"/>${dots}</svg>`;}
+    <defs><linearGradient id="hz" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="rgba(53,224,230,.35)"/><stop offset="1" stop-color="rgba(53,224,230,0)"/></linearGradient></defs>
+    <path d="${area}" fill="url(#hz)"/><path d="${line}" fill="none" stroke="#35e0e6" stroke-width="2" style="filter:drop-shadow(0 0 4px rgba(53,224,230,.7))"/>${dots}</svg>`;}
 function trailSVG(tr){if(!tr||!tr.nodes.length)return '<div class="cap">no trail</div>';
   const byh={};tr.nodes.forEach(n=>(byh[n.hop_from_victim]=byh[n.hop_from_victim]||[]).push(n));
   const hops=Object.keys(byh).map(Number).sort((a,b)=>a-b),W=330,colW=W/(hops.length+.5),pos={};let s='';
   hops.forEach((h,hi)=>byh[h].forEach((n,ni)=>{const x=26+hi*colW,y=22+ni*24;pos[n.account_id]={x,y};
-    const c=n.is_victim?'#33d3d9':n.is_leaf?'#ff5d6c':'#586377';
-    s+=`<circle cx="${x}" cy="${y}" r="6" fill="${c}"><title>${n.account_id} ${money(n.tainted_amount)}</title></circle>`;}));
+    const c=n.is_victim?'#35e0e6':n.is_leaf?'#ff5a6e':'#5b6d80';
+    s+=`<circle cx="${x}" cy="${y}" r="6" fill="${c}" style="filter:drop-shadow(0 0 4px ${c})"><title>${n.account_id} ${money(n.tainted_amount)}</title></circle>`;}));
   let e='';tr.edges.forEach(x=>{const a=pos[x.src_account],b=x.dst_account?pos[x.dst_account]:null;
-    if(a&&b)e+=`<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="#1d2735" stroke-width="${x.observed?1.4:.6}" stroke-dasharray="${x.observed?'':'3 2'}"/>`;
-    if(a&&!b)e+=`<rect x="${a.x+8}" y="${a.y-4}" width="7" height="7" fill="#ff5d6c" transform="rotate(45 ${a.x+11} ${a.y})"/>`;});
+    if(a&&b)e+=`<line x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}" stroke="#2a3b4d" stroke-width="${x.observed?1.4:.6}" stroke-dasharray="${x.observed?'':'3 2'}"/>`;
+    if(a&&!b)e+=`<rect x="${a.x+8}" y="${a.y-4}" width="7" height="7" fill="#ff5a6e" transform="rotate(45 ${a.x+11} ${a.y})"/>`;});
   const rows=Math.max(...hops.map(h=>byh[h].length));
   return `<svg viewBox="0 0 ${W} ${24+rows*24}" style="height:${24+rows*24}px">${e}${s}</svg>`;}
 
-// ---------- briefing ----------
-function channelTop(ch){const o=[['ATM',ch.ATM],['POS (card cash)',ch.POS],
-  ['keeps moving',ch.onward_transfer],['sits idle',ch.dormant]].sort((a,b)=>b[1]-a[1]);return o;}
+// ---------- derived text ----------
+function channelTop(ch){return [['ATM',ch.ATM],['POS (card cash)',ch.POS],['keeps moving',ch.onward_transfer],['sits idle',ch.dormant]].sort((a,b)=>b[1]-a[1]);}
 function whereText(loc){
   if(loc.granularity==='terminal'&&loc.terminals[0])return {v:loc.terminals[0].atm_id,s:'exact ATM'};
   if(loc.granularity==='cell'&&loc.cells[0])return {v:loc.cells[0].district,s:'~5 km area'};
   return {v:(loc.districts[0]||{}).district||'?',s:'district only'};}
 function whenText(c){const w=c.window_minutes;return w[0]===0?`0–${w[1]} min`:`${w[0]}–${w[1]} min`;}
+function locListHTML(loc){
+  if(loc.granularity==='terminal')
+    return loc.terminals.map((t,i)=>`<div class="loc"><span>${i+1}. <span class="mono">${t.atm_id}</span> <small>[${t.sources.join(',')}]</small></span><span class="p">${pct(t.p)}</span></div>`).join('');
+  if(loc.granularity==='cell')
+    return loc.cells.slice(0,4).map((t,i)=>`<div class="loc"><span>${i+1}. ${t.district} <small>${t.n_terminals} ATMs</small></span><span class="p">${pct(t.p)}</span></div>`).join('');
+  return loc.districts.map((t,i)=>`<div class="loc"><span>${i+1}. ${t.district}</span><span class="p">${pct(t.p)}</span></div>`).join('');}
+function abstainHTML(loc){return loc.abstained_at
+  ? `<div class="abstain"><b>Not naming one ATM.</b> ${loc.abstain_reason}</div>`
+  : `<div class="ok">&#10003; Confident enough to name a specific ATM.</div>`;}
+function chanRowsHTML(chans){return chans.map(x=>`<div class="chan"><span class="nm">${x[0]}</span><span class="track"><i style="width:${x[1]*100}%"></i></span><span class="pc">${pct(x[1])}</span></div>`).join('');}
 
-function renderBriefing(p, clockHTML){
+// ---------- JARVIS briefing ----------
+function districtOf(loc){return (loc.cells&&loc.cells[0]&&loc.cells[0].district)||(loc.districts&&loc.districts[0]&&loc.districts[0].district)||'the area';}
+function buildBrief(p){
+  const c=p.cashout,loc=p.location,r=p.recommendation,ch=p.channel;
+  const chans=channelTop(ch),top=chans[0][0],dist=districtOf(loc),where=whereText(loc);
+  const acct=p.account_id, amt=money(r.tainted_amount), p10=Math.round(c.p_10m*100);
+  const howWord = top==='ATM'?'an ATM withdrawal':top==='POS (card cash)'?'a POS card-cash out':
+    top==='keeps moving'?'another onward transfer':'sitting idle';
+  // narrative
+  let n=`Complaint ${p.ack_no.slice(0,6)}. ${amt} has been traced to account ${acct}, which is holding the stolen funds right now. `;
+  if(top==='keeps moving'){
+    n+=`The money is still moving — most likely ${howWord} in the next ${c.window_minutes[1]} minutes, so do not deploy anyone yet. `;
+  } else if(top==='sits idle'){
+    n+=`It is currently sitting still, giving you a window to act. `;
+  } else {
+    n+=`There is a ${p10}% chance of a cash-out within 10 minutes, most likely via ${howWord} in ${where.v} (${where.s}). `;
+  }
+  n+= loc.abstained_at ? `I can pin this to the ${loc.granularity} level, but the distribution is too flat to name a single ATM. `
+                       : ``;
+  n+=`My recommendation is to ${r.action}.`;
+  // steps
+  const steps=[], red=r.tier==='RED';
+  if(top==='ATM'||top==='POS (card cash)'){
+    if(red){
+      steps.push(`Freeze account ${acct} immediately — this is the fastest way to stop the loss.`);
+      steps.push(`Alert ${r.target_station||dist+' cyber PS'} covering the ${dist} cell.`);
+      steps.push(`If the freeze cannot land in time, deploy to the highlighted ~5 km cell and pull ATM CCTV / footfall.`);
+    } else {
+      steps.push(`Place a watch / lien on account ${acct}.`);
+      steps.push(`Brief the ${dist} desk and pre-draft the freeze request.`);
+      steps.push(`Re-check in 10–20 minutes as the hazard rises.`);
+    }
+  } else if(top==='keeps moving'){
+    steps.push(`Hold — do not deploy; the money is still being layered.`);
+    steps.push(`Trace the next hop and identify the beneficiary account and bank.`);
+    steps.push(`Send a freeze notice to the receiving bank's nodal officer / PSP.`);
+  } else {
+    steps.push(`Freeze account ${acct} now, while the funds are still sitting in it.`);
+    steps.push(`Keep tracing the chain for any late movement.`);
+  }
+  return {narr:n, steps, red};
+}
+function stepsHTML(b){return b.steps.map((s,i)=>`<div class="jstep ${b.red&&i===0?'red':''}"><b>${i+1}</b><span>${s}</span></div>`).join('');}
+function typeInto(el, text){if(!el)return;const tok=++TYPETOK;
+  if(window.matchMedia&&matchMedia('(prefers-reduced-motion:reduce)').matches){el.textContent=text;return;}
+  el.innerHTML='';let i=0;(function step(){if(tok!==TYPETOK)return;
+    el.innerHTML=text.slice(0,i)+'<span class="cur">▌</span>';i++;
+    if(i<=text.length)setTimeout(step, 11);else el.textContent=text;})();}
+// normalise text so the voice reads it ACCURATELY (₹, %, IDs, distances)
+function toSpeech(t){return t
+  .replace(/Complaint\s+(\d+)/g,(m,d)=>'Complaint '+d.split('').join(' '))
+  .replace(/₹\s?([\d,]+)/g,(m,n)=>n.replace(/,/g,'')+' rupees')
+  .replace(/ACC[_\- ]?(\d+)/g,(m,d)=>'account '+d.split('').join(' '))
+  .replace(/~\s?(\d+(?:\.\d+)?)\s?km/gi,'about $1 kilometres')
+  .replace(/%/g,' percent').replace(/&/g,' and ')
+  .replace(/\s+/g,' ').trim();}
+function pickDefaultVoice(){  // prefer a sweet English (ideally Indian-English) female voice
+  const prefs=[/Neerja/i,/Heera/i,/Swara/i,/Aria/i,/Jenny/i,/Google UK English Female/i,/Samantha/i,/Zira/i,/Hazel/i,/Susan/i,/female/i];
+  for(const rx of prefs){const v=VOICES.find(x=>rx.test((x.name||'')+' '+(x.lang||'')));if(v)return v;}
+  return VOICES.find(x=>/en-IN/i.test(x.lang||''))||VOICES.find(x=>/^en/i.test(x.lang||''))||VOICES[0];}
+function voiceOpts(){const en=VOICES.filter(v=>/^en/i.test(v.lang||''));const list=en.length?en:VOICES;
+  return list.map(v=>`<option value="${v.name}" ${v.name===JVOICE?'selected':''}>${v.name.replace(/Microsoft |Google /,'')}</option>`).join('')||'<option>default</option>';}
+function populateVoices(){if(!window.speechSynthesis)return;const load=()=>{VOICES=speechSynthesis.getVoices()||[];
+  if(!JVOICE){const d=pickDefaultVoice();JVOICE=d&&d.name;}const s=$('voiceSel');if(s)s.innerHTML=voiceOpts();};
+  load();speechSynthesis.onvoiceschanged=load;}
+function setVoice(name){JVOICE=name;speak('Voice set. This is your cash-out forecast assistant.');}
+function speak(text){try{if(!SOUND||!window.speechSynthesis)return;speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(toSpeech(text));u.rate=0.88;u.pitch=1.06;u.volume=1;  // slow, soothing, smooth
+  const v=VOICES.find(x=>x.name===JVOICE)||pickDefaultVoice();if(v)u.voice=v;
+  speechSynthesis.speak(u);}catch(e){}}
+// play a bundled cloned-voice clip if present (voice/<ack>.mp3 -> voice/default.mp3),
+// otherwise fall back to the system voice. Never fails on stage.
+function playAudioChain(urls, fallback){
+  if(!urls.length)return fallback();
+  const a=new Audio(urls[0]);CURAUDIO=a;
+  a.onerror=()=>playAudioChain(urls.slice(1),fallback);
+  a.play().catch(()=>playAudioChain(urls.slice(1),fallback));}
+function playBrief(ack,text){if(!SOUND)return;
+  try{if(CURAUDIO){CURAUDIO.pause();CURAUDIO=null;}
+    playAudioChain(['voice/'+ack+'.mp3','voice/default.mp3'],()=>speak(text));}catch(e){speak(text);}}
+function toggleSound(){SOUND=!SOUND;const b=$('sndBtn');if(b)b.textContent=SOUND?'🔊':'🔇';
+  if(!SOUND){if(window.speechSynthesis)speechSynthesis.cancel();if(CURAUDIO){CURAUDIO.pause();CURAUDIO=null;}}}
+
+// ---------- briefing: build shell ONCE ----------
+function renderBriefing(p, clockHTML, speakNow){
   const c=p.cashout, loc=p.location, r=p.recommendation, ch=p.channel;
-  const where=whereText(loc), chans=channelTop(ch);
-  const locList = loc.granularity==='terminal'
-    ? loc.terminals.map((t,i)=>`<div class="loc"><span>${i+1}. <span class="mono">${t.atm_id}</span>
-        <small>[${t.sources.join(',')}]</small></span><span class="p">${pct(t.p)}</span></div>`).join('')
-    : loc.granularity==='cell'
-    ? loc.cells.slice(0,4).map((t,i)=>`<div class="loc"><span>${i+1}. ${t.district}
-        <small>${t.n_terminals} ATMs</small></span><span class="p">${pct(t.p)}</span></div>`).join('')
-    : loc.districts.map((t,i)=>`<div class="loc"><span>${i+1}. ${t.district}</span><span class="p">${pct(t.p)}</span></div>`).join('');
-  const abstain = loc.abstained_at
-    ? `<div class="abstain"><b>Not naming one ATM.</b> ${loc.abstain_reason}</div>`
-    : `<div class="ok">&#10003; Confident enough to name a specific ATM.</div>`;
-
+  const where=whereText(loc), chans=channelTop(ch), b=buildBrief(p);
+  LASTHL=null; CURDIST=districtOf(loc);
   $('stage').innerHTML=`
     <div class="stagehead">
       <span class="cid">#${p.ack_no.slice(0,8)}</span>
       <span class="ftype">${(SELMETA&&SELMETA.fraud_category)||''}</span>
-      <span class="tier ${r.tier}">${r.tier}</span>
+      <span class="tier ${r.tier}" id="tierBadge">${r.tier}</span>
       <div class="replay">
         <button class="btn" id="playbtn" onclick="togglePlay()">&#9654; Replay</button>
         <input type="range" id="scrub" min="0" max="120" step="1" value="${REPLAY_T}" oninput="scrubTo(this.value)">
-        <span class="clock" id="clock">${clockHTML||'live'}</span>
+        <span class="clock" id="clock">${clockHTML||'● LIVE'}</span>
       </div>
     </div>
 
-    <div class="action ${r.tier}">
-      <div><div class="big">${r.action}</div><div class="why">${r.reason}</div></div>
+    <div class="jarvis">
+      <div class="jhead"><span class="rc"></span> JARVIS — Situation analysis
+        <select class="sp" id="voiceSel" onchange="setVoice(this.value)" title="pick voice"
+          style="margin-left:auto;font-size:11px;font-family:var(--mono);max-width:150px">${voiceOpts()}</select>
+        <span class="sp" id="sndBtn" onclick="toggleSound()" title="voice on/off" style="margin-left:8px">${SOUND?'🔊':'🔇'}</span></div>
+      <div class="jtext" id="jtext"></div>
+      <div class="jlive" id="jlive"></div>
+      <div class="jsteps" id="jsteps">${stepsHTML(b)}</div>
+    </div>
+
+    <div class="action ${r.tier}" id="actionBox">
+      <div><div class="big" id="actBig" style="color:${tierColor(r.tier)}">${r.action}</div>
+        <div class="why" id="actWhy">${r.reason}</div></div>
     </div>
 
     <div class="kpis">
       <div class="kpi"><span class="lbl">Will it cash out?</span>
-        <div class="v" style="color:${tierColor(r.tier)}">${pct(c.p_10m)}</div>
-        <div class="s">chance in the next 10 min &middot; ${c.severity}</div></div>
+        <div class="v" id="kWill" style="color:${tierColor(r.tier)}">${pct(c.p_10m)}</div>
+        <div class="s" id="kWillSub">chance in the next 10 min &middot; ${c.severity}</div></div>
       <div class="kpi"><span class="lbl">When?</span>
-        <div class="v">${whenText(c)}</div><div class="s">most likely window</div></div>
+        <div class="v" id="kWhen" style="color:var(--cyan)">${whenText(c)}</div><div class="s">most likely window</div></div>
       <div class="kpi"><span class="lbl">How?</span>
-        <div class="v" style="font-size:19px">${chans[0][0]}</div>
-        <div class="s">${pct(chans[0][1])} &middot; then ${chans[1][0]}</div></div>
+        <div class="v" id="kHow" style="font-size:19px;color:var(--cyan)">${chans[0][0]}</div>
+        <div class="s" id="kHowSub">${pct(chans[0][1])} &middot; then ${chans[1][0]}</div></div>
       <div class="kpi"><span class="lbl">Where?</span>
-        <div class="v" style="font-size:19px">${where.v}</div><div class="s">${where.s}</div></div>
+        <div class="v" id="kWhere" style="font-size:19px;color:var(--cyan)">${where.v}</div>
+        <div class="s" id="kWhereSub">${where.s}</div></div>
     </div>
 
     <div class="cols">
       <div class="card">
-        <h3>Predicted cash-out area</h3>
-        <div class="cap">Regions shaded by risk. Numbered dots = the most likely ~5 km areas. This case highlighted in white.</div>
-        <div class="maphold"><svg id="map" viewBox="0 0 800 560" preserveAspectRatio="xMidYMid meet"></svg>
+        <h3>&#9678; Predicted cash-out area &middot; ${CURDIST}</h3>
+        <div class="cap">Heat = forecast cash-out risk. Dashed = district. Reticle locks the most likely ~5 km cell.</div>
+        <div class="maphold">
+          <button class="mapbtn" id="mapToggle" onclick="toggleMapFocus()">${FOCUSON?'◎ LOCKED':'⊕ WIDE VIEW'}</button>
+          <div id="lmap" style="display:none"></div>
+          <svg id="map" viewBox="0 0 800 560" preserveAspectRatio="xMidYMid meet"></svg>
+          <div class="mapfx"></div>
           <div class="maplist" id="maplist"></div><div class="legend" id="legend"></div></div>
       </div>
       <div>
         <div class="card" style="margin-bottom:14px">
-          <h3>Chance of cash-out over the next hour</h3>${hazardSVG(c)}
+          <h3>&#9651; Chance of cash-out over the next hour</h3><div id="hazBox">${hazardSVG(c)}</div>
         </div>
         <div class="card">
-          <h3>Most likely locations</h3>${locList}${abstain}
+          <h3>&#9673; Most likely locations</h3><div id="locBox">${locListHTML(loc)}${abstainHTML(loc)}</div>
         </div>
       </div>
     </div>
 
     <details>
-      <summary>Technical details (money trail, channel odds, account)</summary>
+      <summary>&#9881; Technical details (money trail, channel odds, account)</summary>
       <div class="inner">
         <div class="cols">
           <div><h3 style="margin-top:6px">Money-flow trail</h3>
             <div class="cap">blue = victim &middot; red = holding cash (target) &middot; grey = pass-through &middot; dashed = unconfirmed</div>
-            ${trailSVG(p._trail)}</div>
+            <div id="trailBox">${trailSVG(p._trail)}</div></div>
           <div><h3 style="margin-top:6px">How the money leaves (M2)</h3>
-            ${chans.map(x=>`<div class="chan"><span class="nm">${x[0]}</span>
-              <span class="track"><i style="width:${x[1]*100}%"></i></span><span class="pc">${pct(x[1])}</span></div>`).join('')}
+            <div id="chanBox">${chanRowsHTML(chans)}</div>
             <h3 style="margin-top:12px">Account</h3>
-            <div class="kv">target <b>${p.account_id}</b></div>
-            <div class="kv">tainted held <b>${money(r.tainted_amount)}</b></div>
-            <div class="kv">route alert to <b>${r.target_station||'--'}</b></div>
+            <div class="kv">target <b id="kvTarget">${p.account_id}</b></div>
+            <div class="kv">tainted held <b id="kvTaint">${money(r.tainted_amount)}</b></div>
+            <div class="kv">route alert to <b id="kvStation">${r.target_station||'--'}</b></div>
           </div>
         </div>
         <div style="display:flex;gap:10px;margin-top:12px">
@@ -353,17 +653,44 @@ function renderBriefing(p, clockHTML){
         <div class="flash" id="flash"></div>
       </div>
     </details>`;
-  renderMap(loc.cells&&loc.cells[0]?loc.cells[0].cell:null);
-  if(p._trail){/*trail already passed*/}
-  else jget(`/trail/${p.ack_no}`).then(tr=>{const el=[...document.querySelectorAll('.inner .cols>div')][0];
-    if(el)el.innerHTML=`<h3 style="margin-top:6px">Money-flow trail</h3>
-      <div class="cap">blue = victim &middot; red = holding cash &middot; grey = pass-through &middot; dashed = unconfirmed</div>${trailSVG(tr)}`;});
+  const hl=(loc.cells&&loc.cells[0]?loc.cells[0].cell:null);
+  setupMap(); renderMap(hl, FOCUSON?CURDIST:null); LASTHL=hl;
+  typeInto($('jtext'), b.narr);
+  if(speakNow) playBrief(p.ack_no, b.narr+' Priority action: '+b.steps[0]);
+  if(!p._trail) jget(`/trail/${p.ack_no}`).then(tr=>{const el=$('trailBox');if(el)el.innerHTML=trailSVG(tr);});
 }
 
-let SELMETA=null;
+// ---------- briefing: in-place update (no flicker) ----------
+function updateBriefing(p, clk){
+  if(!$('kWill')) return renderBriefing(p, clk);
+  const c=p.cashout, loc=p.location, r=p.recommendation, ch=p.channel;
+  const where=whereText(loc), chans=channelTop(ch), tc=tierColor(r.tier);
+  const set=(id,txt)=>{const e=$(id);if(e&&e.textContent!==txt)e.textContent=txt;};
+  if($('clock')) $('clock').textContent=clk||'● LIVE';
+  const tb=$('tierBadge'); if(tb){tb.className='tier '+r.tier; tb.textContent=r.tier;}
+  const ab=$('actionBox'); if(ab) ab.className='action '+r.tier;
+  const big=$('actBig'); if(big){big.textContent=r.action; big.style.color=tc;}
+  set('actWhy', r.reason);
+  const kw=$('kWill'); if(kw){kw.textContent=pct(c.p_10m); kw.style.color=tc;}
+  set('kWillSub', `chance in the next 10 min · ${c.severity}`);
+  set('kWhen', whenText(c)); set('kHow', chans[0][0]);
+  set('kHowSub', `${pct(chans[0][1])} · then ${chans[1][0]}`);
+  set('kWhere', where.v); set('kWhereSub', where.s);
+  if($('hazBox')) $('hazBox').innerHTML=hazardSVG(c);
+  if($('locBox')) $('locBox').innerHTML=locListHTML(loc)+abstainHTML(loc);
+  if($('chanBox')) $('chanBox').innerHTML=chanRowsHTML(chans);
+  set('kvTarget', p.account_id); set('kvTaint', money(r.tainted_amount)); set('kvStation', r.target_station||'--');
+  if(p._trail && $('trailBox')) $('trailBox').innerHTML=trailSVG(p._trail);
+  // JARVIS live line
+  const jl=$('jlive'); if(jl) jl.textContent=`▸ T+${REPLAY_T}m — ${pct(c.p_10m)} risk · ${c.severity} · focus ${districtOf(loc)}`;
+  CURDIST=districtOf(loc);
+  const hl=(loc.cells&&loc.cells[0]?loc.cells[0].cell:null);
+  if(hl!==LASTHL){ mapLock(hl); LASTHL=hl; }   // fly-shift the lock to the new cell
+}
+
 async function selectCase(ack){SEL=ack;REPLAY_T=0;loadQueue();
   const q=await jget(`/queue?limit=60`);SELMETA=q.find(x=>x.ack_no===ack);
-  const p=await jget(`/predict/${ack}`);renderBriefing(p);}
+  const p=await jget(`/predict/${ack}`);renderBriefing(p, null, true);}
 
 async function dispatch(ack,acc){const r=await jpost(`/alerts/dispatch?ack_no=${ack}&account=${acc}`);
   const f=$('flash');if(!f)return;
@@ -382,16 +709,14 @@ function togglePlay(){const b=$('playbtn');
   if(PLAY){clearInterval(PLAY);PLAY=null;if(b)b.innerHTML='&#9654; Replay';return;}
   if(!SEL)return;if(b)b.innerHTML='&#10073;&#10073; Pause';
   PLAY=setInterval(()=>{REPLAY_T+=3;if(REPLAY_T>120){togglePlay();return;}
-    const sc=$('scrub');if(sc)sc.value=REPLAY_T;scrubTo(REPLAY_T);},420);}
+    const sc=$('scrub');if(sc)sc.value=REPLAY_T;scrubTo(REPLAY_T);},480);}
 async function scrubTo(t){REPLAY_T=+t;if(!SEL)return;
   const st=await jget(`/replay/state?case=${SEL}&t=${t}`);
   const p=st.prediction;p._trail=st.trail;
-  const clk=`${st.as_of.slice(11,19)}`;
-  renderBriefing(p, clk);
-  const c=$('clock');if(c)c.textContent=clk;}
+  updateBriefing(p, st.as_of.slice(11,19));}
 
 // ---------- init ----------
-(async function(){await loadQueue();await loadHotspots();
+(async function(){populateVoices();await loadQueue();await loadHotspots();
   const it=await jget('/queue?limit=1');if(it.length)selectCase(it[0].ack_no);})();
 </script>
 </body>
