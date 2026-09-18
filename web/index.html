@@ -122,6 +122,8 @@
   .jstep b{font-family:var(--mono);color:#04181a;background:var(--cyan);min-width:20px;height:20px;border-radius:5px;
     display:flex;align-items:center;justify-content:center;font-size:11px;box-shadow:0 0 10px rgba(53,224,230,.45);flex:0 0 auto;margin-top:1px}
   .jstep.red b{background:var(--red);box-shadow:0 0 10px var(--red);color:#1a0206}
+  .jstep.ev b{background:var(--violet);box-shadow:0 0 10px var(--violet);color:#0a0618}
+  .jstep.ev span b{background:none;box-shadow:none;color:var(--ink);display:inline;min-width:0;height:auto;padding:0}
 
   .action{position:relative;border-radius:14px;padding:16px 18px;margin-bottom:16px;overflow:hidden;display:flex;align-items:center;gap:16px;animation:fadeUp .28s ease both}
   .action::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px}
@@ -217,6 +219,21 @@
       repeating-linear-gradient(0deg,transparent 0 2px,rgba(0,12,16,.09) 3px);
     box-shadow:inset 0 0 70px rgba(53,224,230,.07)}
   .maphold .mapbtn,.maphold .maplist,.maphold .legend{z-index:6}
+  .maphold.hero{height:56vh;min-height:400px}
+  .maphold.hero .legend{bottom:60px}
+  .mapnarr{position:absolute;left:11px;right:11px;bottom:11px;z-index:6;background:rgba(6,10,16,.88);
+    border:1px solid var(--line2);border-radius:10px;padding:10px 13px;font-family:var(--mono);font-size:12.5px;
+    color:var(--ink);backdrop-filter:blur(4px);display:flex;align-items:center;gap:12px;box-shadow:0 0 20px rgba(0,0,0,.5)}
+  .mapnarr .t{color:var(--cyan);font-weight:700;text-shadow:0 0 10px rgba(53,224,230,.5)}
+  .mapnarr .txt{color:var(--dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .mapnarr .a{margin-left:auto;font-weight:800;letter-spacing:1px;padding:3px 10px;border-radius:6px;flex:0 0 auto}
+  .mapnarr .a.RED{background:rgba(255,90,110,.16);color:var(--red);box-shadow:0 0 0 1px rgba(255,90,110,.5) inset}
+  .mapnarr .a.AMBER{background:rgba(255,190,77,.14);color:var(--amber);box-shadow:0 0 0 1px rgba(255,190,77,.5) inset}
+  .mapnarr .a.GREY{background:rgba(91,109,128,.18);color:#9fb0c2}
+  path.flowpulse{animation:cellpulse 1.4s ease-in-out infinite}
+  .cols2{display:grid;grid-template-columns:1.3fr 1fr;gap:14px;margin-top:14px}
+  .kpis.compact{grid-template-columns:repeat(2,1fr)}
+  @media(max-width:1050px){.cols2{grid-template-columns:1fr}}
 </style>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
@@ -255,7 +272,8 @@
 const API = location.protocol==='file:' ? 'http://127.0.0.1:8000' : '';
 let HOT=null, PROJ=null, SEL=null, PLAY=null, REPLAY_T=0, LASTHL=null, SELMETA=null;
 let CURDIST=null, FOCUSON=true, SOUND=true, TYPETOK=0, VOICES=[], JVOICE=null, CURAUDIO=null;
-let MAP=null, HEATL=null, ATML=null, MKL=null, RETL=null;
+let MAP=null, HEATL=null, ATML=null, MKL=null, RETL=null, FLOWL=null;
+let REPLAYING=false, FRAMED=false, ATMXY={};
 const $=id=>document.getElementById(id);
 const money=v=>'₹'+Math.round(v).toLocaleString('en-IN');
 const pct=v=>Math.round(v*100)+'%';
@@ -295,7 +313,52 @@ function buildProj(m){const la=m.map(x=>x.lat),lo=m.map(x=>x.lon);
   const W=800,H=560,p=46;
   return {x:v=>p+(v-mlo)/(Mlo-mlo)*(W-2*p), y:v=>H-p-(v-mla)/(Mla-mla)*(H-2*p),
     mlo,Mlo,mla,Mla,W,H,p};}
-async function loadHotspots(){HOT=await jget('/hotspots?min_amt=0');PROJ=buildProj(HOT.atm_markers);}
+async function loadHotspots(){HOT=await jget('/hotspots?min_amt=0');PROJ=buildProj(HOT.atm_markers);
+  ATMXY={}; HOT.atm_markers.forEach(m=>ATMXY[m.atm_id]=[m.lat,m.lon]);}
+
+// ---- money-flow drawn ON the real map (victim -> mules -> cash-out ATMs) ----
+function drawFlow(trail){
+  if(!MAP||!trail)return;
+  if(!FLOWL)FLOWL=L.layerGroup().addTo(MAP); else FLOWL.clearLayers();
+  const pos={}; (trail.nodes||[]).forEach(n=>{ if(n.lat&&n.lon)pos[n.account_id]=[n.lat,n.lon]; });
+  // edges first (so nodes sit on top)
+  (trail.edges||[]).forEach(e=>{
+    const a=pos[e.src_account];
+    if(e.atm_id){ const atm=ATMXY[e.atm_id];              // cash-out: line to the ATM + a burst
+      if(a&&atm){ L.polyline([a,atm],{color:'#ff5a6e',weight:2,opacity:.85,dashArray:'5 4'}).addTo(FLOWL);
+        L.circleMarker(atm,{radius:8,color:'#ff5a6e',weight:2,fillColor:'#ff2d45',fillOpacity:.6}).bindTooltip('CASH-OUT '+e.atm_id,{direction:'top'}).addTo(FLOWL); } }
+    else { const b=pos[e.dst_account];                    // transfer between accounts
+      if(a&&b)L.polyline([a,b],{color:'#35e0e6',weight:1.8,opacity:.7}).addTo(FLOWL); }
+  });
+  // nodes
+  (trail.nodes||[]).forEach(n=>{ const p=pos[n.account_id]; if(!p)return;
+    const col=n.is_victim?'#4aa3ff':n.is_leaf?'#ff5a6e':'#ffbe4d';
+    L.circleMarker(p,{radius:n.is_victim?6:5,color:col,weight:1.6,fillColor:col,fillOpacity:.9,
+      className:n.is_leaf?'flowpulse':''}).bindTooltip(
+      (n.is_victim?'VICTIM ':n.is_leaf?'HOLDING ':'MULE ')+n.account_id,{direction:'top'}).addTo(FLOWL); });
+}
+// frame the whole case (victim + mules + predicted cell + cash-out ATMs) once, at replay start
+function frameCase(trail, loc){
+  if(!MAP||!trail)return;
+  const pts=[]; (trail.nodes||[]).forEach(n=>{if(n.lat&&n.lon)pts.push([n.lat,n.lon]);});
+  (trail.edges||[]).forEach(e=>{if(e.atm_id&&ATMXY[e.atm_id])pts.push(ATMXY[e.atm_id]);});
+  if(loc&&loc.cells)loc.cells.slice(0,3).forEach(c=>pts.push([c.lat,c.lon]));
+  if(pts.length){try{MAP.flyToBounds(L.latLngBounds(pts).pad(0.25),{duration:1.0});
+    setTimeout(()=>{try{MAP.fitBounds(L.latLngBounds(pts).pad(0.25))}catch(e){}},1200);}catch(e){}}
+}
+// move just the reticle (used during replay -- the frame stays fixed so you watch the whole flow)
+function lockReticleOnly(highlight){
+  if(!MAP)return; RETL.clearLayers();
+  const hc=highlight?HOT.cells.find(c=>c.cell===highlight):null;
+  if(hc)L.marker([hc.lat,hc.lon],{zIndexOffset:1000,
+    icon:L.divIcon({className:'',html:'<div class="ret"><span></span></div>',iconSize:[46,46],iconAnchor:[23,23]})}).addTo(RETL);
+}
+// the live one-line narration + action badge on the map
+function updateNarr(p){
+  const c=p.cashout,r=p.recommendation,loc=p.location,top=channelTop(p.channel)[0];
+  const jl=$('jlive'); if(jl) jl.textContent=`${REPLAYING?('T+'+REPLAY_T+'m · '):''}${pct(c.p_10m)} cash-out risk · likely ${top[0]} · ${districtOf(loc)}`;
+  const a=$('narrAction'); if(a){a.className='a '+r.tier; a.textContent=r.action;}
+}
 
 function renderMapSVG(highlight, focusDistrict){
   if(!HOT||!$('map'))return; const P=PROJ,W=P.W,H=P.H;
@@ -390,7 +453,9 @@ function setupMap(){const svg=$('map'),lm=$('lmap');
     try{ if(MAP){MAP.remove();MAP=null;}
       if(svg)svg.style.display='none'; lm.style.display='block';
       MAP=L.map('lmap',{zoomControl:false,attributionControl:false,preferCanvas:true});
-      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{maxZoom:19,subdomains:'abcd'}).addTo(MAP);
+      const dark=L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{maxZoom:19,subdomains:'abcd'}).addTo(MAP);
+      let terr=0; dark.on('tileerror',()=>{ if(++terr===4){ try{MAP.removeLayer(dark);}catch(e){}
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19}).addTo(MAP); } });
       L.control.zoom({position:'bottomleft'}).addTo(MAP);
       ATML=L.layerGroup().addTo(MAP);MKL=L.layerGroup().addTo(MAP);RETL=L.layerGroup().addTo(MAP);
       MAP.setView([23.9,86.2],8); return;
@@ -408,33 +473,42 @@ function updateLeaflet(highlight, focusDistrict){
   HOT.atm_markers.forEach(m=>L.circleMarker([m.lat,m.lon],{radius:2,weight:0,fillColor:'#5aa0c8',fillOpacity:.5})
     .bindTooltip(`${m.atm_id} · ${m.operator} · fraud ${m.fraud_rate}`,{direction:'top'}).addTo(ATML));
   const cells=HOT.cells;
-  if(typeof L.heatLayer==='function'){
-    HEATL=L.heatLayer(cells.map(c=>[c.lat,c.lon,Math.max(.08,c.risk_norm||0)]),
-      {radius:26,blur:20,minOpacity:.28,max:1,gradient:{0.0:'#37e6a6',0.5:'#ffbe4d',1.0:'#ff5a6e'}}).addTo(MAP);
-  } else {
-    cells.forEach(c=>{const t=c.risk_norm||0;L.circleMarker([c.lat,c.lon],
-      {radius:6+18*t,weight:0,fillColor:riskColor(t),fillOpacity:.35}).addTo(MKL);});
-  }
+  try{
+    if(typeof L.heatLayer==='function' && MAP.getSize && MAP.getSize().x>10){
+      HEATL=L.heatLayer(cells.map(c=>[c.lat,c.lon,Math.max(.08,c.risk_norm||0)]),
+        {radius:26,blur:20,minOpacity:.28,max:1,gradient:{0.0:'#37e6a6',0.5:'#ffbe4d',1.0:'#ff5a6e'}}).addTo(MAP);
+    } else {
+      cells.forEach(c=>{const t=c.risk_norm||0;L.circleMarker([c.lat,c.lon],
+        {radius:6+18*t,weight:0,fillColor:riskColor(t),fillOpacity:.35}).addTo(MKL);});
+    }
+  }catch(e){ /* heat unavailable (e.g. 0-width canvas) -- markers/flow still show */ }
   cells.slice(0,6).forEach((c,i)=>L.marker([c.lat,c.lon],
     {icon:L.divIcon({className:'',html:`<div class="numpin">${i+1}</div>`,iconSize:[20,20],iconAnchor:[10,10]})}).addTo(MKL));
-  setTimeout(()=>{try{MAP.invalidateSize()}catch(e){}},60);
   $('legend').innerHTML=`<div style="color:#cdd6e2;font-family:var(--mono);font-size:10px;letter-spacing:1.4px">RISK FIELD</div><div class="ramp"></div><div class="ramp-l"><span>low</span><span>high</span></div>`;
   $('maplist').innerHTML=`<div class="mlh">&#9673; TOP AREAS</div>`+cells.slice(0,6).map((c,i)=>
     `<div class="mlrow"><b>${i+1}</b><span>${c.district}</span><i style="background:${riskColor(c.risk_norm||0)};color:${riskColor(c.risk_norm||0)}"></i></div>`).join('');
-  lockOn(highlight, focusDistrict);           // then fly-zoom onto the locked cell
+  // defer the lock-on so the just-shown map container has a real size to fly within
+  setTimeout(()=>lockOn(highlight, focusDistrict), 120);
 }
 // move the reticle + smoothly fly to the currently locked cell (cheap; used on lock changes)
 function lockOn(highlight, focusDistrict){
   if(!MAP||!HOT)return;
+  try{MAP.invalidateSize();}catch(e){}   // ensure the container has a real size before flying
   RETL.clearLayers();
   const hc=highlight?HOT.cells.find(c=>c.cell===highlight):null;
   if(hc)L.marker([hc.lat,hc.lon],{zIndexOffset:1000,
     icon:L.divIcon({className:'',html:'<div class="ret"><span></span></div>',iconSize:[46,46],iconAnchor:[23,23]})}).addTo(RETL);
   try{
-    if(focusDistrict && hc){ MAP.flyTo([hc.lat,hc.lon], LOCK_ZOOM, {duration:1.0}); }        // zoom in / lock on
-    else if(focusDistrict){ const ll=HOT.atm_markers.filter(m=>m.district===focusDistrict).map(m=>[m.lat,m.lon]);
-      if(ll.length)MAP.flyToBounds(L.latLngBounds(ll).pad(0.35),{duration:1.0}); }
-    else{ const ll=HOT.atm_markers.map(m=>[m.lat,m.lon]); if(ll.length)MAP.flyToBounds(L.latLngBounds(ll).pad(0.12),{duration:1.0}); }  // wide view
+    if(focusDistrict && hc){ const ll=[hc.lat,hc.lon];
+      MAP.flyTo(ll, LOCK_ZOOM, {duration:1.1});                                   // smooth zoom / lock on
+      setTimeout(()=>{try{if(Math.abs(MAP.getZoom()-LOCK_ZOOM)>0.6)MAP.setView(ll,LOCK_ZOOM);}catch(e){}},1300); // guarantee landing
+    } else {
+      const sel=focusDistrict?HOT.atm_markers.filter(m=>m.district===focusDistrict):HOT.atm_markers;
+      const ll=sel.map(m=>[m.lat,m.lon]);
+      if(ll.length){const bnds=L.latLngBounds(ll).pad(focusDistrict?0.35:0.12);
+        MAP.flyToBounds(bnds,{duration:1.1});
+        setTimeout(()=>{try{if(!MAP.getBounds().intersects(bnds))MAP.fitBounds(bnds);}catch(e){}},1300);}
+    }
   }catch(e){}
 }
 // light update used during replay: just move the lock (fly to the new cell), no full rebuild
@@ -524,6 +598,29 @@ function buildBrief(p){
   return {narr:n, steps, red};
 }
 function stepsHTML(b){return b.steps.map((s,i)=>`<div class="jstep ${b.red&&i===0?'red':''}"><b>${i+1}</b><span>${s}</span></div>`).join('');}
+// the "why" -- concrete evidence behind the call, so the answer is explainable
+function evidenceHTML(p, trail){
+  const c=p.cashout, loc=p.location, ch=p.channel, chans=channelTop(ch), b=[];
+  if(trail && trail.nodes){
+    const node=trail.nodes.find(n=>n.account_id===p.account_id);
+    if(node){ const h=node.hop_from_victim;
+      b.push(`Traced <b>${h} hop${h===1?'':'s'}</b> from the victim to <b>${p.account_id}</b>, now holding <b>${money(node.tainted_amount)}</b>.`);
+      b.push(node.is_leaf ? `The money is <b>still sitting here</b> — a window to freeze before it clears.`
+                          : `The money is <b>being forwarded onward</b> — trace the next hop.`);
+    }
+  }
+  b.push(`Cash-out risk reaches <b>${pct(c.p_10m)}</b> in 10 min and ${c.p_60m>c.p_10m+0.02?'<b>keeps climbing</b>':'levels off'} over the hour.`);
+  b.push(`Most likely next move: <b>${chans[0][0]}</b> (${pct(chans[0][1])}).`);
+  const srcs=new Set();(loc.terminals||[]).forEach(t=>(t.sources||[]).forEach(s=>srcs.add(s)));
+  const why=[];
+  if(srcs.has('C1'))why.push("this account's own past withdrawals");
+  if(srcs.has('C4'))why.push("its ring's shared cash-out spots");
+  if(srcs.has('C3'))why.push('its KYC home area');
+  if(srcs.has('C5'))why.push('known fraud ATMs nearby');
+  if(why.length)b.push(`Location narrowed from ${why.join(', ')}.`);
+  else if(loc.abstained_at)b.push(`Too little history to pin one ATM — held to the ${loc.granularity} level.`);
+  return b.map(x=>`<div class="jstep ev"><b>&rsaquo;</b><span>${x}</span></div>`).join('');
+}
 function typeInto(el, text){if(!el)return;const tok=++TYPETOK;
   if(window.matchMedia&&matchMedia('(prefers-reduced-motion:reduce)').matches){el.textContent=text;return;}
   el.innerHTML='';let i=0;(function step(){if(tok!==TYPETOK)return;
@@ -575,73 +672,77 @@ function renderBriefing(p, clockHTML, speakNow){
       <span class="ftype">${(SELMETA&&SELMETA.fraud_category)||''}</span>
       <span class="tier ${r.tier}" id="tierBadge">${r.tier}</span>
       <div class="replay">
-        <button class="btn" id="playbtn" onclick="togglePlay()">&#9654; Replay</button>
+        <button class="btn" id="playbtn" onclick="togglePlay()">&#9654; Replay simulation</button>
         <input type="range" id="scrub" min="0" max="120" step="1" value="${REPLAY_T}" oninput="scrubTo(this.value)">
         <span class="clock" id="clock">${clockHTML||'● LIVE'}</span>
       </div>
     </div>
 
-    <div class="jarvis">
-      <div class="jhead"><span class="rc"></span> JARVIS — Situation analysis
-        <select class="sp" id="voiceSel" onchange="setVoice(this.value)" title="pick voice"
-          style="margin-left:auto;font-size:11px;font-family:var(--mono);max-width:150px">${voiceOpts()}</select>
-        <span class="sp" id="sndBtn" onclick="toggleSound()" title="voice on/off" style="margin-left:8px">${SOUND?'🔊':'🔇'}</span></div>
-      <div class="jtext" id="jtext"></div>
-      <div class="jlive" id="jlive"></div>
-      <div class="jsteps" id="jsteps">${stepsHTML(b)}</div>
-    </div>
-
-    <div class="action ${r.tier}" id="actionBox">
-      <div><div class="big" id="actBig" style="color:${tierColor(r.tier)}">${r.action}</div>
-        <div class="why" id="actWhy">${r.reason}</div></div>
-    </div>
-
-    <div class="kpis">
-      <div class="kpi"><span class="lbl">Will it cash out?</span>
-        <div class="v" id="kWill" style="color:${tierColor(r.tier)}">${pct(c.p_10m)}</div>
-        <div class="s" id="kWillSub">chance in the next 10 min &middot; ${c.severity}</div></div>
-      <div class="kpi"><span class="lbl">When?</span>
-        <div class="v" id="kWhen" style="color:var(--cyan)">${whenText(c)}</div><div class="s">most likely window</div></div>
-      <div class="kpi"><span class="lbl">How?</span>
-        <div class="v" id="kHow" style="font-size:19px;color:var(--cyan)">${chans[0][0]}</div>
-        <div class="s" id="kHowSub">${pct(chans[0][1])} &middot; then ${chans[1][0]}</div></div>
-      <div class="kpi"><span class="lbl">Where?</span>
-        <div class="v" id="kWhere" style="font-size:19px;color:var(--cyan)">${where.v}</div>
-        <div class="s" id="kWhereSub">${where.s}</div></div>
-    </div>
-
-    <div class="cols">
-      <div class="card">
-        <h3>&#9678; Predicted cash-out area &middot; ${CURDIST}</h3>
-        <div class="cap">Heat = forecast cash-out risk. Dashed = district. Reticle locks the most likely ~5 km cell.</div>
-        <div class="maphold">
-          <button class="mapbtn" id="mapToggle" onclick="toggleMapFocus()">${FOCUSON?'◎ LOCKED':'⊕ WIDE VIEW'}</button>
-          <div id="lmap" style="display:none"></div>
-          <svg id="map" viewBox="0 0 800 560" preserveAspectRatio="xMidYMid meet"></svg>
-          <div class="mapfx"></div>
-          <div class="maplist" id="maplist"></div><div class="legend" id="legend"></div></div>
+    <div class="card" style="padding:12px">
+      <h3>&#9678; Live map &middot; ${CURDIST} &mdash; watch the money move, then act</h3>
+      <div class="maphold hero">
+        <button class="mapbtn" id="mapToggle" onclick="toggleMapFocus()">${FOCUSON?'◎ LOCKED':'⊕ WIDE VIEW'}</button>
+        <div id="lmap" style="display:none"></div>
+        <svg id="map" viewBox="0 0 800 560" preserveAspectRatio="xMidYMid meet"></svg>
+        <div class="mapfx"></div>
+        <div class="maplist" id="maplist"></div><div class="legend" id="legend"></div>
+        <div class="mapnarr"><span class="t">&#9673;</span><span class="txt" id="jlive"></span>
+          <span class="a ${r.tier}" id="narrAction">${r.action}</span></div>
       </div>
+    </div>
+
+    <div class="cols2">
       <div>
-        <div class="card" style="margin-bottom:14px">
-          <h3>&#9651; Chance of cash-out over the next hour</h3><div id="hazBox">${hazardSVG(c)}</div>
+        <div class="action ${r.tier}" id="actionBox">
+          <div><div class="big" id="actBig" style="color:${tierColor(r.tier)}">${r.action}</div>
+            <div class="why" id="actWhy">${r.reason}</div></div>
         </div>
         <div class="card">
-          <h3>&#9673; Most likely locations</h3><div id="locBox">${locListHTML(loc)}${abstainHTML(loc)}</div>
+          <div class="jhead" style="margin-bottom:8px"><span class="rc"></span> JARVIS &mdash; situation
+            <select class="sp" id="voiceSel" onchange="setVoice(this.value)" title="pick voice"
+              style="margin-left:auto;font-size:11px;font-family:var(--mono);max-width:140px">${voiceOpts()}</select>
+            <span class="sp" id="sndBtn" onclick="toggleSound()" title="voice on/off" style="margin-left:8px">${SOUND?'🔊':'🔇'}</span></div>
+          <div class="jtext" id="jtext"></div>
+          <div class="lbl" style="margin:11px 0 4px;color:var(--cyan)">&#9656; Recommended actions</div>
+          <div class="jsteps" id="jsteps">${stepsHTML(b)}</div>
+        </div>
+      </div>
+      <div>
+        <div class="kpis compact">
+          <div class="kpi"><span class="lbl">Will it cash out?</span>
+            <div class="v" id="kWill" style="color:${tierColor(r.tier)}">${pct(c.p_10m)}</div>
+            <div class="s" id="kWillSub">next 10 min &middot; ${c.severity}</div></div>
+          <div class="kpi"><span class="lbl">When?</span>
+            <div class="v" id="kWhen" style="color:var(--cyan)">${whenText(c)}</div><div class="s">likely window</div></div>
+          <div class="kpi"><span class="lbl">How?</span>
+            <div class="v" id="kHow" style="font-size:18px;color:var(--cyan)">${chans[0][0]}</div>
+            <div class="s" id="kHowSub">${pct(chans[0][1])} &middot; then ${chans[1][0]}</div></div>
+          <div class="kpi"><span class="lbl">Where?</span>
+            <div class="v" id="kWhere" style="font-size:18px;color:var(--cyan)">${where.v}</div>
+            <div class="s" id="kWhereSub">${where.s}</div></div>
+        </div>
+        <div class="card" style="margin-top:14px">
+          <div class="lbl" style="color:var(--violet);margin-bottom:6px">&#9671; Why</div>
+          <div class="jsteps" id="jwhy">${evidenceHTML(p, p._trail)}</div>
         </div>
       </div>
     </div>
 
     <details>
-      <summary>&#9881; Technical details (money trail, channel odds, account)</summary>
+      <summary>&#9881; Technical details (hazard curve, locations, money trail, channel, account)</summary>
       <div class="inner">
         <div class="cols">
-          <div><h3 style="margin-top:6px">Money-flow trail</h3>
-            <div class="cap">blue = victim &middot; red = holding cash (target) &middot; grey = pass-through &middot; dashed = unconfirmed</div>
-            <div id="trailBox">${trailSVG(p._trail)}</div></div>
-          <div><h3 style="margin-top:6px">How the money leaves (M2)</h3>
+          <div>
+            <h3 style="margin-top:6px">&#9651; Cash-out hazard (next hour)</h3><div id="hazBox">${hazardSVG(c)}</div>
+            <h3 style="margin-top:12px">&#9673; Most likely locations</h3><div id="locBox">${locListHTML(loc)}${abstainHTML(loc)}</div>
+          </div>
+          <div>
+            <h3 style="margin-top:6px">Money-flow trail (schematic)</h3>
+            <div class="cap">blue = victim &middot; red = holding cash &middot; grey = pass-through &middot; dashed = unconfirmed</div>
+            <div id="trailBox">${trailSVG(p._trail)}</div>
+            <h3 style="margin-top:12px">How the money leaves (M2)</h3>
             <div id="chanBox">${chanRowsHTML(chans)}</div>
-            <h3 style="margin-top:12px">Account</h3>
-            <div class="kv">target <b id="kvTarget">${p.account_id}</b></div>
+            <div class="kv" style="margin-top:8px">target <b id="kvTarget">${p.account_id}</b></div>
             <div class="kv">tainted held <b id="kvTaint">${money(r.tainted_amount)}</b></div>
             <div class="kv">route alert to <b id="kvStation">${r.target_station||'--'}</b></div>
           </div>
@@ -654,10 +755,15 @@ function renderBriefing(p, clockHTML, speakNow){
       </div>
     </details>`;
   const hl=(loc.cells&&loc.cells[0]?loc.cells[0].cell:null);
-  setupMap(); renderMap(hl, FOCUSON?CURDIST:null); LASTHL=hl;
+  REPLAYING=false; FRAMED=false;
+  try{ setupMap(); renderMap(hl, FOCUSON?CURDIST:null); if(p._trail) drawFlow(p._trail); }catch(e){}  // map must never block the briefing
+  LASTHL=hl;
+  updateNarr(p);
   typeInto($('jtext'), b.narr);
   if(speakNow) playBrief(p.ack_no, b.narr+' Priority action: '+b.steps[0]);
-  if(!p._trail) jget(`/trail/${p.ack_no}`).then(tr=>{const el=$('trailBox');if(el)el.innerHTML=trailSVG(tr);});
+  if(!p._trail) jget(`/trail/${p.ack_no}`).then(tr=>{p._trail=tr; drawFlow(tr);
+    const el=$('trailBox');if(el)el.innerHTML=trailSVG(tr);
+    const w=$('jwhy');if(w)w.innerHTML=evidenceHTML(p, tr);});
 }
 
 // ---------- briefing: in-place update (no flicker) ----------
@@ -681,11 +787,17 @@ function updateBriefing(p, clk){
   if($('chanBox')) $('chanBox').innerHTML=chanRowsHTML(chans);
   set('kvTarget', p.account_id); set('kvTaint', money(r.tainted_amount)); set('kvStation', r.target_station||'--');
   if(p._trail && $('trailBox')) $('trailBox').innerHTML=trailSVG(p._trail);
-  // JARVIS live line
-  const jl=$('jlive'); if(jl) jl.textContent=`▸ T+${REPLAY_T}m — ${pct(c.p_10m)} risk · ${c.severity} · focus ${districtOf(loc)}`;
+  if($('jwhy')) $('jwhy').innerHTML=evidenceHTML(p, p._trail);
+  if($('jsteps')) $('jsteps').innerHTML=stepsHTML(buildBrief(p));   // actions update live
   CURDIST=districtOf(loc);
+  updateNarr(p);                                                    // live narration + action badge
   const hl=(loc.cells&&loc.cells[0]?loc.cells[0].cell:null);
-  if(hl!==LASTHL){ mapLock(hl); LASTHL=hl; }   // fly-shift the lock to the new cell
+  try{
+    if(MAP){ drawFlow(p._trail);                                    // grow the flow on the map
+      if(!FRAMED){ frameCase(p._trail, loc); FRAMED=true; }         // frame the whole case once
+      if(hl!==LASTHL){ lockReticleOnly(hl); LASTHL=hl; } }          // move the reticle, keep the frame
+    else { if(hl!==LASTHL){ renderMapSVG(hl, FOCUSON?CURDIST:null); LASTHL=hl; } }
+  }catch(e){}
 }
 
 async function selectCase(ack){SEL=ack;REPLAY_T=0;loadQueue();
@@ -708,9 +820,11 @@ async function loadAlerts(){const a=await jget('/alerts');
 function togglePlay(){const b=$('playbtn');
   if(PLAY){clearInterval(PLAY);PLAY=null;if(b)b.innerHTML='&#9654; Replay';return;}
   if(!SEL)return;if(b)b.innerHTML='&#10073;&#10073; Pause';
+  REPLAYING=true; FRAMED=false; REPLAY_T=0;   // reset so the sim starts clean and re-frames the case
   PLAY=setInterval(()=>{REPLAY_T+=3;if(REPLAY_T>120){togglePlay();return;}
     const sc=$('scrub');if(sc)sc.value=REPLAY_T;scrubTo(REPLAY_T);},480);}
 async function scrubTo(t){REPLAY_T=+t;if(!SEL)return;
+  REPLAYING=true;
   const st=await jget(`/replay/state?case=${SEL}&t=${t}`);
   const p=st.prediction;p._trail=st.trail;
   updateBriefing(p, st.as_of.slice(11,19));}

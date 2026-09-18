@@ -120,12 +120,15 @@ def expand_trail(seed_txn_id: str, as_of: datetime, ctx) -> Trail:
         is_leaf = (acc != victim) and (residual > min_edge)
         if is_leaf:
             leaf_accounts.append(acc)
+        info = ctx.account_info(acc)  # KYC centroid, so the client can plot the flow
         nodes.append(TrailNode(
             account_id=acc,
             hop_from_victim=st["hop"],
             tainted_amount=round(max(st["in"], st["out"]), 2),
             is_victim=(acc == victim),
             is_leaf=is_leaf,
+            lat=info.get("kyc_lat"),
+            lon=info.get("kyc_lon"),
         ))
 
     return Trail(

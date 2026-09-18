@@ -55,6 +55,8 @@ class TrailNode(BaseModel):
     is_victim: bool = False
     is_leaf: bool = Field(False, description="currently holds funds -- a forecast target")
     mule_score: Optional[float] = None
+    lat: Optional[float] = Field(None, description="account KYC centroid, for plotting on the map")
+    lon: Optional[float] = None
 
 
 class TrailEdge(BaseModel):

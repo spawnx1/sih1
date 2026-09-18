@@ -77,7 +77,11 @@ CELL_MIN_P = 0.30              # need >= this on top cell to emit a cell
 # fired). See api/main.py decision layer.
 # --------------------------------------------------------------------------
 TIER_RED_P = 0.60          # P(cash-out <= 10m) at/above this -> RED
-TIER_RED_AMOUNT = 50000    # AND tainted amount >= this (rupees) -> RED
+# Amount floor for a FREEZE. Set to a realistic per-account figure: after
+# fan-out/layering the money is split across mules, so a single account rarely
+# holds the full disputed sum -- but a 60%+ imminent cash-out of even ~15k is
+# worth a freeze (freezing is cheap; letting it clear is not).
+TIER_RED_AMOUNT = 5000     # AND tainted amount >= this (rupees) -> RED
 TIER_AMBER_P = 0.30        # middle band -> AMBER
 ALERT_DEDUP_MINUTES = 15   # one alert per account per 15 minutes
 
