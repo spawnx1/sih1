@@ -24,7 +24,7 @@ from datetime import datetime, timedelta
 
 import numpy as np
 import pandas as pd
-from fastapi import FastAPI, Query
+from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
@@ -253,7 +253,7 @@ def get_queue(limit: int = 50, sort: str = "imminence"):
 def get_case(ack_no: str):
     r = _case_row(ack_no)
     if r is None:
-        return {"error": "unknown ack_no"}
+        raise HTTPException(status_code=404, detail=f"unknown ack_no: {ack_no}")
     seed_ts = _seed_ts(r["seed_txn_id"])
     filed = pd.Timestamp(r["filed_ts"]).to_pydatetime()
     case = Case(ack_no=ack_no, filed_ts=filed, victim_account=r["victim_account"],
@@ -270,7 +270,7 @@ def get_case(ack_no: str):
 def get_trail(ack_no: str, as_of: str | None = None):
     r = _case_row(ack_no)
     if r is None:
-        return {"error": "unknown ack_no"}
+        raise HTTPException(status_code=404, detail=f"unknown ack_no: {ack_no}")
     filed = pd.Timestamp(r["filed_ts"]).to_pydatetime()
     aof = _parse_as_of(as_of, filed)
     trail = expand_trail(r["seed_txn_id"], aof, STATE["ctx"])
@@ -282,7 +282,7 @@ def get_trail(ack_no: str, as_of: str | None = None):
 def get_predict(ack_no: str, as_of: str | None = None, account: str | None = None):
     r = _case_row(ack_no)
     if r is None:
-        return {"error": "unknown ack_no"}
+        raise HTTPException(status_code=404, detail=f"unknown ack_no: {ack_no}")
     aof = _parse_as_of(as_of, pd.Timestamp(r["filed_ts"]).to_pydatetime())
     return _predict(ack_no, aof, account)
 
@@ -307,11 +307,10 @@ def get_hotspots(from_: str | None = Query(None, alias="from"),
         if float(case["disputed_amount"]) < min_amt:
             continue
         pred = _predict(case["ack_no"], filed, None)
-        if channel and channel.upper() not in (
-                "ATM" if pred.channel.ATM >= pred.channel.POS else "POS",):
-            # light channel filter: keep if the dominant cash-out channel matches
-            if channel.upper() not in ("ATM", "POS"):
-                pass
+        if channel:
+            dominant = "ATM" if pred.channel.ATM >= pred.channel.POS else "POS"
+            if channel.strip().upper() != dominant:
+                continue
         for c in pred.location.cells[:5]:
             d = cell_risk.setdefault(c.cell, {"cell": c.cell, "lat": c.lat,
                 "lon": c.lon, "district": c.district, "risk": 0.0, "n": 0})
@@ -338,7 +337,7 @@ def get_hotspots(from_: str | None = Query(None, alias="from"),
 def dispatch_alert(ack_no: str, account: str | None = None, as_of: str | None = None):
     r = _case_row(ack_no)
     if r is None:
-        return {"error": "unknown ack_no"}
+        raise HTTPException(status_code=404, detail=f"unknown ack_no: {ack_no}")
     aof = _parse_as_of(as_of, pd.Timestamp(r["filed_ts"]).to_pydatetime())
     pred = _predict(ack_no, aof, account)
     rec = pred.recommendation
@@ -351,18 +350,24 @@ def dispatch_alert(ack_no: str, account: str | None = None, as_of: str | None = 
     if rec.tier == "RED":
         sho = config.JURISDICTION_SHO.get(rec.target_district, {})
         made.append(_mk_alert(pred, "SMS", sho.get("sho_phone", "+91-0000000000"),
-            f"[RED] FREEZE {pred.account_id} now",
-            f"Freeze a/c {pred.account_id} (Rs{rec.tainted_amount:,.0f} tainted). "
-            f"P(cash-out<=10m)={rec.p_cashout_10m:.2f}. Likely cell {rec.target_cell} "
-            f"({rec.target_district}). Deadline {rec.freeze_deadline}."))
+            f"[RED][URGENT] FREEZE {pred.account_id} now",
+            f"URGENT - FREEZE ACTION REQUIRED. Ack {ack_no}. Account {pred.account_id} "
+            f"holds Rs{rec.tainted_amount:,.0f} tainted funds. "
+            f"P(cash-out<=10m)={rec.p_cashout_10m:.2f}. Likely cash-out cell "
+            f"{rec.target_cell} ({rec.target_district}). Freeze deadline {rec.freeze_deadline}."))
         made.append(_mk_alert(pred, "WEBHOOK", "bank-freeze-api://cfcfrms",
             f"FREEZE_REQUEST {pred.account_id}",
-            f"Automated freeze request for {pred.account_id}, ack {ack_no}."))
+            f"tier=RED action=FREEZE ack_no={ack_no} account_id={pred.account_id} "
+            f"tainted_amount={rec.tainted_amount:,.0f} p_cashout_10m={rec.p_cashout_10m:.2f} "
+            f"district={rec.target_district} target_cell={rec.target_cell} "
+            f"freeze_deadline={rec.freeze_deadline}"))
     elif rec.tier == "AMBER":
         made.append(_mk_alert(pred, "EMAIL", f"{rec.target_district}.cyber@jhpolice.gov.in",
-            f"[AMBER] Watch {pred.account_id}",
-            f"Monitor a/c {pred.account_id}. P(cash-out<=10m)={rec.p_cashout_10m:.2f}. "
-            f"Likely district {rec.target_district}."))
+            f"[AMBER] Monitor {pred.account_id}",
+            f"MONITOR ONLY - no freeze or dispatch requested. Ack {ack_no}. "
+            f"Account {pred.account_id} holds Rs{rec.tainted_amount:,.0f} tainted funds. "
+            f"P(cash-out<=10m)={rec.p_cashout_10m:.2f}. District {rec.target_district}, "
+            f"cell {rec.target_cell}. Action: MONITOR - continue tracing, no immediate dispatch."))
     if made:
         STATE["dedup"].add(key)
         STATE["alerts"].extend(made)
@@ -393,13 +398,59 @@ def get_alerts(district: str | None = None):
 
     return alerts
 
+@app.get("/explain/{ack_no}")
+def explain_case(ack_no: str, as_of: str | None = None):
+    """Return deterministic explanation facts for the officer console."""
+    r = _case_row(ack_no)
+    if r is None:
+        raise HTTPException(status_code=404, detail=f"unknown ack_no: {ack_no}")
+
+    aof = _parse_as_of(as_of, pd.Timestamp(r["filed_ts"]).to_pydatetime())
+    pred = _predict(ack_no, aof, None)
+    rec = pred.recommendation
+
+    dominant_channel = (
+        "ATM" if pred.channel.ATM >= pred.channel.POS else "POS"
+    )
+
+    top_cell = pred.location.cells[0] if pred.location.cells else None
+    location_district = top_cell.district if top_cell else None
+
+    reasons = [
+        f"P(cash-out<=10m)={pred.cashout.p_10m:.2f}",
+        f"tainted_amount=Rs{rec.tainted_amount:,.0f}",
+        f"dominant_channel={dominant_channel}",
+        f"location={location_district}",
+        f"granularity={pred.location.granularity}",
+        f"decision={rec.tier}/{rec.action}",
+    ]
+
+    return {
+        "ack_no": pred.ack_no,
+        "account_id": pred.account_id,
+        "as_of": pred.as_of,
+        "reasons": reasons,
+        "prediction": pred.model_dump(mode="json"),
+        "recommendation": rec.model_dump(mode="json"),
+        "narrative": (
+            f"Case {pred.ack_no}: account {pred.account_id} has "
+            f"P(cash-out<=10m)={pred.cashout.p_10m:.2f} with "
+            f"Rs{rec.tainted_amount:,.0f} tainted funds. "
+            f"Dominant channel is {dominant_channel}, and the predicted "
+            f"location is {location_district}. "
+            f"Decision: {rec.tier} / {rec.action}."
+        ),
+    }
+
+@app.get("/replay/state")
+
 @app.get("/replay/state")
 def replay_state(case: str, t: float = 0.0):
     """Full render state at t minutes after the seed transaction (for the
     replay scrubber). Returns the trail + prediction + clock at that instant."""
     r = _case_row(case)
     if r is None:
-        return {"error": "unknown ack_no"}
+        raise HTTPException(status_code=404, detail=f"unknown ack_no: {case}")
     seed_ts = _seed_ts(r["seed_txn_id"])
     aof = seed_ts + timedelta(minutes=float(t))
     pred = _predict(case, aof, None)
