@@ -200,6 +200,7 @@
   #lmap{position:absolute;inset:0;z-index:1;background:#070b12}
   .leaflet-container{background:#070b12!important;font-family:var(--mono)}
   .leaflet-tile{filter:brightness(.9) saturate(.85) contrast(1.03)}
+  .leaflet-heatmap-layer{opacity:.6}   /* dim heat so the network lines stand out */
   .leaflet-control-zoom a{background:rgba(10,16,24,.92)!important;color:var(--cyan)!important;
     border-color:var(--line)!important;text-shadow:0 0 6px rgba(53,224,230,.5)}
   .leaflet-tooltip{background:rgba(6,10,16,.92);border:1px solid var(--line2);color:var(--ink);
@@ -231,6 +232,10 @@
   .mapnarr .a.AMBER{background:rgba(255,190,77,.14);color:var(--amber);box-shadow:0 0 0 1px rgba(255,190,77,.5) inset}
   .mapnarr .a.GREY{background:rgba(91,109,128,.18);color:#9fb0c2}
   path.flowpulse{animation:cellpulse 1.4s ease-in-out infinite}
+  path.meshline{animation:meshdash 3.2s linear infinite}
+  @keyframes meshdash{to{stroke-dashoffset:-24}}
+  path.flowline{animation:flowdash 1s linear infinite;filter:drop-shadow(0 0 3px currentColor)}
+  @keyframes flowdash{to{stroke-dashoffset:-22}}
   .cols2{display:grid;grid-template-columns:1.3fr 1fr;gap:14px;margin-top:14px}
   .kpis.compact{grid-template-columns:repeat(2,1fr)}
   @media(max-width:1050px){.cols2{grid-template-columns:1fr}}
@@ -272,7 +277,7 @@
 const API = location.protocol==='file:' ? 'http://127.0.0.1:8000' : '';
 let HOT=null, PROJ=null, SEL=null, PLAY=null, REPLAY_T=0, LASTHL=null, SELMETA=null;
 let CURDIST=null, FOCUSON=true, SOUND=true, TYPETOK=0, VOICES=[], JVOICE=null, CURAUDIO=null;
-let MAP=null, HEATL=null, ATML=null, MKL=null, RETL=null, FLOWL=null;
+let MAP=null, HEATL=null, ATML=null, MKL=null, RETL=null, FLOWL=null, MESHL=null, RSVG=null;
 let REPLAYING=false, FRAMED=false, ATMXY={};
 const $=id=>document.getElementById(id);
 const money=v=>'₹'+Math.round(v).toLocaleString('en-IN');
@@ -325,15 +330,15 @@ function drawFlow(trail){
   (trail.edges||[]).forEach(e=>{
     const a=pos[e.src_account];
     if(e.atm_id){ const atm=ATMXY[e.atm_id];              // cash-out: line to the ATM + a burst
-      if(a&&atm){ L.polyline([a,atm],{color:'#ff5a6e',weight:2,opacity:.85,dashArray:'5 4'}).addTo(FLOWL);
-        L.circleMarker(atm,{radius:8,color:'#ff5a6e',weight:2,fillColor:'#ff2d45',fillOpacity:.6}).bindTooltip('CASH-OUT '+e.atm_id,{direction:'top'}).addTo(FLOWL); } }
+      if(a&&atm){ L.polyline([a,atm],{renderer:RSVG,className:'flowline',color:'#ff5a6e',weight:2.4,opacity:.95,dashArray:'6 5'}).addTo(FLOWL);
+        L.circleMarker(atm,{renderer:RSVG,radius:8,color:'#ff5a6e',weight:2,fillColor:'#ff2d45',fillOpacity:.65}).bindTooltip('CASH-OUT '+e.atm_id,{direction:'top'}).addTo(FLOWL); } }
     else { const b=pos[e.dst_account];                    // transfer between accounts
-      if(a&&b)L.polyline([a,b],{color:'#35e0e6',weight:1.8,opacity:.7}).addTo(FLOWL); }
+      if(a&&b)L.polyline([a,b],{renderer:RSVG,className:'flowline',color:'#4fe3e8',weight:2.2,opacity:.9,dashArray:'6 5'}).addTo(FLOWL); }
   });
   // nodes
   (trail.nodes||[]).forEach(n=>{ const p=pos[n.account_id]; if(!p)return;
     const col=n.is_victim?'#4aa3ff':n.is_leaf?'#ff5a6e':'#ffbe4d';
-    L.circleMarker(p,{radius:n.is_victim?6:5,color:col,weight:1.6,fillColor:col,fillOpacity:.9,
+    L.circleMarker(p,{renderer:RSVG,radius:n.is_victim?7:6,color:'#fff',weight:1.4,fillColor:col,fillOpacity:.95,
       className:n.is_leaf?'flowpulse':''}).bindTooltip(
       (n.is_victim?'VICTIM ':n.is_leaf?'HOLDING ':'MULE ')+n.account_id,{direction:'top'}).addTo(FLOWL); });
 }
@@ -358,6 +363,27 @@ function updateNarr(p){
   const c=p.cashout,r=p.recommendation,loc=p.location,top=channelTop(p.channel)[0];
   const jl=$('jlive'); if(jl) jl.textContent=`${REPLAYING?('T+'+REPLAY_T+'m · '):''}${pct(c.p_10m)} cash-out risk · likely ${top[0]} · ${districtOf(loc)}`;
   const a=$('narrAction'); if(a){a.className='a '+r.tier; a.textContent=r.action;}
+}
+// Watch-Dogs "ctOS" mesh: connect each ATM to its nearest neighbours so the
+// network reads as one connected surveillance grid (drawn during replay).
+function drawMesh(loc){
+  if(!MAP||!HOT)return;
+  if(MESHL){try{MAP.removeLayer(MESHL);}catch(e){}}
+  MESHL=L.layerGroup(); MESHL.addTo(MAP);
+  const dset=new Set(); ((loc&&loc.cells)||[]).slice(0,4).forEach(c=>dset.add(c.district)); if(CURDIST)dset.add(CURDIST);
+  let atms=HOT.atm_markers.filter(m=>dset.size?dset.has(m.district):true);
+  if(atms.length>350)atms=atms.slice(0,350);
+  const seen=new Set();
+  for(let i=0;i<atms.length;i++){const a=atms[i],arr=[];
+    for(let j=0;j<atms.length;j++){if(i===j)continue;const b=atms[j];
+      arr.push([(a.lat-b.lat)*(a.lat-b.lat)+(a.lon-b.lon)*(a.lon-b.lon),j]);}
+    arr.sort((x,y)=>x[0]-y[0]);
+    for(let k=0;k<2&&k<arr.length;k++){const j=arr[k][1],key=i<j?i+'_'+j:j+'_'+i;
+      if(seen.has(key))continue; seen.add(key);
+      L.polyline([[a.lat,a.lon],[atms[j].lat,atms[j].lon]],
+        {renderer:RSVG,className:'meshline',color:'#35e0e6',weight:1.6,opacity:0.65,dashArray:'5 6',interactive:false}).addTo(MESHL);}}
+  // a node at every ATM so the grid reads as connected points
+  atms.forEach(m=>L.circleMarker([m.lat,m.lon],{renderer:RSVG,radius:2.4,weight:0,fillColor:'#6bebef',fillOpacity:.9,interactive:false}).addTo(MESHL));
 }
 
 function renderMapSVG(highlight, focusDistrict){
@@ -449,14 +475,18 @@ function toggleMapFocus(){FOCUSON=!FOCUSON;const b=$('mapToggle');if(b)b.textCon
 
 // choose the real (Leaflet) map when online, else the offline SVG map
 function setupMap(){const svg=$('map'),lm=$('lmap');
+  if(MAP){try{MAP.remove();}catch(e){}}                    // tear down the previous case's map safely
+  MAP=null; FLOWL=null; HEATL=null; MESHL=null; ATML=null; MKL=null; RETL=null; RSVG=null;  // reset layers so they rebind to the new map
   if(typeof L!=='undefined' && lm){
-    try{ if(MAP){MAP.remove();MAP=null;}
+    try{
       if(svg)svg.style.display='none'; lm.style.display='block';
       MAP=L.map('lmap',{zoomControl:false,attributionControl:false,preferCanvas:true});
       const dark=L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{maxZoom:19,subdomains:'abcd'}).addTo(MAP);
       let terr=0; dark.on('tileerror',()=>{ if(++terr===4){ try{MAP.removeLayer(dark);}catch(e){}
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19}).addTo(MAP); } });
       L.control.zoom({position:'bottomleft'}).addTo(MAP);
+      MAP.createPane('fx'); MAP.getPane('fx').style.zIndex=450; MAP.getPane('fx').style.pointerEvents='none'; // above heat, below markers
+      RSVG=L.svg({pane:'fx'}); RSVG.addTo(MAP);
       ATML=L.layerGroup().addTo(MAP);MKL=L.layerGroup().addTo(MAP);RETL=L.layerGroup().addTo(MAP);
       MAP.setView([23.9,86.2],8); return;
     }catch(e){MAP=null;}
@@ -658,8 +688,10 @@ function playAudioChain(urls, fallback){
 function playBrief(ack,text){if(!SOUND)return;
   try{if(CURAUDIO){CURAUDIO.pause();CURAUDIO=null;}
     playAudioChain(['voice/'+ack+'.mp3','voice/default.mp3'],()=>speak(text));}catch(e){speak(text);}}
+function stopVoice(){try{if(window.speechSynthesis){speechSynthesis.cancel();speechSynthesis.cancel();}}catch(e){}
+  if(CURAUDIO){try{CURAUDIO.pause();CURAUDIO.currentTime=0;}catch(e){}CURAUDIO=null;}}
 function toggleSound(){SOUND=!SOUND;const b=$('sndBtn');if(b)b.textContent=SOUND?'🔊':'🔇';
-  if(!SOUND){if(window.speechSynthesis)speechSynthesis.cancel();if(CURAUDIO){CURAUDIO.pause();CURAUDIO=null;}}}
+  if(!SOUND)stopVoice();}
 
 // ---------- briefing: build shell ONCE ----------
 function renderBriefing(p, clockHTML, speakNow){
@@ -756,7 +788,9 @@ function renderBriefing(p, clockHTML, speakNow){
     </details>`;
   const hl=(loc.cells&&loc.cells[0]?loc.cells[0].cell:null);
   REPLAYING=false; FRAMED=false;
-  try{ setupMap(); renderMap(hl, FOCUSON?CURDIST:null); if(p._trail) drawFlow(p._trail); }catch(e){}  // map must never block the briefing
+  try{ setupMap(); }catch(e){}
+  try{ renderMap(hl, FOCUSON?CURDIST:null); }catch(e){}
+  try{ if(MAP){ drawMesh(loc); if(p._trail) drawFlow(p._trail); } }catch(e){}   // mesh + flow always drawn (isolated)
   LASTHL=hl;
   updateNarr(p);
   typeInto($('jtext'), b.narr);
@@ -793,9 +827,10 @@ function updateBriefing(p, clk){
   updateNarr(p);                                                    // live narration + action badge
   const hl=(loc.cells&&loc.cells[0]?loc.cells[0].cell:null);
   try{
-    if(MAP){ drawFlow(p._trail);                                    // grow the flow on the map
-      if(!FRAMED){ frameCase(p._trail, loc); FRAMED=true; }         // frame the whole case once
-      if(hl!==LASTHL){ lockReticleOnly(hl); LASTHL=hl; } }          // move the reticle, keep the frame
+    if(MAP){
+      if(!FRAMED){ drawMesh(loc); frameCase(p._trail, loc); FRAMED=true; }  // ctOS mesh + frame, once
+      drawFlow(p._trail);                                            // grow the flow on the map (on top of the mesh)
+      if(hl!==LASTHL){ lockReticleOnly(hl); LASTHL=hl; } }           // move the reticle, keep the frame
     else { if(hl!==LASTHL){ renderMapSVG(hl, FOCUSON?CURDIST:null); LASTHL=hl; } }
   }catch(e){}
 }

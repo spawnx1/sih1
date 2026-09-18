@@ -39,6 +39,16 @@ app = FastAPI(title="SIH26184 -- Cash-out Forecast Console", version="0.1")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"],
                    allow_headers=["*"])
 
+
+@app.middleware("http")
+async def _no_cache(request, call_next):
+    # never let the browser cache the console -- a stale cached index.html was
+    # serving old JS and hiding new features. Always fetch fresh on refresh.
+    resp = await call_next(request)
+    resp.headers["Cache-Control"] = "no-store"
+    return resp
+
+
 STATE: dict = {}
 
 
