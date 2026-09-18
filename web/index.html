@@ -199,7 +199,7 @@
   /* ---- real map (Leaflet) ---- */
   #lmap{position:absolute;inset:0;z-index:1;background:#070b12}
   .leaflet-container{background:#070b12!important;font-family:var(--mono)}
-  .leaflet-tile{filter:brightness(.9) saturate(.85) contrast(1.03)}
+  .leaflet-tile{filter:brightness(1.08) contrast(1.05)}
   .leaflet-heatmap-layer{opacity:.6}   /* dim heat so the network lines stand out */
   .leaflet-control-zoom a{background:rgba(10,16,24,.92)!important;color:var(--cyan)!important;
     border-color:var(--line)!important;text-shadow:0 0 6px rgba(53,224,230,.5)}
@@ -481,9 +481,11 @@ function setupMap(){const svg=$('map'),lm=$('lmap');
     try{
       if(svg)svg.style.display='none'; lm.style.display='block';
       MAP=L.map('lmap',{zoomControl:false,attributionControl:false,preferCanvas:true});
-      const dark=L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png',{maxZoom:19,subdomains:'abcd'}).addTo(MAP);
-      let terr=0; dark.on('tileerror',()=>{ if(++terr===4){ try{MAP.removeLayer(dark);}catch(e){}
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19}).addTo(MAP); } });
+      // Esri Dark Gray Canvas -- a real dark street map, KEYLESS (no API key).
+      const base=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
+        {maxZoom:16, attribution:'Esri'}).addTo(MAP);
+      let terr=0; base.on('tileerror',()=>{ if(++terr===4){ try{MAP.removeLayer(base);}catch(e){}
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,subdomains:'abc'}).addTo(MAP); } });
       L.control.zoom({position:'bottomleft'}).addTo(MAP);
       MAP.createPane('fx'); MAP.getPane('fx').style.zIndex=450; MAP.getPane('fx').style.pointerEvents='none'; // above heat, below markers
       RSVG=L.svg({pane:'fx'}); RSVG.addTo(MAP);
@@ -500,8 +502,9 @@ function updateLeaflet(highlight, focusDistrict){
   if(!MAP||!HOT)return;
   ATML.clearLayers();MKL.clearLayers();
   if(HEATL){MAP.removeLayer(HEATL);HEATL=null;}
-  HOT.atm_markers.forEach(m=>L.circleMarker([m.lat,m.lon],{radius:2,weight:0,fillColor:'#5aa0c8',fillOpacity:.5})
-    .bindTooltip(`${m.atm_id} · ${m.operator} · fraud ${m.fraud_rate}`,{direction:'top'}).addTo(ATML));
+  HOT.atm_markers.forEach(m=>L.circleMarker([m.lat,m.lon],{radius:3.2,weight:1,color:'#0a1420',
+    fillColor:'#7fd4ff',fillOpacity:.9})
+    .bindTooltip(`ATM ${m.atm_id} · ${m.operator} · ${m.district} · fraud rate ${m.fraud_rate}`,{direction:'top'}).addTo(ATML));
   const cells=HOT.cells;
   try{
     if(typeof L.heatLayer==='function' && MAP.getSize && MAP.getSize().x>10){
