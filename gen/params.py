@@ -55,18 +55,18 @@ class Params:
     # Where mules cluster (cash-out geography). Legit accounts are ~uniform.
     mule_hotspot_mix: dict = field(
         default_factory=lambda: {
-            "Jamtara": 0.38,
-            "Deoghar": 0.30,
-            "Dhanbad": 0.20,
-            "Ranchi": 0.12,
+            "Pimpri-Chinchwad": 0.38,
+            "Pune City": 0.30,
+            "Hadapsar": 0.20,
+            "Hinjawadi": 0.12,
         }
     )
     legit_district_mix: dict = field(
         default_factory=lambda: {
-            "Jamtara": 0.24,
-            "Deoghar": 0.25,
-            "Dhanbad": 0.26,
-            "Ranchi": 0.25,
+            "Pimpri-Chinchwad": 0.24,
+            "Pune City": 0.25,
+            "Hadapsar": 0.26,
+            "Hinjawadi": 0.25,
         }
     )
 
@@ -134,10 +134,10 @@ class Params:
             n_complaints=350,
             # different hotspot mix (moved toward the cities)
             mule_hotspot_mix={
-                "Ranchi": 0.34,
-                "Dhanbad": 0.30,
-                "Deoghar": 0.20,
-                "Jamtara": 0.16,
+                "Hinjawadi": 0.34,
+                "Hadapsar": 0.30,
+                "Pune City": 0.20,
+                "Pimpri-Chinchwad": 0.16,
             },
             # slower forwarding
             mule_delay_shape=1.9,

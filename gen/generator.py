@@ -196,7 +196,7 @@ class Generator:
                     "account_id": aid,
                     "bank_code": rng.choice(BANK_CODES),
                     "open_date": pd.Timestamp(open_date),
-                    "kyc_pin": str(814000 + int(rng.integers(0, 20000))),
+                    "kyc_pin": str(411000 + int(rng.integers(0, 120))),
                     "kyc_district": district,
                     "kyc_lat": round(float(kyc_lat), 6),
                     "kyc_lon": round(float(kyc_lon), 6),

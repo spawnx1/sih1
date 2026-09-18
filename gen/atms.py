@@ -22,7 +22,7 @@ import config
 # TODO(real-data): replace the synthetic scatter with an OpenStreetMap pull.
 # Overpass query (one district shown; loop over the four):
 #   [out:json][timeout:90];
-#   area["name"="Deoghar"]["boundary"="administrative"]->.a;
+#   area["name"="Pune"]["boundary"="administrative"]->.a;
 #   ( node["amenity"="atm"](area.a); node["amenity"="bank"]["atm"="yes"](area.a); );
 #   out body;
 # Map node lat/lon -> lat/lon; operator tag -> operator; addr:postcode -> pin.
@@ -42,18 +42,18 @@ OPERATOR_SHARE = {
 # Rough PIN prefix per district (Jharkhand, stored as string -- leading zeros
 # are meaningless here but the column MUST stay string so nobody int-casts it).
 PIN_BASE = {
-    "Deoghar": 814100,
-    "Jamtara": 815351,
-    "Dhanbad": 826001,
-    "Ranchi": 834001,
+    "Pune City": 411001,
+    "Pimpri-Chinchwad": 411018,
+    "Hinjawadi": 411057,
+    "Hadapsar": 411028,
 }
 
 # How many terminals per district (bigger cities get more).
 COUNT_PER_DISTRICT = {
-    "Deoghar": 150,
-    "Jamtara": 120,
-    "Dhanbad": 220,
-    "Ranchi": 210,
+    "Pune City": 220,
+    "Pimpri-Chinchwad": 210,
+    "Hinjawadi": 120,
+    "Hadapsar": 150,
 }
 
 PER_TXN_LIMITS = [10000, 20000, 25000]

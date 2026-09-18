@@ -22,13 +22,13 @@ SEED = 26184  # SIH problem statement number, used as the master RNG seed
 # Geography -- four real districts in Jharkhand, the well-documented
 # "Jamtara belt" cybercrime cash-out region. Centroids are (lat, lon).
 # --------------------------------------------------------------------------
-STATE = "Jharkhand"
+STATE = "Maharashtra"
 
 DISTRICTS: dict[str, dict] = {
-    "Deoghar": {"lat": 24.4823, "lon": 86.6947, "code": "DGH"},
-    "Jamtara": {"lat": 23.9617, "lon": 86.8025, "code": "JMT"},
-    "Dhanbad": {"lat": 23.7957, "lon": 86.4304, "code": "DHN"},
-    "Ranchi":  {"lat": 23.3441, "lon": 85.3096, "code": "RNC"},
+    "Pune City":        {"lat": 18.5204, "lon": 73.8567, "code": "PNC"},
+    "Pimpri-Chinchwad": {"lat": 18.6279, "lon": 73.8009, "code": "PCH"},
+    "Hinjawadi":        {"lat": 18.5913, "lon": 73.7389, "code": "HJW"},
+    "Hadapsar":         {"lat": 18.5089, "lon": 73.9260, "code": "HDP"},
 }
 
 DISTRICT_CENTROIDS: dict[str, tuple[float, float]] = {
@@ -38,10 +38,10 @@ DISTRICT_CENTROIDS: dict[str, tuple[float, float]] = {
 # Police station covering each district's main cash-out cluster. Alerts route
 # here (to the SHO), keyed by district -- the officer-facing routing table.
 JURISDICTION_SHO: dict[str, dict] = {
-    "Deoghar": {"station": "Deoghar Cyber PS", "sho_phone": "+91-9430000101"},
-    "Jamtara": {"station": "Jamtara Cyber PS", "sho_phone": "+91-9430000102"},
-    "Dhanbad": {"station": "Dhanbad Cyber PS", "sho_phone": "+91-9430000103"},
-    "Ranchi":  {"station": "Ranchi Cyber PS",  "sho_phone": "+91-9430000104"},
+    "Pune City":        {"station": "Pune City Cyber PS", "sho_phone": "+91-9430000201"},
+    "Pimpri-Chinchwad": {"station": "Pimpri-Chinchwad Cyber PS", "sho_phone": "+91-9430000202"},
+    "Hinjawadi":        {"station": "Hinjawadi IT-Park PS", "sho_phone": "+91-9430000203"},
+    "Hadapsar":         {"station": "Hadapsar Cyber PS", "sho_phone": "+91-9430000204"},
 }
 
 # --------------------------------------------------------------------------
