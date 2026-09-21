@@ -93,6 +93,7 @@ class FeatureContext:
         self._atm_cell = self.atm["cell"].to_dict()
         self._atm_cell_fine = self.atm["cell_fine"].to_dict()
         self._atm_district = self.atm["district"].to_dict()
+        self._atm_pin = self.atm["pin"].to_dict()
         self._atm_limit = self.atm["per_txn_limit"].to_dict()
         self._atm_operator = self.atm["operator"].to_dict()
         self._atm_standalone = self.atm["is_standalone"].to_dict()
@@ -161,6 +162,7 @@ class FeatureContext:
             "kyc_lat": float(r["kyc_lat"]),
             "kyc_lon": float(r["kyc_lon"]),
             "kyc_district": r["kyc_district"],
+            "kyc_pin": r["kyc_pin"],
             "open_date": r["open_date"],
             "ring_id": r["label_ring_id"],
             "bank_code": r["bank_code"],

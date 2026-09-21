@@ -129,6 +129,8 @@ def expand_trail(seed_txn_id: str, as_of: datetime, ctx) -> Trail:
             is_leaf=is_leaf,
             lat=info.get("kyc_lat"),
             lon=info.get("kyc_lon"),
+            district=info.get("kyc_district"),
+            pin=str(info["kyc_pin"]) if info.get("kyc_pin") is not None else None,
         ))
 
     return Trail(

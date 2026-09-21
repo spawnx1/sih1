@@ -57,6 +57,8 @@ class TrailNode(BaseModel):
     mule_score: Optional[float] = None
     lat: Optional[float] = Field(None, description="account KYC centroid, for plotting on the map")
     lon: Optional[float] = None
+    district: Optional[str] = Field(None, description="KYC-registered district (for map labels)")
+    pin: Optional[str] = Field(None, description="KYC-registered PIN code (string; for map labels)")
 
 
 class TrailEdge(BaseModel):

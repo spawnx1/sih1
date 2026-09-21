@@ -68,8 +68,21 @@
   .sw.GREY{background:var(--faint)}
 
   .app{position:relative;z-index:3;display:grid;grid-template-columns:290px 1fr;height:calc(100vh - 54px)}
+  .app.railmin{grid-template-columns:0 1fr}
+  .app.railmin .rail{opacity:0;pointer-events:none}
+  .app.railmin .stagehead{padding-left:104px}   /* clear the floating CASES button */
 
-  .rail{border-right:1px solid var(--line);display:flex;flex-direction:column;min-height:0;background:rgba(8,12,19,.55);backdrop-filter:blur(8px)}
+  .rail{border-right:1px solid var(--line);display:flex;flex-direction:column;min-height:0;overflow:hidden;background:rgba(8,12,19,.55);backdrop-filter:blur(8px);transition:opacity .2s ease}
+  .railbtn{cursor:pointer;color:var(--faint);font-family:var(--mono);font-size:13px;line-height:1;padding:4px 8px;border:1px solid var(--line);border-radius:6px;margin-left:8px}
+  .railbtn:hover{color:var(--cyan);border-color:var(--cyan)}
+  .railopen{position:fixed;left:12px;top:64px;z-index:20;display:none;background:rgba(10,16,25,.94);
+    color:var(--cyan);border:1px solid var(--line2);border-radius:9px;padding:9px 12px;font-family:var(--mono);
+    font-size:11px;letter-spacing:1.4px;cursor:pointer;box-shadow:0 0 16px rgba(53,224,230,.25)}
+  .railopen:hover{border-color:var(--cyan);box-shadow:0 0 22px rgba(53,224,230,.45)}
+  .atgl{cursor:pointer;user-select:none;display:flex;align-items:center;gap:5px;color:var(--dim);
+    font-family:var(--mono);font-size:12px;padding:3px 9px;border:1px solid var(--line);border-radius:7px}
+  .atgl:hover{border-color:var(--cyan);color:var(--ink)}
+  .atgl.off{opacity:.55;border-style:dashed}
   .rail .head{display:flex;align-items:center;justify-content:space-between;padding:13px 14px 9px}
   .rail select{background:var(--solid);color:var(--ink);border:1px solid var(--line);border-radius:7px;padding:5px 7px;font-size:11px;font-family:var(--mono)}
   .cases{overflow:auto;padding:6px 10px 14px;min-height:0}
@@ -89,7 +102,7 @@
 
   .stage{overflow:auto;min-height:0;padding:18px 20px 28px}
   .stagehead{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:14px}
-  .stagehead .cid{font-family:var(--mono);font-size:18px;font-weight:700;letter-spacing:1px}
+  .stagehead .cid{font-family:var(--mono);font-size:22px;font-weight:900;letter-spacing:1px}
   .stagehead .ftype{color:var(--faint);font-family:var(--mono);font-size:12px}
   .tier{font-family:var(--mono);font-size:11px;font-weight:800;padding:5px 11px;border-radius:6px;letter-spacing:2px}
   .tier.RED{background:rgba(255,90,110,.14);color:var(--red);box-shadow:0 0 0 1px rgba(255,90,110,.5) inset,0 0 16px rgba(255,90,110,.25)}
@@ -145,7 +158,7 @@
 
   .cols{display:grid;grid-template-columns:1fr 360px;gap:14px}
   .card{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:15px;backdrop-filter:blur(6px);animation:fadeUp .3s ease both}
-  .card h3{margin:0 0 4px;font-family:var(--mono);font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:var(--dim);font-weight:600}
+  .card h3{margin:0 0 4px;font-family:var(--mono);font-size:12px;letter-spacing:1.4px;text-transform:uppercase;color:#c6d6e4;font-weight:800}
   .card .cap{color:var(--faint);font-size:11px;margin-bottom:8px}
   @keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 
@@ -199,16 +212,22 @@
   /* ---- real map (Leaflet) ---- */
   #lmap{position:absolute;inset:0;z-index:1;background:#070b12}
   .leaflet-container{background:#070b12!important;font-family:var(--mono)}
-  .leaflet-tile{filter:brightness(1.08) contrast(1.05)}
-  .leaflet-heatmap-layer{opacity:.6}   /* dim heat so the network lines stand out */
+  .leaflet-tile{filter:brightness(1.02) contrast(1.18) saturate(.68) hue-rotate(-8deg)}  /* ctOS surveillance look */
+  .leaflet-heatmap-layer{opacity:.5}   /* dim heat so the network lines stand out */
   .leaflet-control-zoom a{background:rgba(10,16,24,.92)!important;color:var(--cyan)!important;
     border-color:var(--line)!important;text-shadow:0 0 6px rgba(53,224,230,.5)}
   .leaflet-tooltip{background:rgba(6,10,16,.92);border:1px solid var(--line2);color:var(--ink);
     font-family:var(--mono);font-size:10px;box-shadow:0 0 10px rgba(0,0,0,.6)}
   .leaflet-tooltip-top:before{border-top-color:var(--line2)}
-  .numpin{width:20px;height:20px;border-radius:6px;background:var(--cyan);color:#04181a;
-    font:800 11px var(--mono);display:flex;align-items:center;justify-content:center;
-    box-shadow:0 0 10px rgba(53,224,230,.8);border:1px solid #04181a}
+  .numpin{width:24px;height:24px;border-radius:50%;background:var(--cyan);color:#04181a;
+    font:800 13px var(--mono);display:flex;align-items:center;justify-content:center;
+    box-shadow:0 0 14px rgba(53,224,230,.9),0 0 0 2px #04181a;border:2px solid #fff}
+  /* bold, labelled hotspot pin for the command-centre map */
+  .hotpin{display:flex;align-items:center;transform:translate(-14px,-14px);pointer-events:auto}
+  .hotpin .n{width:28px;height:28px;border-radius:50%;color:#0a0405;font:900 14px var(--mono);flex:0 0 auto;
+    display:flex;align-items:center;justify-content:center;border:2px solid #fff;box-shadow:0 0 16px currentColor,0 0 0 3px rgba(4,10,16,.7)}
+  .hotpin .lb{margin-left:7px;background:rgba(6,10,16,.92);color:#fff;font:800 10.5px var(--mono);letter-spacing:.5px;
+    padding:4px 9px;border-radius:7px;white-space:nowrap;box-shadow:0 0 10px rgba(0,0,0,.7);border:1px solid var(--line2)}
   .ret{width:46px;height:46px;position:relative}
   .ret::before{content:"";position:absolute;left:50%;top:50%;width:14px;height:14px;transform:translate(-50%,-50%);
     border:2px solid #fff;border-radius:50%;box-shadow:0 0 12px #fff}
@@ -216,12 +235,46 @@
     border:2px solid #fff;border-radius:50%;animation:retping 1.7s ease-out infinite}
   @keyframes retping{0%{width:14px;height:14px;opacity:.9}100%{width:46px;height:46px;opacity:0}}
   .mapfx{position:absolute;inset:0;z-index:2;pointer-events:none;
-    background:radial-gradient(130% 130% at 50% 45%,transparent 58%,rgba(0,6,12,.6) 100%),
-      repeating-linear-gradient(0deg,transparent 0 2px,rgba(0,12,16,.09) 3px);
-    box-shadow:inset 0 0 70px rgba(53,224,230,.07)}
+    background:
+      linear-gradient(rgba(53,224,230,.05) 1px,transparent 1px) 0 0/44px 44px,
+      linear-gradient(90deg,rgba(53,224,230,.05) 1px,transparent 1px) 0 0/44px 44px,
+      radial-gradient(130% 130% at 50% 45%,transparent 56%,rgba(0,6,12,.66) 100%),
+      repeating-linear-gradient(0deg,transparent 0 2px,rgba(0,12,16,.10) 3px);
+    box-shadow:inset 0 0 80px rgba(53,224,230,.09)}
+  /* ctOS corner brackets on the live map */
+  .maphold.hero::before,.maphold.hero .mapfx::after{content:"";position:absolute;z-index:5;pointer-events:none;
+    width:26px;height:26px;border:2px solid rgba(53,224,230,.5);filter:drop-shadow(0 0 5px rgba(53,224,230,.5))}
+  .maphold.hero::before{top:10px;left:10px;border-right:0;border-bottom:0;z-index:5}
+  .maphold.hero .mapfx::after{bottom:10px;right:10px;border-left:0;border-top:0}
   .maphold .mapbtn,.maphold .maplist,.maphold .legend{z-index:6}
   .maphold.hero{height:56vh;min-height:400px}
   .maphold.hero .legend{bottom:60px}
+  /* ---- CINEMATIC replay mode ---- */
+  .cinebar{position:absolute;left:0;right:0;height:46px;background:#000;z-index:8;pointer-events:none;
+    transition:transform .6s cubic-bezier(.7,0,.25,1)}
+  .cinebar.top{top:0;transform:translateY(-100%);box-shadow:0 6px 20px rgba(0,0,0,.6)}
+  .cinebar.bot{bottom:0;transform:translateY(100%);box-shadow:0 -6px 20px rgba(0,0,0,.6)}
+  .maphold.cinema .cinebar{transform:translateY(0)}
+  .maphold.cinema .cinebar.top::after{content:"CASHOUT FORECAST · REPLAY";position:absolute;left:16px;top:50%;transform:translateY(-50%);
+    font:800 10px var(--mono);letter-spacing:3px;color:rgba(255,255,255,.5)}
+  .cineflash{position:absolute;inset:0;z-index:7;pointer-events:none;opacity:0;transition:opacity .4s;
+    background:radial-gradient(circle at 50% 55%,rgba(255,45,69,.42),transparent 62%)}
+  .maphold.cinema.climax .cineflash{opacity:1;animation:climaxpulse 1.1s ease-in-out infinite}
+  @keyframes climaxpulse{0%,100%{opacity:.22}50%{opacity:.72}}
+  .cinehud{position:absolute;top:56px;left:18px;z-index:9;pointer-events:none;opacity:0;transform:translateY(-6px);transition:opacity .4s,transform .4s}
+  .maphold.cinema .cinehud{opacity:1;transform:none}
+  .cinehud .rec{display:flex;align-items:center;gap:7px;color:#ff5a6e;font:800 11px var(--mono);letter-spacing:2.5px}
+  .cinehud .rec .dot{width:9px;height:9px;border-radius:50%;background:#ff5a6e;box-shadow:0 0 10px #ff5a6e;animation:blink 1s ease-in-out infinite}
+  .cinehud .tc{color:#fff;font:900 28px/1 var(--mono);letter-spacing:2px;margin-top:5px;text-shadow:0 0 16px rgba(0,0,0,.9)}
+  .cinehud .act{color:var(--cyan);font:800 11px var(--mono);letter-spacing:3.5px;margin-top:5px;text-shadow:0 0 12px rgba(53,224,230,.6)}
+  .maphold.cinema.climax .cinehud .act{color:#ff8a97;text-shadow:0 0 12px rgba(255,90,110,.7)}
+  .maphold.cinema{box-shadow:inset 0 0 120px rgba(0,0,0,.65)}
+  /* clean cinematic frame -- hide map chrome while filming */
+  .maphold.cinema .maplist,.maphold.cinema .legend,.maphold.cinema .mapbtn{opacity:0;pointer-events:none;transition:opacity .4s}
+  /* comet-style money flow while filming */
+  .maphold.cinema path.flowline{stroke-width:3.4px!important;filter:drop-shadow(0 0 7px currentColor)!important;animation:flowdash .7s linear infinite!important}
+  .maphold.cinema.climax path.flowline{animation:flowdash .32s linear infinite!important}
+  .maphold.cinema path.meshline{opacity:.28!important}
   .mapnarr{position:absolute;left:11px;right:11px;bottom:11px;z-index:6;background:rgba(6,10,16,.88);
     border:1px solid var(--line2);border-radius:10px;padding:10px 13px;font-family:var(--mono);font-size:12.5px;
     color:var(--ink);backdrop-filter:blur(4px);display:flex;align-items:center;gap:12px;box-shadow:0 0 20px rgba(0,0,0,.5)}
@@ -232,13 +285,131 @@
   .mapnarr .a.AMBER{background:rgba(255,190,77,.14);color:var(--amber);box-shadow:0 0 0 1px rgba(255,190,77,.5) inset}
   .mapnarr .a.GREY{background:rgba(91,109,128,.18);color:#9fb0c2}
   path.flowpulse{animation:cellpulse 1.4s ease-in-out infinite}
-  path.meshline{animation:meshdash 3.2s linear infinite}
+  path.meshline{animation:meshdash 3.2s linear infinite;filter:drop-shadow(0 0 2px rgba(53,224,230,.7))}
   @keyframes meshdash{to{stroke-dashoffset:-24}}
   path.flowline{animation:flowdash 1s linear infinite;filter:drop-shadow(0 0 3px currentColor)}
   @keyframes flowdash{to{stroke-dashoffset:-22}}
+  path.guideline{animation:meshdash 4s linear infinite}
+  /* money-mule network graph */
+  .mgedge{animation:flowdash 1.1s linear infinite}
+  .mgnode circle{transition:r .15s, filter .15s;cursor:default}
+  .mgnode:hover circle{filter:drop-shadow(0 0 12px currentColor) brightness(1.15)!important}
+  .mgnode.leaf circle{animation:cellpulse 1.5s ease-in-out infinite}
+  .mglegend{display:flex;flex-wrap:wrap;gap:14px;margin-top:8px;font-family:var(--mono);font-size:10.5px;color:var(--dim)}
+  .mglegend span{display:inline-flex;align-items:center;gap:6px}
+  .mglegend i{width:11px;height:11px;border-radius:50%;box-shadow:0 0 7px currentColor}
+  .mglegend i.dia{border-radius:2px;transform:rotate(45deg)}
+  /* distance chips floating on the flow lines */
+  .leaflet-tooltip.distlbl{background:rgba(6,10,16,.82);border:none;padding:1px 6px;border-radius:999px;
+    font:800 9.5px/1.3 var(--mono);letter-spacing:.3px;box-shadow:0 0 0 1px rgba(53,224,230,.25),0 0 8px rgba(0,0,0,.6)}
+  .leaflet-tooltip.distlbl:before{display:none}
+  .leaflet-tooltip.distlbl.out{color:#ff9aa6;box-shadow:0 0 0 1px rgba(255,90,110,.35),0 0 8px rgba(0,0,0,.6)}
+  .leaflet-tooltip.distlbl.hop{color:#7fe8ec}
+  /* always-on NAME tags on each pointer (click a pointer for full PIN + coordinates) */
+  .leaflet-tooltip.namelbl{background:rgba(4,8,14,.92);border:none;color:#fff;padding:3px 9px;border-radius:7px;
+    font:800 11px/1.25 var(--mono);letter-spacing:.7px;text-transform:uppercase;box-shadow:0 0 0 1.5px rgba(84,150,180,.5),0 0 10px rgba(0,0,0,.75)}
+  .leaflet-tooltip.namelbl:before{display:none}
+  .leaflet-tooltip.namelbl.v{color:#8fc6ff;box-shadow:0 0 0 1.5px rgba(74,163,255,.85),0 0 12px rgba(74,163,255,.35)}
+  .leaflet-tooltip.namelbl.a,.leaflet-tooltip.namelbl.c{color:#ff9aa8;box-shadow:0 0 0 1.5px rgba(255,90,110,.9),0 0 12px rgba(255,90,110,.4)}
+  .leaflet-tooltip.namelbl.m{color:#ffd27a;box-shadow:0 0 0 1.5px rgba(255,190,77,.8),0 0 12px rgba(255,190,77,.35)}
+  .leaflet-popup-content-wrapper{background:rgba(8,13,20,.96);color:var(--ink);border:1px solid var(--line2);
+    border-radius:10px;font-family:var(--mono);font-size:11px;box-shadow:0 0 20px rgba(0,0,0,.6)}
+  .leaflet-popup-tip{background:rgba(8,13,20,.96);border:1px solid var(--line2)}
+  .leaflet-popup-content{margin:9px 12px;line-height:1.5}
+  .leaflet-popup-close-button{color:var(--faint)!important}
+  .destpin{transform:translate(13px,-10px);white-space:nowrap;color:#04121a;background:var(--amber);
+    font:900 10.5px var(--mono);letter-spacing:.5px;padding:3px 10px;border-radius:999px;
+    box-shadow:0 0 16px rgba(255,190,77,.9),0 0 0 2px rgba(4,10,16,.6);border:1px solid #04121a;animation:blink 2.2s ease-in-out infinite}
   .cols2{display:grid;grid-template-columns:1.3fr 1fr;gap:14px;margin-top:14px}
   .kpis.compact{grid-template-columns:repeat(2,1fr)}
   @media(max-width:1050px){.cols2{grid-template-columns:1fr}}
+
+  /* ---- COMMAND-CENTER OVERVIEW (landing dashboard) ---- */
+  .navbtn{cursor:pointer;user-select:none;display:inline-flex;align-items:center;gap:6px;color:var(--dim);
+    font-family:var(--mono);font-size:12px;padding:5px 12px;border:1px solid var(--line);border-radius:8px}
+  .navbtn:hover{border-color:var(--cyan);color:var(--ink)}
+  .navbtn.on{color:#04181a;background:var(--cyan);border-color:var(--cyan);box-shadow:0 0 16px rgba(53,224,230,.4)}
+  .ovhead{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin:2px 0 16px}
+  .ovhead h1{margin:0;font:900 30px/1 var(--mono);letter-spacing:2px;text-shadow:0 0 24px rgba(53,224,230,.45)}
+  .ovhead .sub{color:var(--dim);font-size:13px}
+  .ovhead .live{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--green);letter-spacing:1px;display:flex;align-items:center;gap:7px}
+  .ovhead .live .d{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 10px var(--green);animation:blink 1.8s ease-in-out infinite}
+  .ovtiles{display:grid;grid-template-columns:repeat(5,1fr);gap:13px;margin-bottom:16px}
+  .ovtile{position:relative;background:var(--panel);border:1px solid var(--line2);border-radius:15px;padding:17px 18px;overflow:hidden;backdrop-filter:blur(6px);animation:fadeUp .3s ease both}
+  .ovtile::before{content:"";position:absolute;left:0;top:0;height:4px;width:100%;box-shadow:0 0 14px currentColor}
+  .ovtile::after{content:"";position:absolute;right:-30px;bottom:-30px;width:90px;height:90px;border-radius:50%;background:currentColor;opacity:.06}
+  .ovtile.c1{color:var(--cyan)} .ovtile.c2{color:var(--red)} .ovtile.c3{color:var(--amber)} .ovtile.c4{color:var(--violet)} .ovtile.c5{color:var(--green)}
+  .ovtile.c1::before{background:var(--cyan)} .ovtile.c2::before{background:var(--red)}
+  .ovtile.c3::before{background:var(--amber)} .ovtile.c4::before{background:var(--violet)} .ovtile.c5::before{background:var(--green)}
+  .ovtile .k{font-family:var(--mono);font-size:10px;letter-spacing:1.6px;text-transform:uppercase;color:var(--faint)}
+  .ovtile .v{font-family:var(--mono);font-size:36px;font-weight:900;margin-top:8px;line-height:1;text-shadow:0 0 18px currentColor}
+  .ovtile .s{color:var(--dim);font-size:11.5px;margin-top:7px}
+  .ovmain{display:grid;grid-template-columns:1fr 340px;gap:14px}
+  @media(max-width:1100px){.ovmain{grid-template-columns:1fr}.ovtiles{grid-template-columns:repeat(2,1fr)}}
+  #omap{height:52vh;min-height:380px;border-radius:12px;overflow:hidden;background:#070b12;border:1px solid var(--line)}
+  .ovside{display:flex;flex-direction:column;gap:14px;min-height:0}
+  .ovlist{display:flex;flex-direction:column;gap:8px;max-height:32vh;overflow:auto}
+  .ovrow{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:9px 11px;border:1px solid var(--line);border-radius:10px;cursor:pointer;background:rgba(12,18,28,.5);transition:.14s}
+  .ovrow:hover{border-color:var(--cyan);transform:translateX(2px)}
+  .ovrow .bar{width:5px;height:34px;border-radius:5px}
+  .ovrow .cid{font-family:var(--mono);font-size:12.5px;font-weight:650}
+  .ovrow .mt{color:var(--dim);font-size:11px;margin-top:1px}
+  .ovrow .rk{font-family:var(--mono);font-weight:750;font-size:15px;text-align:right}
+  .arow{display:flex;align-items:center;gap:9px;padding:6px 0;border-bottom:1px solid rgba(84,150,180,.12)}
+  .arow:last-child{border:0}
+  .arow b{font-family:var(--mono);color:var(--cyan);width:16px;text-align:center}
+  .arow .track{flex:1;height:7px;background:rgba(20,29,41,.9);border-radius:5px;overflow:hidden}
+  .arow .track>i{display:block;height:100%;border-radius:5px}
+  .arow .pc{width:34px;text-align:right;font-family:var(--mono);font-size:11px;color:var(--dim)}
+  /* impact / "why this works" strip */
+  .impact{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:16px}
+  @media(max-width:1100px){.impact{grid-template-columns:repeat(2,1fr)}}
+  .imp{position:relative;background:linear-gradient(180deg,rgba(16,26,34,.6),rgba(10,16,24,.5));border:1px solid var(--line2);border-radius:13px;padding:14px 15px;overflow:hidden}
+  .imp .k{font-family:var(--mono);font-size:9.5px;letter-spacing:1.3px;text-transform:uppercase;color:var(--cyan)}
+  .imp .v{font-family:var(--mono);font-size:28px;font-weight:900;margin-top:6px;color:#fff;text-shadow:0 0 14px rgba(53,224,230,.3)}
+  .imp .s{color:var(--dim);font-size:11px;margin-top:5px;line-height:1.4}
+  .trustbadge{display:inline-flex;align-items:center;gap:7px;font-family:var(--mono);font-size:11px;color:var(--green);
+    background:rgba(55,230,166,.08);border:1px solid rgba(55,230,166,.3);border-radius:999px;padding:5px 12px;margin-left:6px}
+
+  /* ---- URGENT popup (auto for new RED cases + when opening an urgent case) ---- */
+  .modal{position:fixed;inset:0;z-index:40;display:none;align-items:center;justify-content:center;
+    background:rgba(2,4,8,.66);backdrop-filter:blur(5px)}
+  .modal.on{display:flex;animation:modalin .18s ease both}
+  @keyframes modalin{from{opacity:0}to{opacity:1}}
+  .urgent{position:relative;width:min(520px,92vw);border-radius:16px;padding:24px 26px 20px;
+    background:linear-gradient(180deg,rgba(32,10,15,.97),rgba(13,8,12,.97));
+    border:1px solid rgba(255,90,110,.55);overflow:hidden;
+    box-shadow:0 0 0 1px rgba(255,90,110,.25),0 0 60px rgba(255,90,110,.4),inset 0 0 46px rgba(255,90,110,.09);
+    animation:urgpop .3s cubic-bezier(.2,1.35,.4,1) both}
+  @keyframes urgpop{from{opacity:0;transform:scale(.9) translateY(12px)}to{opacity:1;transform:none}}
+  .urgent::before{content:"";position:absolute;left:0;right:0;top:0;height:3px;background:var(--red);
+    box-shadow:0 0 16px var(--red);animation:blink 1.1s ease-in-out infinite}
+  .urgent::after{content:"";position:absolute;inset:0;z-index:0;pointer-events:none;opacity:.5;
+    background:repeating-linear-gradient(0deg,transparent 0 2px,rgba(0,0,0,.18) 3px)}
+  .urgent>*{position:relative;z-index:1}
+  .urgent .utop{display:flex;align-items:center;gap:12px}
+  .urgent .siren{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;
+    background:rgba(255,90,110,.16);box-shadow:0 0 0 1px rgba(255,90,110,.5) inset,0 0 20px rgba(255,90,110,.45);animation:blink 1.1s ease-in-out infinite}
+  .urgent h2{margin:0;font-family:var(--mono);letter-spacing:3px;font-size:15px;color:var(--red);text-shadow:0 0 16px rgba(255,90,110,.6)}
+  .urgent .usub{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--dim);letter-spacing:1px}
+  .urgent .uline{color:var(--ink);font-size:14px;line-height:1.6;margin:15px 0 4px}
+  .urgent .uline b{color:#ffd0d6}
+  .urgent .uwhere{font-family:var(--mono);font-size:11.5px;color:var(--amber);margin:6px 0 2px;letter-spacing:.4px}
+  .urgent .ustats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:15px 0 18px}
+  .urgent .ust{background:rgba(255,255,255,.03);border:1px solid rgba(255,90,110,.22);border-radius:10px;padding:9px 11px}
+  .urgent .ust .k{font-family:var(--mono);font-size:9px;letter-spacing:1.3px;color:var(--faint);text-transform:uppercase}
+  .urgent .ust .v{font-family:var(--mono);font-size:18px;font-weight:750;margin-top:3px;color:#fff}
+  .urgent .uact{display:flex;gap:10px}
+  .urgent .bigfreeze{flex:1;background:linear-gradient(180deg,#ff5a6e,#d83048);color:#fff;border:0;border-radius:10px;
+    padding:13px;font-family:var(--mono);font-weight:800;letter-spacing:1.5px;font-size:13px;cursor:pointer;
+    box-shadow:0 0 22px rgba(255,90,110,.5);transition:.15s}
+  .urgent .bigfreeze:hover{filter:brightness(1.08);box-shadow:0 0 30px rgba(255,90,110,.8)}
+  .urgent .ubtn{background:rgba(255,255,255,.06);color:var(--ink);border:1px solid var(--line2);border-radius:10px;
+    padding:13px 15px;font-family:var(--mono);font-size:12px;cursor:pointer;letter-spacing:.5px}
+  .urgent .ubtn:hover{border-color:var(--cyan);color:var(--cyan)}
+  .urgent .uflash{font-family:var(--mono);font-size:11px;color:var(--green);margin-top:11px;min-height:14px;text-shadow:0 0 10px rgba(55,230,166,.4)}
+  .urgent .ux{position:absolute;top:12px;right:15px;z-index:2;color:var(--faint);cursor:pointer;font-size:15px;font-family:var(--mono)}
+  .urgent .ux:hover{color:var(--red)}
 </style>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
@@ -251,7 +422,12 @@
 <header>
   <div class="brand"><span class="dotlogo"></span> CASHOUT&nbsp;FORECAST
     <small>&nbsp;// SIH26184 &middot; I4C-MHA</small></div>
+  <div style="display:flex;gap:8px;margin-left:8px">
+    <span class="navbtn on" id="navOverview" onclick="showOverview()">&#9635;&nbsp; Command centre</span>
+    <span class="navbtn" id="navCase" onclick="SEL&&selectCase(SEL)">&#9673;&nbsp; Case view</span>
+  </div>
   <div class="chips" id="chips"><span class="chip">initialising&hellip;</span></div>
+  <span class="atgl" id="alertToggle" onclick="toggleAlerts()" title="auto pop-up for new urgent cases">&#128276; alerts on</span>
 </header>
 
 <div class="app">
@@ -264,6 +440,7 @@
         <option value="amount">biggest amount</option>
         <option value="golden">least time left</option>
       </select>
+      <span class="railbtn" id="railBtn" onclick="toggleRail()" title="minimize sidebar">&#171;</span>
     </div>
     <div class="cases" id="cases"></div>
   </aside>
@@ -273,14 +450,26 @@
   </main>
 </div>
 
+<button class="railopen" id="railOpen" onclick="toggleRail()">&#9776;&nbsp; CASES</button>
+
+<div class="modal" id="urgentModal" onclick="if(event.target===this)dismissUrgent()">
+  <div class="urgent" id="urgentBox"></div>
+</div>
+
 <script>
 const API = location.protocol==='file:' ? 'http://127.0.0.1:8000' : '';
 let HOT=null, PROJ=null, SEL=null, PLAY=null, REPLAY_T=0, LASTHL=null, SELMETA=null;
 let CURDIST=null, FOCUSON=true, SOUND=true, TYPETOK=0, VOICES=[], JVOICE=null, CURAUDIO=null;
 let MAP=null, HEATL=null, ATML=null, MKL=null, RETL=null, FLOWL=null, MESHL=null, RSVG=null;
-let REPLAYING=false, FRAMED=false, ATMXY={};
+let REPLAYING=false, FRAMED=false, ATMXY={}, ATMMETA={};
+let QUEUE=[], URGENT_SEEN=new Set(), SUPPRESS_URGENT=false, POLL=null;  // urgent-popup state
+let BASELINE_ACKS=null, ALERT_LAST=0;                                    // only alert on NEW reds, throttled
+let OMAP=null, OHEAT=null, VIEW='overview';                              // command-centre overview state
+let CINE_BEAT=-1, LAST_TRAIL_SIG=null;                                   // cinematic replay director state
+let ALERTS_ON=(()=>{try{return localStorage.getItem('alertsOn')!=='0';}catch(e){return true;}})();
 const $=id=>document.getElementById(id);
 const money=v=>'₹'+Math.round(v).toLocaleString('en-IN');
+const moneyC=v=>v>=1e7?'₹'+(v/1e7).toFixed(2)+' Cr':v>=1e5?'₹'+(v/1e5).toFixed(1)+' L':money(v);  // compact ₹ for big tiles
 const pct=v=>Math.round(v*100)+'%';
 async function jget(u){return (await fetch(API+u)).json();}
 async function jpost(u){return (await fetch(API+u,{method:'POST'})).json();}
@@ -299,6 +488,8 @@ function convexHull(pts){if(pts.length<3)return pts;
 // ---------- cases list ----------
 async function loadQueue(){
   const items=await jget(`/queue?limit=60&sort=${$('qsort').value}`);
+  QUEUE=items;
+  if(BASELINE_ACKS===null) BASELINE_ACKS=new Set(items.map(i=>i.ack_no));  // cases already on screen won't pop
   const R=items.filter(i=>i.tier==='RED').length, A=items.filter(i=>i.tier==='AMBER').length;
   $('chips').innerHTML=`<span class="chip"><b>${items.length}</b> tracking</span>
     <span class="chip"><span class="sw RED"></span><b>${R}</b> freeze now</span>
@@ -312,6 +503,155 @@ async function loadQueue(){
     </div>`).join('');
 }
 
+// ---------- URGENT popup (auto for new RED cases + when opening an urgent case) ----------
+function urgentHTML(it, opened){
+  const where=(it.top_district||it.district||'').toString();
+  return `<span class="ux" onclick="dismissUrgent()">CLOSE ✕</span>
+    <div class="utop"><div class="siren">&#9888;</div>
+      <h2>URGENT &middot; FREEZE WINDOW</h2><span class="usub">#${it.ack_no.slice(0,8)}</span></div>
+    <div class="uline"><b>${it.fraud_category||'Fraud'}</b> case is <b>${pct(it.p_cashout_10m)} likely</b> to cash out within
+      <b>10 minutes</b>. Freezing now is the fastest way to stop the loss.</div>
+    ${where?`<div class="uwhere">&#9673; likely area: ${where}</div>`:''}
+    <div class="ustats">
+      <div class="ust"><div class="k">Cash-out risk</div><div class="v" style="color:var(--red)">${pct(it.p_cashout_10m)}</div></div>
+      <div class="ust"><div class="k">Amount at risk</div><div class="v">${money(it.disputed_amount)}</div></div>
+      <div class="ust"><div class="k">Time left</div><div class="v">${it.golden_hour_remaining_min}m</div></div>
+    </div>
+    <div class="uact">
+      <button class="bigfreeze" onclick="urgentFreeze('${it.ack_no}')">&#10052; FREEZE NOW</button>
+      ${opened?'':`<button class="ubtn" onclick="urgentOpen('${it.ack_no}')">Open case</button>`}
+      <button class="ubtn" onclick="dismissUrgent()">Dismiss</button>
+    </div>
+    <div class="uflash" id="uflash"></div>`;
+}
+function showUrgent(it, opened){ if(!it)return;
+  $('urgentBox').innerHTML=urgentHTML(it, !!opened);
+  $('urgentModal').classList.add('on'); URGENT_SEEN.add(it.ack_no); }
+function dismissUrgent(){ $('urgentModal').classList.remove('on'); }
+function urgentOpen(ack){ SUPPRESS_URGENT=true; dismissUrgent(); selectCase(ack); }
+async function urgentFreeze(ack){
+  const r=await jpost(`/alerts/dispatch?ack_no=${ack}`);
+  const f=$('uflash'); if(f)f.textContent=r.deduped?'Already dispatched < 15 min ago.'
+    :(r.dispatched&&r.dispatched.length)?'✓ Freeze alert sent: '+r.dispatched.map(a=>a.channel).join(', ')
+    :'Logged (tier '+((r.recommendation&&r.recommendation.tier)||'?')+').';
+  loadQueue(); setTimeout(dismissUrgent, 1500); }
+// Calm auto-alerts: only pop for a RED case that arrived AFTER the app loaded
+// (never for cases already on screen), at most once every 2 minutes, and never
+// while a popup is open. Muteable from the header. Clicking a case does NOT pop.
+function checkNewUrgent(){
+  if(!ALERTS_ON) return;
+  if($('urgentModal').classList.contains('on')) return;
+  if(Date.now()-ALERT_LAST < 120000) return;                // throttle: >=2 min between auto-alerts
+  const base=BASELINE_ACKS||new Set();
+  const fresh=QUEUE.filter(i=>i.tier==='RED').find(i=>!base.has(i.ack_no) && !URGENT_SEEN.has(i.ack_no));
+  if(fresh){ ALERT_LAST=Date.now(); showUrgent(fresh, fresh.ack_no===SEL); }
+}
+function toggleAlerts(){ ALERTS_ON=!ALERTS_ON;
+  try{localStorage.setItem('alertsOn', ALERTS_ON?'1':'0');}catch(e){}
+  const b=$('alertToggle'); if(b){b.className='atgl'+(ALERTS_ON?'':' off');
+    b.innerHTML=(ALERTS_ON?'&#128276; alerts on':'&#128277; alerts off');}
+  if(!ALERTS_ON) dismissUrgent();
+}
+// ---------- sidebar minimize ----------
+function toggleRail(){ const app=document.querySelector('.app');
+  const min=app.classList.toggle('railmin');
+  const ro=$('railOpen'); if(ro) ro.style.display=min?'block':'none';
+  try{localStorage.setItem('railMin', min?'1':'0');}catch(e){}
+  setTimeout(()=>{try{if(MAP)MAP.invalidateSize();if(OMAP)OMAP.invalidateSize();}catch(e){}},280);
+}
+
+// ================= COMMAND-CENTRE OVERVIEW (landing dashboard) =================
+function setNav(){ const o=$('navOverview'),c=$('navCase');
+  if(o)o.className='navbtn'+(VIEW==='overview'?' on':'');
+  if(c)c.className='navbtn'+(VIEW==='case'?' on':''); }
+function showOverview(){
+  VIEW='overview';
+  if(MAP){try{MAP.remove();}catch(e){}MAP=null;FLOWL=HEATL=MESHL=ATML=MKL=RETL=RSVG=null;}  // drop the case map
+  renderOverview(); setNav();
+}
+function renderOverview(){
+  const items=QUEUE||[];
+  const red=items.filter(i=>i.tier==='RED'), amb=items.filter(i=>i.tier==='AMBER');
+  const atRisk=items.reduce((s,i)=>s+(+i.disputed_amount||0),0);
+  const redRisk=red.reduce((s,i)=>s+(+i.disputed_amount||0),0);
+  const avgLeft=red.length?Math.round(red.reduce((s,i)=>s+(+i.golden_hour_remaining_min||0),0)/red.length):0;
+  const atms=(HOT&&HOT.atm_markers)?HOT.atm_markers.length:0;
+  const zones=(HOT&&HOT.district_centroids)?Object.keys(HOT.district_centroids).length:0;
+  const topCells=(HOT&&HOT.cells)?HOT.cells.slice(0,6):[];
+  const urgent=items.slice().sort((a,b)=>(b.p_cashout_10m*Math.log1p(b.disputed_amount))-(a.p_cashout_10m*Math.log1p(a.disputed_amount))).slice(0,6);
+  const maxRisk=Math.max(1,...topCells.map(c=>c.risk_norm||0));
+  $('stage').innerHTML=`
+    <div class="ovhead">
+      <h1>PUNE CASH-OUT COMMAND CENTRE</h1>
+      <span class="sub">live cyber-fraud cash-out forecasting &middot; I4C / MHA</span>
+      <span class="trustbadge">&#10003; leakage-safe as-of engine</span>
+      <span class="live"><span class="d"></span>LIVE &middot; ${zones} zones</span>
+    </div>
+    <div class="ovtiles">
+      <div class="ovtile c1"><div class="k">Cases tracked</div><div class="v">${items.length}</div><div class="s">across Pune metro</div></div>
+      <div class="ovtile c2"><div class="k">Freeze now</div><div class="v" style="color:var(--red)">${red.length}</div><div class="s">imminent cash-out</div></div>
+      <div class="ovtile c3"><div class="k">Money at risk</div><div class="v" style="color:var(--amber)">${moneyC(atRisk)}</div><div class="s">${moneyC(redRisk)} in RED cases</div></div>
+      <div class="ovtile c4"><div class="k">Watch</div><div class="v" style="color:var(--violet)">${amb.length}</div><div class="s">rising hazard</div></div>
+      <div class="ovtile c5"><div class="k">Avg window left</div><div class="v" style="color:var(--green)">${avgLeft}<small style="font-size:13px"> min</small></div><div class="s">to act on RED cases</div></div>
+    </div>
+    <div class="ovmain">
+      <div>
+        <div id="omap"></div>
+        <div class="cap" style="margin-top:8px">&#9673; ${atms} ATMs monitored &middot; heat = predicted cash-out pressure per ~5&thinsp;km cell &middot; numbered = today's top hotspots</div>
+      </div>
+      <div class="ovside">
+        <div class="card">
+          <h3 style="color:var(--red)">&#9888; Most urgent &mdash; act first</h3>
+          <div class="ovlist">${urgent.map(i=>`
+            <div class="ovrow" onclick="selectCase('${i.ack_no}')">
+              <div class="bar" style="background:${tierColor(i.tier)};box-shadow:0 0 8px ${tierColor(i.tier)}"></div>
+              <div><div class="cid">#${i.ack_no.slice(0,6)} <span style="color:var(--faint)">${i.fraud_category}</span></div>
+                <div class="mt">${money(i.disputed_amount)} &middot; ${i.golden_hour_remaining_min}m left</div></div>
+              <div class="rk" style="color:${tierColor(i.tier)}">${pct(i.p_cashout_10m)}</div>
+            </div>`).join('')||'<div class="cap">no active cases</div>'}</div>
+        </div>
+        <div class="card">
+          <h3>&#9673; Top hotspot areas</h3>
+          ${topCells.map((c,i)=>`<div class="arow"><b>${i+1}</b><span style="min-width:110px">${c.district}</span>
+            <span class="track"><i style="width:${Math.round((c.risk_norm||0)/maxRisk*100)}%;background:${riskColor(c.risk_norm||0)};box-shadow:0 0 8px ${riskColor(c.risk_norm||0)}"></i></span>
+            <span class="pc">${Math.round((c.risk_norm||0)*100)}</span></div>`).join('')||'<div class="cap">no data</div>'}
+        </div>
+      </div>
+    </div>
+    <div class="ovhead" style="margin:22px 0 10px">
+      <h1 style="font-size:16px">&#9670; WHY THIS FORECAST CAN BE TRUSTED</h1>
+      <span class="sub">the honest version &mdash; every number below is measured on data the model never trained on</span>
+    </div>
+    <div class="impact">
+      <div class="imp"><div class="k">Cash-out model</div><div class="v">0.913 <small style="font-size:12px">ROC-AUC</small></div><div class="s">tested on a sealed set with fraud patterns the model never trained on (0.98 would mean a data leak)</div></div>
+      <div class="imp"><div class="k">Channel model</div><div class="v">92% <small style="font-size:12px">acc.</small></div><div class="s">predicts how the cash leaves &mdash; ATM vs POS vs onward transfer</div></div>
+      <div class="imp"><div class="k">Lead time</div><div class="v">up to 60 <small style="font-size:12px">min</small></div><div class="s">warning before the money is withdrawn &mdash; time to freeze</div></div>
+      <div class="imp"><div class="k">Discipline</div><div class="v" style="color:var(--green)">Honest</div><div class="s">as-of features (no future leakage) &middot; abstains from naming an ATM when it isn't sure</div></div>
+    </div>`;
+  buildOverviewMap();
+}
+function buildOverviewMap(){
+  if(!HOT||!$('omap')||typeof L==='undefined')return;
+  if(OMAP){try{OMAP.remove();}catch(e){}OMAP=null;OHEAT=null;}
+  try{
+    OMAP=L.map('omap',{zoomControl:false,attributionControl:false,preferCanvas:true});
+    const base=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',{maxZoom:16,attribution:'Esri'}).addTo(OMAP);
+    let terr=0; base.on('tileerror',()=>{if(++terr===4){try{OMAP.removeLayer(base);}catch(e){}
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,subdomains:'abc'}).addTo(OMAP);}});
+    L.control.zoom({position:'bottomright'}).addTo(OMAP);
+    HOT.atm_markers.forEach(m=>L.circleMarker([m.lat,m.lon],{radius:2.8,weight:0,fillColor:'#5cc0ee',fillOpacity:.45,interactive:false}).addTo(OMAP));
+    try{ if(L.heatLayer) OHEAT=L.heatLayer(HOT.cells.map(c=>[c.lat,c.lon,Math.max(.08,c.risk_norm||0)]),
+      {radius:34,blur:26,minOpacity:.35,gradient:{0:'#37e6a6',0.5:'#ffbe4d',1:'#ff5a6e'}}).addTo(OMAP); }catch(e){}
+    HOT.cells.slice(0,5).forEach((c,i)=>{const col=riskColor(c.risk_norm||0);
+      L.marker([c.lat,c.lon],{zIndexOffset:1000,icon:L.divIcon({className:'',iconSize:[0,0],
+        html:`<div class="hotpin"><span class="n" style="background:${col};box-shadow:0 0 16px ${col},0 0 0 3px rgba(4,10,16,.7)">${i+1}</span><span class="lb">${c.district}</span></div>`})})
+        .bindTooltip(`Hotspot #${i+1} &middot; ${c.district} &middot; predicted cash-out pressure ${Math.round((c.risk_norm||0)*100)}/100`,{direction:'top'}).addTo(OMAP);});
+    const ll=HOT.atm_markers.map(m=>[m.lat,m.lon]);
+    if(ll.length)OMAP.fitBounds(L.latLngBounds(ll).pad(0.04));
+    setTimeout(()=>{try{OMAP.invalidateSize();}catch(e){}},160);
+  }catch(e){OMAP=null;}
+}
+
 // ---------- map projection (returns extents for scale) ----------
 function buildProj(m){const la=m.map(x=>x.lat),lo=m.map(x=>x.lon);
   const mla=Math.min(...la),Mla=Math.max(...la),mlo=Math.min(...lo),Mlo=Math.max(...lo);
@@ -319,28 +659,95 @@ function buildProj(m){const la=m.map(x=>x.lat),lo=m.map(x=>x.lon);
   return {x:v=>p+(v-mlo)/(Mlo-mlo)*(W-2*p), y:v=>H-p-(v-mla)/(Mla-mla)*(H-2*p),
     mlo,Mlo,mla,Mla,W,H,p};}
 async function loadHotspots(){HOT=await jget('/hotspots?min_amt=0');PROJ=buildProj(HOT.atm_markers);
-  ATMXY={}; HOT.atm_markers.forEach(m=>ATMXY[m.atm_id]=[m.lat,m.lon]);}
+  ATMXY={}; ATMMETA={}; HOT.atm_markers.forEach(m=>{ATMXY[m.atm_id]=[m.lat,m.lon];
+    ATMMETA[m.atm_id]={district:m.district,pin:m.pin,operator:m.operator};});}
+// human-readable coordinate string, e.g. "18.463°N, 73.875°E"
+function coordStr(ll){ if(!ll||ll[0]==null)return ''; return ll[0].toFixed(3)+'°N, '+ll[1].toFixed(3)+'°E'; }
+// nearest district name for a raw point (fallback when a node carries no district)
+function nearestDistrict(ll){ if(!ll||!HOT||!HOT.district_centroids)return '';
+  let best='',bd=1e9; for(const[d,c]of Object.entries(HOT.district_centroids)){
+    const k=haversine(ll,[c.lat,c.lon]); if(k!=null&&k<bd){bd=k;best=d;}} return best; }
+// full "accurate location" label for a trail node: area · PIN · coordinates
+function nodePlace(n){ const parts=[];
+  const dist=n.district||nearestDistrict([n.lat,n.lon]); if(dist)parts.push(dist);
+  if(n.pin)parts.push('PIN '+n.pin);
+  const cs=coordStr([n.lat,n.lon]); if(cs)parts.push(cs);
+  return parts.join(' · '); }
+
+// ---- approx distances (great-circle, straight-line) ----------------------
+// All coordinates here are KYC centroids / predicted cells -- NOT a live GPS
+// fix on any person (R3). "Distance" therefore means the honest straight-line
+// gap between where accounts are *registered* and where the cash *surfaces*.
+function haversine(a,b){ if(!a||!b||a[0]==null||b[0]==null)return null;
+  const R=6371,toR=x=>x*Math.PI/180, dLa=toR(b[0]-a[0]), dLo=toR(b[1]-a[1]);
+  const s=Math.sin(dLa/2)**2+Math.cos(toR(a[0]))*Math.cos(toR(b[0]))*Math.sin(dLo/2)**2;
+  return 2*R*Math.asin(Math.min(1,Math.sqrt(s))); }
+function kmText(km){ return km==null?'—':(km<1?Math.round(km*1000)+' m':km.toFixed(km<10?1:0)+' km'); }
+// Resolve the case geography: SOURCE (victim), the cash-out AGENT's registered
+// area, and the DESTINATION (actual cash-out ATM in the trail, else predicted).
+function caseGeo(trail, loc){
+  const g={victim:null, agent:null, dest:null, destLabel:'', destPlace:''};
+  const atmPlace=id=>{const m=ATMMETA[id]||{},ll=ATMXY[id];
+    return [m.district,m.pin?'PIN '+m.pin:'',coordStr(ll)].filter(Boolean).join(' · ');};
+  if(trail&&trail.nodes){
+    const v=trail.nodes.find(n=>n.is_victim); if(v&&v.lat)g.victim=[v.lat,v.lon];
+    const a=trail.nodes.find(n=>n.is_leaf); if(a&&a.lat)g.agent=[a.lat,a.lon];
+    const co=(trail.edges||[]).find(e=>e.atm_id&&ATMXY[e.atm_id]);
+    if(co){g.dest=ATMXY[co.atm_id]; g.destLabel=co.atm_id; g.destPlace=atmPlace(co.atm_id);}
+  }
+  if(!g.dest&&loc){   // no observed cash-out yet -> use the PREDICTED location, honouring abstention (R5)
+    if(loc.granularity==='terminal'&&loc.terminals&&loc.terminals[0]&&ATMXY[loc.terminals[0].atm_id]){
+      const id=loc.terminals[0].atm_id;
+      g.dest=ATMXY[id]; g.destLabel=id; g.destPlace=atmPlace(id); g.approx=false; }
+    else if(loc.cells&&loc.cells[0]&&loc.cells[0].lat!=null){
+      const c=loc.cells[0]; g.dest=[c.lat,c.lon]; g.destLabel=(c.district||'')+' ~5 km cell';
+      g.destPlace=[c.district,coordStr([c.lat,c.lon])].filter(Boolean).join(' · '); g.approx=true; }
+    else if(loc.districts&&loc.districts[0]&&loc.districts[0].lat!=null){
+      const d=loc.districts[0]; g.dest=[d.lat,d.lon]; g.destLabel=(d.district||'')+' district';
+      g.destPlace=[d.district,coordStr([d.lat,d.lon])].filter(Boolean).join(' · '); g.approx=true; }
+  }
+  return g;
+}
 
 // ---- money-flow drawn ON the real map (victim -> mules -> cash-out ATMs) ----
-function drawFlow(trail){
+function drawFlow(trail, loc){
   if(!MAP||!trail)return;
   if(!FLOWL)FLOWL=L.layerGroup().addTo(MAP); else FLOWL.clearLayers();
   const pos={}; (trail.nodes||[]).forEach(n=>{ if(n.lat&&n.lon)pos[n.account_id]=[n.lat,n.lon]; });
-  // edges first (so nodes sit on top)
+  // edges first (so nodes sit on top). Distances live on hover (sticky) -- clean map.
   (trail.edges||[]).forEach(e=>{
     const a=pos[e.src_account];
     if(e.atm_id){ const atm=ATMXY[e.atm_id];              // cash-out: line to the ATM + a burst
-      if(a&&atm){ L.polyline([a,atm],{renderer:RSVG,className:'flowline',color:'#ff5a6e',weight:2.4,opacity:.95,dashArray:'6 5'}).addTo(FLOWL);
-        L.circleMarker(atm,{renderer:RSVG,radius:8,color:'#ff5a6e',weight:2,fillColor:'#ff2d45',fillOpacity:.65}).bindTooltip('CASH-OUT '+e.atm_id,{direction:'top'}).addTo(FLOWL); } }
+      if(a&&atm){ const m=ATMMETA[e.atm_id]||{}, km=kmText(haversine(a,atm));
+        const atmLbl='CASH-OUT · '+e.atm_id+(m.district?'<br>'+m.district+(m.pin?' · PIN '+m.pin:''):'')+'<br>'+coordStr(atm)+' · ~'+km+' hop'+(m.operator?'<br>'+m.operator:'');
+        L.polyline([a,atm],{renderer:RSVG,className:'flowline',color:'#ff5a6e',weight:2.4,opacity:.95,dashArray:'6 5'})
+          .bindTooltip('cash-out · ~'+km,{sticky:true,className:'distlbl out'}).addTo(FLOWL);
+        L.circleMarker(atm,{renderer:RSVG,radius:10,color:'#fff',weight:2,fillColor:'#ff2d45',fillOpacity:.85})
+          .bindTooltip('CASH-OUT',{permanent:true,direction:'top',className:'namelbl c',offset:[0,-5]})
+          .bindPopup(atmLbl).addTo(FLOWL); } }
     else { const b=pos[e.dst_account];                    // transfer between accounts
-      if(a&&b)L.polyline([a,b],{renderer:RSVG,className:'flowline',color:'#4fe3e8',weight:2.2,opacity:.9,dashArray:'6 5'}).addTo(FLOWL); }
+      if(a&&b)L.polyline([a,b],{renderer:RSVG,className:'flowline',color:'#4fe3e8',weight:2.2,opacity:.9,dashArray:'6 5'})
+          .bindTooltip('~'+kmText(haversine(a,b))+' hop',{sticky:true,className:'distlbl hop'}).addTo(FLOWL); }
   });
-  // nodes
+  // SOURCE -> DESTINATION guide + a single minimal TARGET tag (full detail on hover)
+  const g=caseGeo(trail, loc);
+  if(g.victim&&g.dest){ const tot=kmText(haversine(g.victim,g.dest));
+    L.polyline([g.victim,g.dest],{renderer:RSVG,className:'guideline',color:'#ffbe4d',weight:1.4,opacity:.45,dashArray:'2 8',interactive:false}).addTo(FLOWL);
+    const dfull=(g.approx?'PREDICTED TARGET (approx)':'TARGET')+' · '+(g.destPlace||g.destLabel||'')+'<br>~'+tot+' straight-line from source';
+    L.marker(g.dest,{zIndexOffset:900,
+      icon:L.divIcon({className:'',html:'<div class="destpin">◈ TARGET · ~'+tot+'</div>',iconSize:[0,0]})})
+      .bindTooltip(dfull,{direction:'top'}).addTo(FLOWL); }
+  // nodes -- each keeps a visible NAME tag; click a node for its full KYC location
   (trail.nodes||[]).forEach(n=>{ const p=pos[n.account_id]; if(!p)return;
     const col=n.is_victim?'#4aa3ff':n.is_leaf?'#ff5a6e':'#ffbe4d';
-    L.circleMarker(p,{renderer:RSVG,radius:n.is_victim?7:6,color:'#fff',weight:1.4,fillColor:col,fillOpacity:.95,
-      className:n.is_leaf?'flowpulse':''}).bindTooltip(
-      (n.is_victim?'VICTIM ':n.is_leaf?'HOLDING ':'MULE ')+n.account_id,{direction:'top'}).addTo(FLOWL); });
+    const nm=n.is_victim?'VICTIM':n.is_leaf?'AGENT':'MULE';
+    const cls=n.is_victim?'v':n.is_leaf?'a':'m';
+    const role=n.is_victim?'SOURCE · VICTIM':n.is_leaf?'CASH-OUT AGENT · holds funds':'MULE';
+    const place=nodePlace(n);
+    L.circleMarker(p,{renderer:RSVG,radius:n.is_victim?10:n.is_leaf?9:8,color:'#fff',weight:2,fillColor:col,fillOpacity:.98,
+      className:n.is_leaf?'flowpulse':''})
+      .bindTooltip(nm,{permanent:true,direction:'top',className:'namelbl '+cls,offset:[0,-7]})
+      .bindPopup(role+' · '+n.account_id+(place?'<br>'+place:'')).addTo(FLOWL); });
 }
 // frame the whole case (victim + mules + predicted cell + cash-out ATMs) once, at replay start
 function frameCase(trail, loc){
@@ -350,6 +757,44 @@ function frameCase(trail, loc){
   if(loc&&loc.cells)loc.cells.slice(0,3).forEach(c=>pts.push([c.lat,c.lon]));
   if(pts.length){try{MAP.flyToBounds(L.latLngBounds(pts).pad(0.25),{duration:1.0});
     setTimeout(()=>{try{MAP.fitBounds(L.latLngBounds(pts).pad(0.25))}catch(e){}},1200);}catch(e){}}
+}
+// ---- CINEMATIC replay director (Nolan mode) ----
+function cinemaOn(){const m=$('maphold');return m&&m.classList.contains('cinema');}
+function enterCinema(){const m=$('maphold');if(m){m.classList.add('cinema');m.classList.remove('climax');}CINE_BEAT=-1;}
+function exitCinema(){const m=$('maphold');if(m){m.classList.remove('cinema');m.classList.remove('climax');}CINE_BEAT=-1;}
+function casePts(p){const pts=[],tr=p._trail;
+  (tr&&tr.nodes||[]).forEach(n=>{if(n.lat&&n.lon)pts.push([n.lat,n.lon]);});
+  (tr&&tr.edges||[]).forEach(e=>{if(e.atm_id&&ATMXY[e.atm_id])pts.push(ATMXY[e.atm_id]);});
+  ((p.location&&p.location.cells)||[]).slice(0,3).forEach(c=>pts.push([c.lat,c.lon]));
+  return pts;}
+function leadNode(p){const tr=p._trail;if(!tr||!tr.nodes)return null;
+  const leaves=tr.nodes.filter(n=>n.is_leaf&&n.lat!=null);
+  const pool=leaves.length?leaves:tr.nodes.filter(n=>!n.is_victim&&n.lat!=null);
+  if(!pool.length)return null;
+  const n=pool.reduce((a,b)=>((b.tainted_amount||0)>(a.tainted_amount||0)?b:a));
+  return [n.lat,n.lon];}
+// choreograph the camera by replay progress -- fires a slow eased move only on beat change
+function cineDirect(t,p){
+  if(!MAP)return; const m=$('maphold');
+  const beat = t<24?0 : t<72?1 : t<102?2 : 3;
+  const acts=['ESTABLISHING SCENE','TRACING THE MONEY','LOCKING ON TARGET','⚠ CASH-OUT WINDOW — FREEZE'];
+  const al=$('cineAct'); if(al)al.textContent=acts[beat];
+  if(m){ if(beat===3)m.classList.add('climax'); else m.classList.remove('climax'); }
+  if(beat===CINE_BEAT)return; CINE_BEAT=beat;                 // hold the shot until the next beat
+  const land=(tgt,z,dur)=>{ // guaranteed landing if the eased fly gets interrupted (safe for the live pitch)
+    setTimeout(()=>{try{if(CINE_BEAT===beat && Math.abs(MAP.getZoom()-z)>0.5) MAP.setView(tgt,z,{animate:false});}catch(e){}}, dur*1000+350); };
+  try{
+    if(beat===0){ const pts=casePts(p); if(pts.length){const bnds=L.latLngBounds(pts).pad(0.38);
+      MAP.flyToBounds(bnds,{duration:2.4,easeLinearity:.1});
+      setTimeout(()=>{try{if(CINE_BEAT===0 && !MAP.getBounds().intersects(bnds))MAP.fitBounds(bnds,{animate:false});}catch(e){}},2750); } }
+    else if(beat===1){ const ld=leadNode(p)||casePts(p)[0]; if(ld){MAP.flyTo(ld,12,{duration:2.3,easeLinearity:.12}); land(ld,12,2.3);} }
+    else if(beat===2){ const g=caseGeo(p._trail,p.location); const tgt=(g&&g.dest)||leadNode(p); if(tgt){MAP.flyTo(tgt,LOCK_ZOOM+1,{duration:2.0,easeLinearity:.14}); land(tgt,LOCK_ZOOM+1,2.0);} }
+    else { const g=caseGeo(p._trail,p.location); const tgt=(g&&g.dest)||leadNode(p); if(tgt){MAP.flyTo(tgt,LOCK_ZOOM+2,{duration:1.7,easeLinearity:.2}); land(tgt,LOCK_ZOOM+2,1.7);} }
+  }catch(e){}
+}
+function endReplay(){ if(PLAY){clearInterval(PLAY);PLAY=null;} const b=$('playbtn');
+  if(b)b.innerHTML='&#9654; Replay simulation'; REPLAYING=false;
+  setTimeout(()=>{ if(!REPLAYING) exitCinema(); }, 2800);   // hold on the climax, then lift the letterbox
 }
 // move just the reticle (used during replay -- the frame stays fixed so you watch the whole flow)
 function lockReticleOnly(highlight){
@@ -487,7 +932,7 @@ function setupMap(){const svg=$('map'),lm=$('lmap');
       let terr=0; base.on('tileerror',()=>{ if(++terr===4){ try{MAP.removeLayer(base);}catch(e){}
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,subdomains:'abc'}).addTo(MAP); } });
       L.control.zoom({position:'bottomleft'}).addTo(MAP);
-      MAP.createPane('fx'); MAP.getPane('fx').style.zIndex=450; MAP.getPane('fx').style.pointerEvents='none'; // above heat, below markers
+      MAP.createPane('fx'); MAP.getPane('fx').style.zIndex=450; // above heat; interactive markers here stay clickable
       RSVG=L.svg({pane:'fx'}); RSVG.addTo(MAP);
       ATML=L.layerGroup().addTo(MAP);MKL=L.layerGroup().addTo(MAP);RETL=L.layerGroup().addTo(MAP);
       MAP.setView([23.9,86.2],8); return;
@@ -502,8 +947,8 @@ function updateLeaflet(highlight, focusDistrict){
   if(!MAP||!HOT)return;
   ATML.clearLayers();MKL.clearLayers();
   if(HEATL){MAP.removeLayer(HEATL);HEATL=null;}
-  HOT.atm_markers.forEach(m=>L.circleMarker([m.lat,m.lon],{radius:3.2,weight:1,color:'#0a1420',
-    fillColor:'#7fd4ff',fillOpacity:.9})
+  HOT.atm_markers.forEach(m=>L.circleMarker([m.lat,m.lon],{radius:2.4,weight:0,
+    fillColor:'#4a7a9a',fillOpacity:.38})   // context only -- the flow pointers are the stars
     .bindTooltip(`ATM ${m.atm_id} · ${m.operator} · ${m.district} · fraud rate ${m.fraud_rate}`,{direction:'top'}).addTo(ATML));
   const cells=HOT.cells;
   try{
@@ -569,6 +1014,55 @@ function trailSVG(tr){if(!tr||!tr.nodes.length)return '<div class="cap">no trail
     if(a&&!b)e+=`<rect x="${a.x+8}" y="${a.y-4}" width="7" height="7" fill="#ff5a6e" transform="rotate(45 ${a.x+11} ${a.y})"/>`;});
   const rows=Math.max(...hops.map(h=>byh[h].length));
   return `<svg viewBox="0 0 ${W} ${24+rows*24}" style="height:${24+rows*24}px">${e}${s}</svg>`;}
+
+// big interactive money-mule NETWORK graph (victim -> mules -> cash-out)
+function muleGraphSVG(tr){
+  if(!tr||!tr.nodes||!tr.nodes.length)return '<div class="cap">building network&hellip;</div>';
+  const W=820,H=300,padX=64,padY=30;
+  const byh={}; tr.nodes.forEach(n=>(byh[n.hop_from_victim]=byh[n.hop_from_victim]||[]).push(n));
+  const hops=Object.keys(byh).map(Number).sort((a,b)=>a-b);
+  const cashouts=(tr.edges||[]).filter(e=>e.atm_id);
+  const nCols=hops.length+(cashouts.length?1:0);
+  const span=(W-2*padX)/Math.max(1,nCols-1);
+  const colX=h=>padX+hops.indexOf(h)*span;
+  const cashX=padX+(nCols-1)*span;
+  const maxT=Math.max(1,...tr.nodes.map(n=>n.tainted_amount||0));
+  const rOf=t=>7+13*Math.sqrt((t||0)/maxT);
+  const pos={};
+  hops.forEach(h=>{const col=byh[h];col.forEach((n,i)=>{
+    const gap=Math.min(66,(H-2*padY)/Math.max(1,col.length));
+    pos[n.account_id]={x:colX(h),y:H/2+(i-(col.length-1)/2)*gap,r:rOf(n.tainted_amount),n};});});
+  let edges='',cash='';
+  (tr.edges||[]).forEach((e,idx)=>{
+    const a=pos[e.src_account]; if(!a)return;
+    let bx,by,co=false;
+    if(e.atm_id){ bx=cashX; by=H/2+(((idx%5)-2)*42); co=true; pos['__a'+idx]={x:bx,y:by,atm:e.atm_id,cash:true}; }
+    else { const b=pos[e.dst_account]; if(!b)return; bx=b.x; by=b.y; }
+    const mx=(a.x+bx)/2, col=co?'#ff5a6e':'#4fe3e8', w=1.3+3.2*Math.sqrt((e.tainted_amount||0)/maxT);
+    edges+=`<path class="mgedge" d="M${a.x},${a.y} C${mx},${a.y} ${mx},${by} ${bx},${by}" fill="none" stroke="${col}" stroke-width="${w.toFixed(1)}" stroke-opacity=".5" stroke-dasharray="7 6"><title>${money(e.tainted_amount)} &middot; ${e.channel}${co?' &middot; CASH-OUT '+e.atm_id:''}</title></path>`;
+  });
+  Object.keys(pos).filter(k=>pos[k].cash).forEach(k=>{const p=pos[k];
+    cash+=`<g class="mgnode leaf"><rect x="${p.x-7}" y="${p.y-7}" width="14" height="14" transform="rotate(45 ${p.x} ${p.y})" fill="#ff2d45" stroke="#fff" stroke-width="1.3" style="filter:drop-shadow(0 0 7px #ff2d45)"><title>CASH-OUT ${p.atm}</title></rect>
+      <text x="${p.x}" y="${p.y+24}" text-anchor="middle" font-size="9" fill="#ff9aa6" font-family="ui-monospace,monospace">CASH-OUT</text></g>`;});
+  let nodes='';
+  tr.nodes.forEach(n=>{const p=pos[n.account_id];if(!p)return;
+    const col=n.is_victim?'#4aa3ff':n.is_leaf?'#ff5a6e':'#ffbe4d';
+    const nm=n.is_victim?'VICTIM':n.is_leaf?'MULE ✦':'MULE';
+    const role=n.is_victim?'VICTIM (source)':n.is_leaf?'MULE · holding cash NOW':'MULE (pass-through)';
+    nodes+=`<g class="mgnode ${n.is_leaf?'leaf':''}" style="color:${col}">
+      <circle cx="${p.x}" cy="${p.y}" r="${p.r.toFixed(1)}" fill="${col}" fill-opacity=".92" stroke="#fff" stroke-width="1.4" style="filter:drop-shadow(0 0 6px ${col})">
+        <title>${role} · ${n.account_id} · ${money(n.tainted_amount)} held · hop ${n.hop_from_victim}${n.district?' · '+n.district:''}${n.pin?' · PIN '+n.pin:''}</title></circle>
+      <text x="${p.x}" y="${(p.y+p.r+13).toFixed(1)}" text-anchor="middle" font-size="9.5" font-weight="700" fill="#dfeaf3" font-family="ui-monospace,monospace">${nm}</text>
+      <text x="${p.x}" y="${(p.y+p.r+24).toFixed(1)}" text-anchor="middle" font-size="8.5" fill="#8598ab" font-family="ui-monospace,monospace">${money(n.tainted_amount)}</text></g>`;});
+  return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" style="width:100%;height:302px">${edges}${cash}${nodes}</svg>
+    <div class="mglegend">
+      <span><i style="background:#4aa3ff;color:#4aa3ff"></i>victim</span>
+      <span><i style="background:#ffbe4d;color:#ffbe4d"></i>mule (pass-through)</span>
+      <span><i style="background:#ff5a6e;color:#ff5a6e"></i>holding cash now &mdash; freeze target</span>
+      <span><i class="dia" style="background:#ff2d45;color:#ff2d45"></i>cash-out point</span>
+      <span>circle size = money held</span>
+    </div>`;
+}
 
 // ---------- derived text ----------
 function channelTop(ch){return [['ATM',ch.ATM],['POS (card cash)',ch.POS],['keeps moving',ch.onward_transfer],['sits idle',ch.dormant]].sort((a,b)=>b[1]-a[1]);}
@@ -652,6 +1146,11 @@ function evidenceHTML(p, trail){
   if(srcs.has('C5'))why.push('known fraud ATMs nearby');
   if(why.length)b.push(`Location narrowed from ${why.join(', ')}.`);
   else if(loc.abstained_at)b.push(`Too little history to pin one ATM — held to the ${loc.granularity} level.`);
+  const g=caseGeo(trail, loc);
+  if(g.victim&&g.dest){ const tot=haversine(g.victim,g.dest), place=g.destPlace||g.destLabel;
+    b.push(`Cash surfaces <b>~${kmText(tot)}</b> (straight-line) from the victim's registered area${place?', at <b>'+place+'</b>':''}.`);
+    if(g.agent){ const ad=haversine(g.agent,g.dest);
+      if(ad!=null)b.push(`The holding account is registered <b>~${kmText(ad)}</b> from that cash-out point.`); } }
   return b.map(x=>`<div class="jstep ev"><b>&rsaquo;</b><span>${x}</span></div>`).join('');
 }
 function typeInto(el, text){if(!el)return;const tok=++TYPETOK;
@@ -715,15 +1214,25 @@ function renderBriefing(p, clockHTML, speakNow){
 
     <div class="card" style="padding:12px">
       <h3>&#9678; Live map &middot; ${CURDIST} &mdash; watch the money move, then act</h3>
-      <div class="maphold hero">
+      <div class="maphold hero" id="maphold">
         <button class="mapbtn" id="mapToggle" onclick="toggleMapFocus()">${FOCUSON?'◎ LOCKED':'⊕ WIDE VIEW'}</button>
         <div id="lmap" style="display:none"></div>
         <svg id="map" viewBox="0 0 800 560" preserveAspectRatio="xMidYMid meet"></svg>
         <div class="mapfx"></div>
+        <div class="cineflash"></div>
+        <div class="cinebar top"></div><div class="cinebar bot"></div>
+        <div class="cinehud"><div class="rec"><span class="dot"></span> REC</div>
+          <div class="tc" id="cineTC">T+00:00</div><div class="act" id="cineAct">ESTABLISHING</div></div>
         <div class="maplist" id="maplist"></div><div class="legend" id="legend"></div>
         <div class="mapnarr"><span class="t">&#9673;</span><span class="txt" id="jlive"></span>
           <span class="a ${r.tier}" id="narrAction">${r.action}</span></div>
       </div>
+    </div>
+
+    <div class="card" style="padding:14px;margin-top:14px">
+      <h3>&#9635; Money-mule network &mdash; who is holding the stolen money</h3>
+      <div class="cap">victim &rarr; layered through mule accounts &rarr; cash-out. Red = holding cash now (your freeze targets). Hover any node for account, area &amp; PIN.</div>
+      <div id="muleBox">${muleGraphSVG(p._trail)}</div>
     </div>
 
     <div class="cols2">
@@ -790,16 +1299,17 @@ function renderBriefing(p, clockHTML, speakNow){
       </div>
     </details>`;
   const hl=(loc.cells&&loc.cells[0]?loc.cells[0].cell:null);
-  REPLAYING=false; FRAMED=false;
+  REPLAYING=false; FRAMED=false; CINE_BEAT=-1; LAST_TRAIL_SIG=(p._trail?(p._trail.nodes.length+'/'+p._trail.edges.length):null); exitCinema();
   try{ setupMap(); }catch(e){}
   try{ renderMap(hl, FOCUSON?CURDIST:null); }catch(e){}
-  try{ if(MAP){ drawMesh(loc); if(p._trail) drawFlow(p._trail); } }catch(e){}   // mesh + flow always drawn (isolated)
+  try{ if(MAP){ drawMesh(loc); if(p._trail) drawFlow(p._trail, loc); } }catch(e){}   // mesh + flow always drawn (isolated)
   LASTHL=hl;
   updateNarr(p);
   typeInto($('jtext'), b.narr);
   if(speakNow) playBrief(p.ack_no, b.narr+' Priority action: '+b.steps[0]);
-  if(!p._trail) jget(`/trail/${p.ack_no}`).then(tr=>{p._trail=tr; drawFlow(tr);
+  if(!p._trail) jget(`/trail/${p.ack_no}`).then(tr=>{p._trail=tr; drawFlow(tr, loc);
     const el=$('trailBox');if(el)el.innerHTML=trailSVG(tr);
+    const mb=$('muleBox');if(mb)mb.innerHTML=muleGraphSVG(tr);
     const w=$('jwhy');if(w)w.innerHTML=evidenceHTML(p, tr);});
 }
 
@@ -824,23 +1334,31 @@ function updateBriefing(p, clk){
   if($('chanBox')) $('chanBox').innerHTML=chanRowsHTML(chans);
   set('kvTarget', p.account_id); set('kvTaint', money(r.tainted_amount)); set('kvStation', r.target_station||'--');
   if(p._trail && $('trailBox')) $('trailBox').innerHTML=trailSVG(p._trail);
+  if(p._trail && $('muleBox')) $('muleBox').innerHTML=muleGraphSVG(p._trail);
   if($('jwhy')) $('jwhy').innerHTML=evidenceHTML(p, p._trail);
   if($('jsteps')) $('jsteps').innerHTML=stepsHTML(buildBrief(p));   // actions update live
   CURDIST=districtOf(loc);
   updateNarr(p);                                                    // live narration + action badge
+  const ctc=$('cineTC'); if(ctc&&clk) ctc.textContent='T '+clk;     // cinematic timecode (money's real clock)
   const hl=(loc.cells&&loc.cells[0]?loc.cells[0].cell:null);
   try{
     if(MAP){
-      if(!FRAMED){ drawMesh(loc); frameCase(p._trail, loc); FRAMED=true; }  // ctOS mesh + frame, once
-      drawFlow(p._trail);                                            // grow the flow on the map (on top of the mesh)
-      if(hl!==LASTHL){ lockReticleOnly(hl); LASTHL=hl; } }           // move the reticle, keep the frame
+      if(!FRAMED){ drawMesh(loc); FRAMED=true; if(!cinemaOn()) frameCase(p._trail, loc); }
+      const sig=p._trail?(p._trail.nodes.length+'/'+p._trail.edges.length):'';
+      if(sig!==LAST_TRAIL_SIG){ drawFlow(p._trail, loc); LAST_TRAIL_SIG=sig; }  // only redraw when the trail grows (keeps the comet animation smooth)
+      if(cinemaOn()) cineDirect(REPLAY_T, p);                        // Nolan camera
+      if(hl!==LASTHL){ lockReticleOnly(hl); LASTHL=hl; } }
     else { if(hl!==LASTHL){ renderMapSVG(hl, FOCUSON?CURDIST:null); LASTHL=hl; } }
   }catch(e){}
 }
 
-async function selectCase(ack){SEL=ack;REPLAY_T=0;loadQueue();
+async function selectCase(ack){
+  VIEW='case'; if(OMAP){try{OMAP.remove();}catch(e){}OMAP=null;OHEAT=null;}   // leave the overview
+  SEL=ack;REPLAY_T=0;loadQueue(); setNav();
   const q=await jget(`/queue?limit=60`);SELMETA=q.find(x=>x.ack_no===ack);
-  const p=await jget(`/predict/${ack}`);renderBriefing(p, null, true);}
+  const p=await jget(`/predict/${ack}`);renderBriefing(p, null, true);
+  // (no auto-popup on click -- opening a case just shows it; urgent alerts are opt-in)
+}
 
 async function dispatch(ack,acc){const r=await jpost(`/alerts/dispatch?ack_no=${ack}&account=${acc}`);
   const f=$('flash');if(!f)return;
@@ -856,11 +1374,12 @@ async function loadAlerts(){const a=await jget('/alerts');
 
 // ---------- replay ----------
 function togglePlay(){const b=$('playbtn');
-  if(PLAY){clearInterval(PLAY);PLAY=null;if(b)b.innerHTML='&#9654; Replay';return;}
+  if(PLAY){clearInterval(PLAY);PLAY=null;if(b)b.innerHTML='&#9654; Replay simulation';REPLAYING=false;exitCinema();return;}  // pause -> lift cinema
   if(!SEL)return;if(b)b.innerHTML='&#10073;&#10073; Pause';
-  REPLAYING=true; FRAMED=false; REPLAY_T=0;   // reset so the sim starts clean and re-frames the case
-  PLAY=setInterval(()=>{REPLAY_T+=3;if(REPLAY_T>120){togglePlay();return;}
-    const sc=$('scrub');if(sc)sc.value=REPLAY_T;scrubTo(REPLAY_T);},480);}
+  REPLAYING=true; FRAMED=false; REPLAY_T=0; CINE_BEAT=-1; LAST_TRAIL_SIG=null;
+  enterCinema(); scrubTo(0);                    // roll film + show the establishing frame at once
+  PLAY=setInterval(()=>{REPLAY_T+=3; if(REPLAY_T>120){ endReplay(); return; }
+    const sc=$('scrub');if(sc)sc.value=REPLAY_T; scrubTo(REPLAY_T);},480);}
 async function scrubTo(t){REPLAY_T=+t;if(!SEL)return;
   REPLAYING=true;
   const st=await jget(`/replay/state?case=${SEL}&t=${t}`);
@@ -868,8 +1387,17 @@ async function scrubTo(t){REPLAY_T=+t;if(!SEL)return;
   updateBriefing(p, st.as_of.slice(11,19));}
 
 // ---------- init ----------
-(async function(){populateVoices();await loadQueue();await loadHotspots();
-  const it=await jget('/queue?limit=1');if(it.length)selectCase(it[0].ack_no);})();
+(async function(){
+  // restore saved UI prefs (sidebar state + alert toggle)
+  try{ if(localStorage.getItem('railMin')==='1'){ document.querySelector('.app').classList.add('railmin');
+    const ro=$('railOpen'); if(ro)ro.style.display='block'; } }catch(e){}
+  const b=$('alertToggle'); if(b){b.className='atgl'+(ALERTS_ON?'':' off');
+    b.innerHTML=(ALERTS_ON?'&#128276; alerts on':'&#128277; alerts off');}
+  populateVoices();await loadQueue();await loadHotspots();
+  showOverview();                        // land on the command centre, not a single case
+  // no pop-up on load. Only genuinely NEW red cases (via the poll) alert, throttled.
+  POLL=setInterval(async()=>{await loadQueue();if(VIEW==='overview')renderOverview();checkNewUrgent();}, 30000);
+  document.addEventListener('keydown',e=>{if(e.key==='Escape')dismissUrgent();});})();
 </script>
 </body>
 </html>

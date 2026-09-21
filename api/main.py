@@ -334,6 +334,7 @@ def get_hotspots(from_: str | None = Query(None, alias="from"),
             c["risk"] = round(c["risk"], 1)
     markers = [{"atm_id": a, "lat": ctx._atm_lat[a], "lon": ctx._atm_lon[a],
                 "operator": ctx._atm_operator[a], "district": ctx._atm_district[a],
+                "pin": str(ctx._atm_pin[a]),
                 "fraud_rate": round(ctx.atm_fraud_rate(a), 3)}
                for a in ctx.atms["atm_id"]]
     result = {"cells": cells[:60], "atm_markers": markers,
