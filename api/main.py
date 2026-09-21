@@ -476,6 +476,188 @@ def replay_state(case: str, t: float = 0.0):
             "prediction": pred.model_dump(mode="json")}
 
 
+# --------------------------------------------------------------------------
+# TICKET CENTRE -- SQLite-backed incident lifecycle. Additive: nothing above
+# depends on it, the forecast demo runs with or without it. Stores status,
+# assignment, analyst notes, resolution + outcome, and an append-only audit
+# timeline. The RESOLVED outcome (frozen / recovered / cashed-out) is also the
+# ground-truth feedback loop the models can later be retrained on.
+# --------------------------------------------------------------------------
+import sqlite3
+from fastapi import Body
+from fastapi.responses import Response
+
+TICKET_DB = os.path.join(config.DATA_DIR, "tickets.db")
+_TSTATUS = ["NEW", "ASSIGNED", "INVESTIGATING", "FREEZE_SENT", "RESOLVED", "CLOSED"]
+_TOUTCOME = ["FROZEN", "RECOVERED", "CASHED_OUT", "FALSE_POSITIVE"]
+_OPEN = ("NEW", "ASSIGNED", "INVESTIGATING", "FREEZE_SENT")
+
+
+def _priority(tier: str) -> str:
+    return {"RED": "P1", "AMBER": "P2"}.get(tier, "P3")
+
+
+def _now() -> str:
+    return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+
+def _tdb():
+    con = sqlite3.connect(TICKET_DB, timeout=8)
+    con.row_factory = sqlite3.Row
+    con.execute("PRAGMA journal_mode=WAL")      # concurrent readers + one writer
+    con.execute("PRAGMA busy_timeout=8000")     # wait instead of erroring on a lock
+    con.execute("""CREATE TABLE IF NOT EXISTS tickets(
+        ack_no TEXT PRIMARY KEY, status TEXT DEFAULT 'NEW', assignee TEXT,
+        priority TEXT, tier TEXT, fraud_category TEXT, disputed_amount REAL,
+        outcome TEXT, recovered_amount REAL DEFAULT 0, created TEXT, updated TEXT)""")
+    con.execute("""CREATE TABLE IF NOT EXISTS ticket_events(
+        id INTEGER PRIMARY KEY AUTOINCREMENT, ack_no TEXT, ts TEXT,
+        actor TEXT, kind TEXT, detail TEXT)""")
+    return con
+
+
+def _log(con, ack, kind, detail, actor="system"):
+    con.execute("INSERT INTO ticket_events(ack_no,ts,actor,kind,detail) VALUES(?,?,?,?,?)",
+                (ack, _now(), actor, kind, detail))
+
+
+def _seed_tickets(con):
+    """One ticket per queued case, created once (race-safe via INSERT OR IGNORE).
+    Analyst-owned fields are never touched afterwards."""
+    if STATE.get("tickets_seeded"):
+        return
+    for q in _build_queue():
+        cur = con.execute(
+            """INSERT OR IGNORE INTO tickets(ack_no,status,priority,tier,fraud_category,disputed_amount,created,updated)
+               VALUES(?,?,?,?,?,?,?,?)""",
+            (q.ack_no, "NEW", _priority(q.tier), q.tier, q.fraud_category, q.disputed_amount, _now(), _now()))
+        if cur.rowcount:
+            _log(con, q.ack_no, "created", f"Ticket opened at {_priority(q.tier)} ({q.tier})")
+    con.commit()
+    STATE["tickets_seeded"] = True
+
+
+def _fetch_ticket(con, ack_no):
+    r = con.execute("SELECT * FROM tickets WHERE ack_no=?", (ack_no,)).fetchone()
+    if not r:
+        return None
+    ev = [dict(e) for e in con.execute(
+        "SELECT * FROM ticket_events WHERE ack_no=? ORDER BY id DESC", (ack_no,))]
+    d = dict(r)
+    d["title"] = f"{d['fraud_category']} — {d['ack_no']}"
+    d["timeline"] = ev
+    return d
+
+
+@app.get("/tickets/summary")
+def ticket_summary():
+    con = _tdb(); _seed_tickets(con)
+    rows = [dict(r) for r in con.execute("SELECT * FROM tickets")]; con.close()
+    return {"total": len(rows),
+            "open": sum(1 for r in rows if r["status"] in _OPEN),
+            "p1_open": sum(1 for r in rows if r["priority"] == "P1" and r["status"] in _OPEN),
+            "assigned": sum(1 for r in rows if r["assignee"]),
+            "resolved": sum(1 for r in rows if r["status"] in ("RESOLVED", "CLOSED")),
+            "recovered": round(sum((r["recovered_amount"] or 0) for r in rows), 2)}
+
+
+@app.get("/tickets.csv")
+def tickets_csv():
+    con = _tdb(); _seed_tickets(con)
+    rows = [dict(r) for r in con.execute("SELECT * FROM tickets")]; con.close()
+    cols = ["ack_no", "priority", "tier", "fraud_category", "status", "assignee",
+            "outcome", "recovered_amount", "disputed_amount", "created", "updated"]
+    lines = [",".join(cols)]
+    for r in rows:
+        lines.append(",".join(str(r.get(c, "") if r.get(c) is not None else "") for c in cols))
+    return Response("\n".join(lines), media_type="text/csv",
+                    headers={"Content-Disposition": "attachment; filename=incidents.csv"})
+
+
+@app.get("/tickets")
+def list_tickets(status: str | None = None, assignee: str | None = None, q: str | None = None):
+    con = _tdb(); _seed_tickets(con)
+    rows = [_fetch_ticket(con, r["ack_no"]) for r in con.execute("SELECT ack_no FROM tickets")]
+    con.close()
+    if status:
+        rows = [r for r in rows if r["status"] == status]
+    if assignee:
+        rows = [r for r in rows if (r["assignee"] or "") == assignee]
+    if q:
+        ql = q.lower()
+        rows = [r for r in rows if ql in (r["ack_no"] + " " + (r["fraud_category"] or "") + " " + (r["assignee"] or "")).lower()]
+    order = {"P1": 0, "P2": 1, "P3": 2}
+    rows.sort(key=lambda r: (r["status"] in ("RESOLVED", "CLOSED"),
+                             order.get(r["priority"], 9), -(r["disputed_amount"] or 0)))
+    return rows
+
+
+@app.get("/tickets/{ack_no}")
+def get_ticket(ack_no: str):
+    con = _tdb(); _seed_tickets(con)
+    d = _fetch_ticket(con, ack_no); con.close()
+    if not d:
+        raise HTTPException(status_code=404, detail=f"no ticket {ack_no}")
+    return d
+
+
+@app.patch("/tickets/{ack_no}")
+def update_ticket(ack_no: str, status: str | None = None,
+                  assignee: str | None = None, actor: str = "analyst"):
+    if status and status not in _TSTATUS:
+        raise HTTPException(status_code=400, detail=f"bad status; use {_TSTATUS}")
+    con = _tdb(); _seed_tickets(con)
+    r = con.execute("SELECT * FROM tickets WHERE ack_no=?", (ack_no,)).fetchone()
+    if not r:
+        con.close(); raise HTTPException(status_code=404, detail="no ticket")
+    if status and status != r["status"]:
+        con.execute("UPDATE tickets SET status=?,updated=? WHERE ack_no=?", (status, _now(), ack_no))
+        _log(con, ack_no, "status", f"{r['status']} → {status}", actor)
+    if assignee is not None and assignee != (r["assignee"] or ""):
+        con.execute("""UPDATE tickets SET assignee=?, updated=?,
+                       status=CASE WHEN status='NEW' THEN 'ASSIGNED' ELSE status END
+                       WHERE ack_no=?""", (assignee or None, _now(), ack_no))
+        _log(con, ack_no, "assign", f"Assigned to {assignee or 'Unassigned'}", actor)
+    con.commit()
+    d = _fetch_ticket(con, ack_no); con.close()
+    return d
+
+
+@app.post("/tickets/{ack_no}/note")
+def add_note(ack_no: str, text: str = Body(..., embed=True), actor: str = Body("analyst", embed=True)):
+    con = _tdb(); _seed_tickets(con)
+    if not con.execute("SELECT 1 FROM tickets WHERE ack_no=?", (ack_no,)).fetchone():
+        con.close(); raise HTTPException(status_code=404, detail="no ticket")
+    _log(con, ack_no, "note", text, actor)
+    con.execute("""UPDATE tickets SET updated=?,
+                   status=CASE WHEN status='NEW' THEN 'INVESTIGATING' ELSE status END
+                   WHERE ack_no=?""", (_now(), ack_no))
+    con.commit()
+    d = _fetch_ticket(con, ack_no); con.close()
+    return d
+
+
+@app.post("/tickets/{ack_no}/resolve")
+def resolve_ticket(ack_no: str, outcome: str = Body(..., embed=True),
+                   recovered_amount: float = Body(0.0, embed=True),
+                   note: str | None = Body(None, embed=True), actor: str = Body("analyst", embed=True)):
+    if outcome not in _TOUTCOME:
+        raise HTTPException(status_code=400, detail=f"bad outcome; use {_TOUTCOME}")
+    con = _tdb(); _seed_tickets(con)
+    if not con.execute("SELECT 1 FROM tickets WHERE ack_no=?", (ack_no,)).fetchone():
+        con.close(); raise HTTPException(status_code=404, detail="no ticket")
+    final = "CLOSED" if outcome in ("CASHED_OUT", "FALSE_POSITIVE") else "RESOLVED"
+    con.execute("UPDATE tickets SET status=?,outcome=?,recovered_amount=?,updated=? WHERE ack_no=?",
+                (final, outcome, recovered_amount, _now(), ack_no))
+    detail = f"{final}: {outcome}" + (f" · ₹{recovered_amount:,.0f} recovered" if recovered_amount else "")
+    _log(con, ack_no, "resolve", detail, actor)
+    if note:
+        _log(con, ack_no, "note", note, actor)
+    con.commit()
+    d = _fetch_ticket(con, ack_no); con.close()
+    return d
+
+
 # serve the officer console at / (mount last so API routes win)
 _web = os.path.join(config.BASE_DIR, "web")
 if os.path.isdir(_web):

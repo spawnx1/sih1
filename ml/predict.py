@@ -137,9 +137,19 @@ def predict_location(account: str, as_of, ctx: FeatureContext, models: dict,
                             district=cell_meta[c][2], p=round(v, 4),
                             n_terminals=sum(1 for t in terminals if t.cell == c))
              for c, v in sorted(cell_p.items(), key=lambda kv: kv[1], reverse=True)]
+    def _dcentroid(d):
+        # prefer the config centroid; if the data has a district not in config
+        # (e.g. stale data after a geography change), fall back to the mean of
+        # that district's terminals so we degrade gracefully instead of 500-ing.
+        if d in config.DISTRICT_CENTROIDS:
+            return config.DISTRICT_CENTROIDS[d]
+        pts = [(t.lat, t.lon) for t in terminals if t.district == d]
+        if pts:
+            return (sum(x for x, _ in pts) / len(pts), sum(y for _, y in pts) / len(pts))
+        return (0.0, 0.0)
     districts = [DistrictPrediction(district=d,
-                                    lat=config.DISTRICT_CENTROIDS[d][0],
-                                    lon=config.DISTRICT_CENTROIDS[d][1], p=round(v, 4))
+                                    lat=_dcentroid(d)[0], lon=_dcentroid(d)[1],
+                                    p=round(v, 4))
                  for d, v in sorted(dist_p.items(), key=lambda kv: kv[1], reverse=True)]
 
     max_pt = terminals[0].p

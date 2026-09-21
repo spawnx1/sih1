@@ -371,6 +371,54 @@
   .trustbadge{display:inline-flex;align-items:center;gap:7px;font-family:var(--mono);font-size:11px;color:var(--green);
     background:rgba(55,230,166,.08);border:1px solid rgba(55,230,166,.3);border-radius:999px;padding:5px 12px;margin-left:6px}
 
+  /* ---- CASE CENTRE (ticket queue + lifecycle) ---- */
+  .tkwrap{display:flex;flex-direction:column;gap:14px}
+  .tktiles{display:grid;grid-template-columns:repeat(6,1fr);gap:12px}
+  @media(max-width:1100px){.tktiles{grid-template-columns:repeat(3,1fr)}}
+  .tktile{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:13px 14px;position:relative;overflow:hidden}
+  .tktile .k{font-family:var(--mono);font-size:9px;letter-spacing:1.3px;text-transform:uppercase;color:var(--faint)}
+  .tktile .v{font-family:var(--mono);font-size:24px;font-weight:900;margin-top:6px;line-height:1}
+  .tktoolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .tksearch{flex:1;min-width:220px;background:var(--solid);border:1px solid var(--line2);border-radius:9px;
+    padding:10px 13px;color:var(--ink);font-family:var(--mono);font-size:12px}
+  .tktable{width:100%;border-collapse:collapse;font-size:12.5px}
+  .tktable th{text-align:left;font-family:var(--mono);font-size:9.5px;letter-spacing:1.3px;text-transform:uppercase;
+    color:var(--faint);padding:10px 12px;border-bottom:1px solid var(--line2);position:sticky;top:0;background:var(--solid);z-index:1}
+  .tktable td{padding:11px 12px;border-bottom:1px solid rgba(84,150,180,.1);vertical-align:middle}
+  .tktable tr:hover td{background:rgba(53,224,230,.04)}
+  .tkid{font-family:var(--mono);color:var(--cyan);font-weight:650;font-size:11.5px}
+  .pri{font-family:var(--mono);font-weight:800;font-size:10px;padding:3px 8px;border-radius:5px;letter-spacing:.5px}
+  .pri.P1{background:rgba(255,90,110,.16);color:var(--red);box-shadow:0 0 0 1px rgba(255,90,110,.5) inset}
+  .pri.P2{background:rgba(255,190,77,.14);color:var(--amber);box-shadow:0 0 0 1px rgba(255,190,77,.5) inset}
+  .pri.P3{background:rgba(91,109,128,.18);color:#9fb0c2}
+  .st{font-family:var(--mono);font-weight:800;font-size:9.5px;padding:4px 9px;border-radius:999px;letter-spacing:.8px;white-space:nowrap}
+  .st.NEW{background:rgba(53,224,230,.14);color:var(--cyan)}
+  .st.ASSIGNED{background:rgba(138,123,255,.16);color:var(--violet)}
+  .st.INVESTIGATING{background:rgba(255,190,77,.14);color:var(--amber)}
+  .st.FREEZE_SENT{background:rgba(255,90,110,.16);color:var(--red)}
+  .st.RESOLVED{background:rgba(55,230,166,.14);color:var(--green)}
+  .st.CLOSED{background:rgba(91,109,128,.2);color:#9fb0c2}
+  .tkasg{color:var(--dim)} .tkasg.none{color:var(--red)}
+  .btn.sm{padding:6px 11px;font-size:11px}
+  /* analyst controls + timeline on the case view */
+  .amgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  @media(max-width:900px){.amgrid{grid-template-columns:1fr}}
+  .amctl label{display:block;font-family:var(--mono);font-size:9.5px;letter-spacing:1.2px;text-transform:uppercase;color:var(--faint);margin:10px 0 5px}
+  .amctl select,.amctl input,.amctl textarea{width:100%;background:var(--solid);border:1px solid var(--line2);border-radius:8px;
+    padding:9px 11px;color:var(--ink);font-family:var(--mono);font-size:12px}
+  .amctl textarea{min-height:60px;resize:vertical;font-family:inherit}
+  .amrow{display:flex;gap:8px;margin-top:8px}
+  .tl{list-style:none;margin:0;padding:0;max-height:260px;overflow:auto}
+  .tl li{position:relative;padding:0 0 14px 20px;border-left:2px solid var(--line2);margin-left:4px}
+  .tl li:last-child{border-left-color:transparent}
+  .tl li::before{content:"";position:absolute;left:-6px;top:2px;width:10px;height:10px;border-radius:50%;background:var(--cyan);box-shadow:0 0 8px var(--cyan)}
+  .tl li.resolve::before{background:var(--green);box-shadow:0 0 8px var(--green)}
+  .tl li.status::before{background:var(--amber);box-shadow:0 0 8px var(--amber)}
+  .tl li.assign::before{background:var(--violet);box-shadow:0 0 8px var(--violet)}
+  .tl .tlk{font-family:var(--mono);font-size:9.5px;letter-spacing:1px;text-transform:uppercase;color:var(--faint)}
+  .tl .tld{font-size:12.5px;color:var(--ink);margin:2px 0}
+  .tl .tlm{font-family:var(--mono);font-size:10px;color:var(--faint)}
+
   /* ---- URGENT popup (auto for new RED cases + when opening an urgent case) ---- */
   .modal{position:fixed;inset:0;z-index:40;display:none;align-items:center;justify-content:center;
     background:rgba(2,4,8,.66);backdrop-filter:blur(5px)}
@@ -424,6 +472,7 @@
     <small>&nbsp;// SIH26184 &middot; I4C-MHA</small></div>
   <div style="display:flex;gap:8px;margin-left:8px">
     <span class="navbtn on" id="navOverview" onclick="showOverview()">&#9635;&nbsp; Command centre</span>
+    <span class="navbtn" id="navTickets" onclick="showTickets()">&#9776;&nbsp; Case centre</span>
     <span class="navbtn" id="navCase" onclick="SEL&&selectCase(SEL)">&#9673;&nbsp; Case view</span>
   </div>
   <div class="chips" id="chips"><span class="chip">initialising&hellip;</span></div>
@@ -456,6 +505,27 @@
   <div class="urgent" id="urgentBox"></div>
 </div>
 
+<div class="modal" id="resolveModal" onclick="if(event.target===this)closeResolve()">
+  <div class="urgent" style="background:linear-gradient(180deg,rgba(10,26,20,.97),rgba(8,16,13,.97));border-color:rgba(55,230,166,.5);box-shadow:0 0 0 1px rgba(55,230,166,.25),0 0 60px rgba(55,230,166,.35)">
+    <span class="ux" onclick="closeResolve()">CLOSE ✕</span>
+    <div class="utop"><div class="siren" style="background:rgba(55,230,166,.16);box-shadow:0 0 0 1px rgba(55,230,166,.5) inset,0 0 18px rgba(55,230,166,.4);color:var(--green);animation:none">&#10003;</div>
+      <h2 style="color:var(--green);text-shadow:0 0 14px rgba(55,230,166,.5)">RESOLVE INCIDENT</h2></div>
+    <div class="uline">Record the real outcome — this closes the ticket <b>and feeds the model's ground truth</b>.</div>
+    <div class="amctl">
+      <label>Recovered amount (₹) — for a freeze/recovery</label>
+      <input id="rvAmount" type="number" placeholder="0">
+      <label>Closing note (optional)</label>
+      <textarea id="rvNote" placeholder="How it resolved…"></textarea>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:16px">
+      <button class="btn sm" style="background:linear-gradient(180deg,#37e6a6,#1fbf87);color:#04231a" onclick="doResolve('FROZEN')">&#10052; Frozen in time</button>
+      <button class="btn sm" style="background:linear-gradient(180deg,#37e6a6,#1fbf87);color:#04231a" onclick="doResolve('RECOVERED')">&#8377; Money recovered</button>
+      <button class="ubtn" onclick="doResolve('CASHED_OUT')">Cashed out (missed)</button>
+      <button class="ubtn" onclick="doResolve('FALSE_POSITIVE')">False positive</button>
+    </div>
+  </div>
+</div>
+
 <script>
 const API = location.protocol==='file:' ? 'http://127.0.0.1:8000' : '';
 let HOT=null, PROJ=null, SEL=null, PLAY=null, REPLAY_T=0, LASTHL=null, SELMETA=null;
@@ -473,6 +543,8 @@ const moneyC=v=>v>=1e7?'₹'+(v/1e7).toFixed(2)+' Cr':v>=1e5?'₹'+(v/1e5).toFix
 const pct=v=>Math.round(v*100)+'%';
 async function jget(u){return (await fetch(API+u)).json();}
 async function jpost(u){return (await fetch(API+u,{method:'POST'})).json();}
+async function jpatch(u){return (await fetch(API+u,{method:'PATCH'})).json();}
+async function jpostB(u,obj){return (await fetch(API+u,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(obj)})).json();}
 function tierColor(t){return t==='RED'?'var(--red)':t==='AMBER'?'var(--amber)':'var(--faint)';}
 function riskColor(t){t=Math.max(0,Math.min(1,t||0));
   const g=[55,230,166],y=[255,190,77],r=[255,90,110];let a,b,f;
@@ -561,8 +633,9 @@ function toggleRail(){ const app=document.querySelector('.app');
 }
 
 // ================= COMMAND-CENTRE OVERVIEW (landing dashboard) =================
-function setNav(){ const o=$('navOverview'),c=$('navCase');
+function setNav(){ const o=$('navOverview'),t=$('navTickets'),c=$('navCase');
   if(o)o.className='navbtn'+(VIEW==='overview'?' on':'');
+  if(t)t.className='navbtn'+(VIEW==='tickets'?' on':'');
   if(c)c.className='navbtn'+(VIEW==='case'?' on':''); }
 function showOverview(){
   VIEW='overview';
@@ -650,6 +723,123 @@ function buildOverviewMap(){
     if(ll.length)OMAP.fitBounds(L.latLngBounds(ll).pad(0.04));
     setTimeout(()=>{try{OMAP.invalidateSize();}catch(e){}},160);
   }catch(e){OMAP=null;}
+}
+
+// ================= CASE CENTRE (ticket queue + lifecycle) =================
+const ANALYSTS=['Insp. Sharma','SI Kulkarni','Cst. Patil','ASI Deshmukh','Insp. Rao'];
+let TICKETS=[];
+function stBadge(s){return `<span class="st ${s}">${(s||'').replace('_',' ')}</span>`;}
+function priBadge(p){return `<span class="pri ${p}">${p}</span>`;}
+async function showTickets(){
+  VIEW='tickets';
+  if(OMAP){try{OMAP.remove();}catch(e){}OMAP=null;OHEAT=null;}
+  if(MAP){try{MAP.remove();}catch(e){}MAP=null;FLOWL=HEATL=MESHL=ATML=MKL=RETL=RSVG=null;}
+  setNav(); await renderTickets();
+}
+async function renderTickets(){
+  const [sum, list]=await Promise.all([jget('/tickets/summary'), jget('/tickets')]);
+  TICKETS=list;
+  const tile=(k,v,c)=>`<div class="tktile"><div class="k">${k}</div><div class="v" style="color:${c||'var(--ink)'}">${v}</div></div>`;
+  $('stage').innerHTML=`
+    <div class="ovhead"><h1 style="font-size:24px">CASE CENTRE</h1>
+      <span class="sub">incident tickets &middot; assign, investigate, freeze, resolve &mdash; every action logged</span>
+      <span class="live"><span class="d"></span>LIVE TICKET DATA</span></div>
+    <div class="tkwrap">
+      <div class="tktiles">
+        ${tile('Total incidents', sum.total,'var(--cyan)')}
+        ${tile('Open', sum.open,'var(--amber)')}
+        ${tile('P1 open', sum.p1_open,'var(--red)')}
+        ${tile('Assigned', sum.assigned,'var(--violet)')}
+        ${tile('Resolved', sum.resolved,'var(--green)')}
+        ${tile('₹ recovered', moneyC(sum.recovered||0),'var(--green)')}
+      </div>
+      <div class="card" style="padding:14px">
+        <div class="tktoolbar" style="margin-bottom:12px">
+          <input class="tksearch" id="tkSearch" placeholder="Search incident id, type, analyst, status…" oninput="filterTickets()">
+          <a class="btn ghost sm" href="${API}/tickets.csv" download>&#8681; Export CSV</a>
+        </div>
+        <div style="overflow:auto;max-height:60vh">
+          <table class="tktable"><thead><tr>
+            <th>Incident ID</th><th>Alert</th><th>Priority</th><th>Status</th><th>Assigned analyst</th><th>Outcome</th><th>₹ at risk</th><th>Action</th>
+          </tr></thead><tbody id="tkRows"></tbody></table>
+        </div>
+      </div>
+    </div>`;
+  drawTicketRows(TICKETS);
+}
+function drawTicketRows(rows){
+  const tb=$('tkRows'); if(!tb)return;
+  tb.innerHTML=rows.map(t=>`<tr>
+    <td><span class="tkid">INC-${t.ack_no.slice(0,12)}</span></td>
+    <td>${t.fraud_category||'—'}</td>
+    <td>${priBadge(t.priority)}</td>
+    <td>${stBadge(t.status)}</td>
+    <td class="tkasg ${t.assignee?'':'none'}">${t.assignee?('&#128100; '+t.assignee):'&#9888; Unassigned'}</td>
+    <td>${t.outcome?('<span class="mono" style="color:var(--dim)">'+t.outcome.replace('_',' ')+'</span>'):'<span class="mono" style="color:var(--faint)">—</span>'}</td>
+    <td class="mono">${money(t.disputed_amount||0)}</td>
+    <td><button class="btn sm" onclick="selectCase('${t.ack_no}')">&#128269; Investigate</button></td>
+  </tr>`).join('')||'<tr><td colspan="8" class="cap" style="padding:24px;text-align:center">No incidents match.</td></tr>';
+}
+function filterTickets(){const q=($('tkSearch').value||'').toLowerCase();
+  drawTicketRows(TICKETS.filter(t=>!q||((t.ack_no+' '+(t.fraud_category||'')+' '+(t.assignee||'')+' '+t.status+' '+t.priority).toLowerCase().includes(q))));}
+
+// ---- per-case ticket lifecycle (on the case view) ----
+let CURTICKET=null;
+async function loadTicket(ack){
+  try{ const t=await jget('/tickets/'+ack); CURTICKET=t;
+    const set=(id,html)=>{const e=$(id);if(e)e.innerHTML=html;};
+    set('tkPriBadge', priBadge(t.priority)); set('tkStatusBadge', stBadge(t.status));
+    const ab=$('tkAsgBadge'); if(ab)ab.textContent=t.assignee?('· '+t.assignee):'· Unassigned';
+    const sel=$('tkStatus'); if(sel)sel.value=t.status;
+    const asg=$('tkAssignee'); if(asg)asg.value=t.assignee||'Unassigned';
+    renderTimeline(t.timeline||[]);
+  }catch(e){}
+}
+function renderTimeline(ev){ const el=$('tkTimeline'); if(!el)return;
+  el.innerHTML = ev.length ? ev.map(x=>`<li class="${x.kind}"><div class="tlk">${x.kind}</div>
+    <div class="tld">${x.detail}</div><div class="tlm">${x.actor} &middot; ${x.ts}</div></li>`).join('')
+    : '<li class="tlm">No activity yet.</li>'; }
+async function assignTicket(){ if(!SEL)return; const v=$('tkAssignee').value, a=v==='Unassigned'?'':v;
+  await jpatch(`/tickets/${SEL}?assignee=${encodeURIComponent(a)}`); loadTicket(SEL); loadQueue(); }
+async function setTicketStatus(){ if(!SEL)return;
+  await jpatch(`/tickets/${SEL}?status=${$('tkStatus').value}`); loadTicket(SEL); }
+async function addTicketNote(){ if(!SEL)return; const t=($('tkNote').value||'').trim(); if(!t)return;
+  await jpostB(`/tickets/${SEL}/note`,{text:t,actor:($('tkAssignee')?$('tkAssignee').value:'analyst')});
+  $('tkNote').value=''; loadTicket(SEL); }
+function openResolve(){ if(!SEL)return; const r=$('rvAmount'); if(r&&CURTICKET)r.value=Math.round(CURTICKET.disputed_amount||0);
+  $('resolveModal').classList.add('on'); }
+function closeResolve(){ $('resolveModal').classList.remove('on'); }
+async function doResolve(outcome){ if(!SEL)return;
+  const amt = outcome==='RECOVERED' ? (parseFloat(($('rvAmount')||{}).value)||0)
+            : outcome==='FROZEN' ? (CURTICKET?CURTICKET.disputed_amount:0) : 0;
+  const note=(($('rvNote')||{}).value||'').trim()||null;
+  await jpostB(`/tickets/${SEL}/resolve`,{outcome, recovered_amount:amt, note, actor:($('tkAssignee')?$('tkAssignee').value:'analyst')});
+  closeResolve(); loadTicket(SEL); }
+function printReport(){
+  const t=CURTICKET||{ack_no:SEL};
+  const rows=(t.timeline||[]).slice().reverse().map(x=>`<tr><td>${x.ts}</td><td>${x.kind}</td><td>${x.detail}</td><td>${x.actor}</td></tr>`).join('');
+  const inr=v=>'₹'+Math.round(v||0).toLocaleString('en-IN');
+  const html=`<!doctype html><html><head><meta charset="utf-8"><title>Incident INC-${(t.ack_no||'').slice(0,12)}</title>
+    <style>body{font-family:system-ui,Segoe UI,Arial;margin:40px;color:#111}
+    .k{color:#666;font-size:11px;text-transform:uppercase;letter-spacing:1.5px}
+    h1{margin:2px 0 2px;font-size:26px} .g{display:grid;grid-template-columns:1fr 1fr;gap:8px 24px;margin:18px 0;font-size:14px}
+    table{border-collapse:collapse;width:100%;margin-top:8px;font-size:12.5px}
+    td,th{border:1px solid #ccc;padding:6px 9px;text-align:left} th{background:#f2f4f7}
+    .ft{margin-top:24px;color:#999;font-size:11px;border-top:1px solid #ddd;padding-top:8px}</style></head><body>
+    <div class="k">I4C / MHA &middot; Cyber-fraud Cash-out Forecast &mdash; Incident Report</div>
+    <h1>INC-${(t.ack_no||'').slice(0,12)}</h1>
+    <div class="g">
+      <div><b>Priority:</b> ${t.priority||'—'} (${t.tier||'—'})</div><div><b>Status:</b> ${(t.status||'—')}${t.outcome?(' &middot; '+t.outcome.replace('_',' ')):''}</div>
+      <div><b>Fraud type:</b> ${t.fraud_category||'—'}</div><div><b>Assigned officer:</b> ${t.assignee||'Unassigned'}</div>
+      <div><b>Amount at risk:</b> ${inr(t.disputed_amount)}</div><div><b>Recovered:</b> ${inr(t.recovered_amount)}</div>
+      <div><b>Opened:</b> ${t.created||'—'}</div><div><b>Last updated:</b> ${t.updated||'—'}</div>
+    </div>
+    <h3>Investigation timeline (audit log)</h3>
+    <table><thead><tr><th>Time</th><th>Action</th><th>Detail</th><th>By</th></tr></thead><tbody>${rows||'<tr><td colspan=4>No activity.</td></tr>'}</tbody></table>
+    <div class="ft">Generated ${new Date().toLocaleString()} &middot; SIH26184 Cash-out Forecast Console &middot; auto-generated from the incident audit trail.</div>
+    </body></html>`;
+  const w=window.open('','_blank'); if(!w){alert('Allow pop-ups to print the report.');return;}
+  w.document.write(html); w.document.close(); w.focus(); setTimeout(()=>{try{w.print();}catch(e){}},350);
 }
 
 // ---------- map projection (returns extents for scale) ----------
@@ -1235,6 +1425,34 @@ function renderBriefing(p, clockHTML, speakNow){
       <div id="muleBox">${muleGraphSVG(p._trail)}</div>
     </div>
 
+    <div class="card" style="padding:14px;margin-top:14px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;flex-wrap:wrap">
+        <h3 style="margin:0">&#9776; Case management</h3>
+        <span id="tkPriBadge"></span><span id="tkStatusBadge"></span>
+        <span id="tkAsgBadge" class="mono" style="color:var(--dim);font-size:11px"></span>
+        <button class="btn ghost sm" style="margin-left:auto" onclick="printReport()">&#128196; Incident report</button>
+      </div>
+      <div class="cap">assign an officer, log investigation notes, and resolve with the real outcome &mdash; every action is written to an audit timeline.</div>
+      <div class="amgrid" style="margin-top:12px">
+        <div class="amctl">
+          <label>Assign analyst</label>
+          <div class="amrow"><select id="tkAssignee">${['Unassigned',...ANALYSTS].map(a=>`<option>${a}</option>`).join('')}</select>
+            <button class="btn sm" onclick="assignTicket()">Assign</button></div>
+          <label>Incident status</label>
+          <div class="amrow"><select id="tkStatus">${['NEW','ASSIGNED','INVESTIGATING','FREEZE_SENT','RESOLVED','CLOSED'].map(s=>`<option value="${s}">${s.replace('_',' ')}</option>`).join('')}</select>
+            <button class="btn sm" onclick="setTicketStatus()">Update</button></div>
+          <label>Add investigation note</label>
+          <textarea id="tkNote" placeholder="Observations, containment decision, evidence or next steps…"></textarea>
+          <div class="amrow"><button class="btn ghost sm" onclick="addTicketNote()">Add note</button>
+            <button class="btn sm" style="background:linear-gradient(180deg,#37e6a6,#1fbf87);color:#04231a;margin-left:auto" onclick="openResolve()">&#10003; Resolve incident</button></div>
+        </div>
+        <div class="amctl">
+          <label>Investigation timeline</label>
+          <ul class="tl" id="tkTimeline"><li class="tlm">loading…</li></ul>
+        </div>
+      </div>
+    </div>
+
     <div class="cols2">
       <div>
         <div class="action ${r.tier}" id="actionBox">
@@ -1357,10 +1575,12 @@ async function selectCase(ack){
   SEL=ack;REPLAY_T=0;loadQueue(); setNav();
   const q=await jget(`/queue?limit=60`);SELMETA=q.find(x=>x.ack_no===ack);
   const p=await jget(`/predict/${ack}`);renderBriefing(p, null, true);
+  loadTicket(ack);   // hydrate the case-management panel + timeline
   // (no auto-popup on click -- opening a case just shows it; urgent alerts are opt-in)
 }
 
 async function dispatch(ack,acc){const r=await jpost(`/alerts/dispatch?ack_no=${ack}&account=${acc}`);
+  if(r.dispatched&&r.dispatched.length){ try{ jpatch(`/tickets/${ack}?status=FREEZE_SENT`).then(()=>loadTicket(ack)); }catch(e){} }
   const f=$('flash');if(!f)return;
   f.textContent=r.deduped?'Deduplicated (alert for this account fired < 15 min ago).'
     :(r.dispatched&&r.dispatched.length)?'Sent: '+r.dispatched.map(a=>a.channel+' → '+a.recipient).join(', ')
