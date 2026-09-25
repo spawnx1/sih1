@@ -35,7 +35,8 @@ DISTRICTS = ["DISTRICT_A", "DISTRICT_B", "DISTRICT_C", "DISTRICT_D"]
 # 12 synthetic ~5km cells, 3 per district
 CELLS = [f"CELL_{i:03d}" for i in range(1, 13)]
 CELL_DISTRICT = {c: DISTRICTS[i // 3] for i, c in enumerate(CELLS)}
-BASE_DAY = datetime(2026, 9, 22, 10, 0, 0)  # synthetic incident clock (IST)
+BASE_DAY = datetime(2026, 9, 22, 10, 0, 0)  # synthetic incident date (IST); hour varies per case
+UPI_CAP = 100000.0  # per-transaction UPI limit (Rs); larger UPI payments are split
 
 SCENARIOS = ("simple", "branching", "mule_chain", "complex", "cashout")
 
@@ -162,9 +163,13 @@ def generate_case(scenario: str = "cashout", seed: int | None = None,
             "_tainted": tainted,                  # kept out of model files (leak guard)
         })
 
-    amount0 = rng.choice([85000, 92000, 78000, 120000, 65000])
+    # ---- realistic synthetic amounts: victim losses are right-skewed (most a few
+    # tens of thousands, a long tail into lakhs); people often type round figures. ----
+    amount0 = min(max(rng.lognormvariate(10.9, 0.75), 8000.0), 450000.0)
+    amount0 = float(round(amount0 / 1000) * 1000) if rng.random() < 0.6 else float(round(amount0))
     # ---- money-conserving amounts: at a branch the balance is SPLIT (not copied);
-    # each hop skims a little. Process sources in flow order so inflows are known. ----
+    # each hop skims a little (the mule's commission). Process sources in flow order
+    # so inflows are known. Mules often forward rounded-down sums. ----
     out_by_src = {}
     for (s, d, hop) in edges:
         out_by_src.setdefault(s, []).append((s, d, hop))
@@ -179,31 +184,94 @@ def generate_case(scenario: str = "cashout", seed: int | None = None,
             parts = [rng.uniform(0.35, 0.65) for _ in outs]
             tot = sum(parts)
             fr = [p / tot for p in parts]
-        skim = rng.uniform(0.04, 0.11)
+        skim = 0.0 if s == 0 else rng.uniform(0.04, 0.11)   # the victim sends the full amount
         for (s, d, hop), f in zip(outs, fr):
             amt = avail * (1 - skim) * f
+            if s != 0 and rng.random() < 0.5:
+                amt = max(100.0, float(int(amt // 100) * 100))
             edge_amt[(s, d, hop)] = amt
             amt_at[d] = amt_at.get(d, 0.0) + amt
-    # emit transactions in chronological (hop) order, minutes apart
-    t = BASE_DAY + timedelta(minutes=rng.randint(1, 3))
-    last_ts = t
-    for (s, d, hop) in edges:
-        t = t + timedelta(minutes=rng.randint(2, 5))
-        ch = TRANSFER_CHANNELS[min(hop - 1, len(TRANSFER_CHANNELS) - 1)]
-        add_txn(_acc(s), _acc(d), edge_amt[(s, d, hop)], t, ch, hop, tainted=True)
-        last_ts = max(last_ts, t)
 
-    # benign decoy transactions among normals (same window/cells) -> noise
+    # ---- realistic timing: the incident starts at a daytime-weighted hour; each
+    # mule forwards after a short, skewed delay (mean ~8 min) once its funds have
+    # arrived; UPI/IMPS settle instantly, NEFT waits for a settlement batch. A UPI
+    # payment above the per-transaction cap is split into several smaller ones. ----
+    hour = rng.choices(range(7, 24), weights=[2, 3, 5, 6, 7, 7, 7, 6, 6, 6, 7, 8, 8, 7, 5, 3, 2])[0]
+    t0 = BASE_DAY.replace(hour=hour, minute=0) + timedelta(minutes=rng.uniform(0, 59))
+
+    def pick_channel(amt, is_seed):
+        if amt <= UPI_CAP:
+            return rng.choices(["UPI", "IMPS"], weights=[0.8, 0.2] if is_seed else [0.6, 0.4])[0]
+        return rng.choices(["UPI", "IMPS", "NEFT"], weights=[0.3, 0.55, 0.15])[0]
+
+    arrived = {0: t0}
+    last_ts = t0
+    for s in sorted(out_by_src):
+        t_src = arrived.get(s, t0)
+        if s == 0:
+            t = t_src
+        else:
+            t = t_src + timedelta(minutes=max(0.5, rng.gammavariate(1.9, 4.2)))
+        for (s_, d, hop) in out_by_src[s]:
+            amt = edge_amt[(s_, d, hop)]
+            ch = pick_channel(amt, s == 0)
+            settle = timedelta(minutes=rng.uniform(10, 30)) if ch == "NEFT" else timedelta(0)
+            if ch == "UPI" and amt > UPI_CAP:        # structuring under the UPI cap
+                k = int(amt // UPI_CAP) + 1
+                parts = [amt / k] * k
+            else:
+                parts = [amt]
+            tt = t
+            for part in parts:
+                add_txn(_acc(s_), _acc(d), part, tt + settle, ch, hop, tainted=True)
+                last_ts = max(last_ts, tt + settle)
+                tt = tt + timedelta(seconds=rng.uniform(20, 150))
+            arrived[d] = max(arrived.get(d, t0), tt + settle)
+            t = tt + timedelta(minutes=rng.uniform(0.5, 4))   # next branch a little later
+
+    # ---- legitimate background activity among normal accounts (same day) ----
+    # everyday UPI payments, bills/rent, and occasional larger transfers, spread
+    # over the hours before the incident; plus a few legitimate look-alike bursts
+    # (a large credit forwarded within minutes, e.g. salary -> rent + family).
+    def legit_amount():
+        r = rng.random()
+        if r < 0.60:
+            return max(20.0, round(rng.lognormvariate(5.9, 0.9)))        # ~Rs 350 shop / P2P
+        if r < 0.85:
+            return float(round(rng.lognormvariate(8.3, 0.7), -1))       # ~Rs 4k bills / rent
+        return float(round(rng.lognormvariate(9.6, 0.6), -2))           # ~Rs 15k transfers
+
+    day_lo = t0 - timedelta(hours=6)
     for _ in range(int(n_decoy * 1.4)):
         if len(decoy_ids) < 2:
             break
         a, b = rng.sample(decoy_ids, 2)
-        tt = BASE_DAY + timedelta(minutes=rng.randint(-40, 8))
-        add_txn(_acc(a), _acc(b), rng.uniform(500, 40000), tt,
-                rng.choice(TRANSFER_CHANNELS), hop=0, tainted=False)
+        tt = day_lo + timedelta(minutes=rng.uniform(0, 6 * 60 + 20))
+        amt = legit_amount()
+        ch = "UPI" if amt <= UPI_CAP and rng.random() < 0.85 else rng.choice(["IMPS", "NEFT"])
+        add_txn(_acc(a), _acc(b), amt, tt, ch, hop=0, tainted=False)
+    for a in rng.sample(decoy_ids, min(len(decoy_ids) // 10, max(0, len(decoy_ids) - 3))):
+        others = [x for x in decoy_ids if x != a]
+        src, *dsts = rng.sample(others, min(len(others), rng.randint(2, 4)))
+        credit = float(round(rng.lognormvariate(10.4, 0.4), -3))       # ~Rs 33k credit
+        tt = day_lo + timedelta(minutes=rng.uniform(0, 6 * 60))
+        add_txn(_acc(src), _acc(a), credit, tt, "NEFT", hop=0, tainted=False)
+        left = credit * rng.uniform(0.6, 0.95)
+        for d in dsts:
+            tt = tt + timedelta(minutes=rng.uniform(3, 30))
+            part = float(round(left / len(dsts), -2))
+            add_txn(_acc(a), _acc(d), part, tt, rng.choice(["UPI", "IMPS"]), hop=0, tainted=False)
+    # mules also look ordinary earlier in the day: a few small incoming credits
+    for i in sorted(intermediaries | set(holders)):
+        for _ in range(rng.randint(0, 3)):
+            if not decoy_ids:
+                break
+            tt = day_lo + timedelta(minutes=rng.uniform(0, 5 * 60))
+            add_txn(_acc(rng.choice(decoy_ids)), _acc(i), legit_amount(), tt, "UPI",
+                    hop=0, tainted=False)
 
-    # ---- as_of = the prediction moment (just after the money settles) ----
-    as_of = last_ts + timedelta(minutes=2)
+    # ---- as_of = the prediction moment (shortly after the money settles) ----
+    as_of = last_ts + timedelta(minutes=rng.uniform(1, 4))
 
     # keep only observed <= as_of for model input; sort chronologically
     obs_txns = sorted([x for x in txns if x["timestamp"] <= _iso(as_of)],
@@ -219,8 +287,12 @@ def generate_case(scenario: str = "cashout", seed: int | None = None,
         true_cell = rng.choice([c for c in CELLS if CELL_DISTRICT[c] == CELL_DISTRICT[home_cell]])
     else:
         true_cell = home_cell
-    cashout_amt = round(amt_at.get(true_holder, amount0) * rng.uniform(0.9, 0.99), 2)
-    cashout_time = as_of + timedelta(minutes=rng.randint(3, 12))  # positive lead time
+    # first-day ATM cash-out is limited by the card's daily withdrawal limit, so a
+    # large balance is only partly withdrawn (the rest stays or moves on later)
+    held = amt_at.get(true_holder, amount0) * rng.uniform(0.9, 0.99)
+    daily_limit = rng.choice([25000, 40000, 50000, 100000])
+    cashout_amt = float(round(min(held, daily_limit), -2))
+    cashout_time = as_of + timedelta(minutes=round(2 + rng.gammavariate(1.9, 4.2), 1))  # positive lead time
     cashout_node = f"CASHOUT_SYN_{rng.randint(1, 99):02d}"
 
     # candidate cash-out cells (space the WHERE prediction ranks over)

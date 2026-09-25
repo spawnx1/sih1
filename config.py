@@ -19,8 +19,8 @@ from datetime import datetime
 SEED = 26184  # SIH problem statement number, used as the master RNG seed
 
 # --------------------------------------------------------------------------
-# Geography -- four real districts in Jharkhand, the well-documented
-# "Jamtara belt" cybercrime cash-out region. Centroids are (lat, lon).
+# Geography -- four real districts in the Pune area (Maharashtra). All ATM
+# and account locations around them are synthetic. Centroids are (lat, lon).
 # --------------------------------------------------------------------------
 STATE = "Maharashtra"
 

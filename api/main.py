@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import hashlib
 import os
+import threading
 import uuid
 from datetime import datetime, timedelta
 
@@ -51,6 +52,9 @@ async def _no_cache(request, call_next):
 
 
 STATE: dict = {}
+# FeatureContext.bind() stores the current case on the shared context, so two forecasts
+# running at once on FastAPI's thread pool would read each other's trail. One at a time.
+_CTX_LOCK = threading.RLock()
 
 
 # --------------------------------------------------------------------------
@@ -193,6 +197,11 @@ def make_recommendation(cashout, location, tainted_amount: float,
 
 
 def _predict(ack_no: str, as_of: datetime, account: str | None) -> Prediction:
+    with _CTX_LOCK:
+        return _predict_locked(ack_no, as_of, account)
+
+
+def _predict_locked(ack_no: str, as_of: datetime, account: str | None) -> Prediction:
     ctx, models = STATE["ctx"], STATE["models"]
     case = _case_row(ack_no)
     trail = expand_trail(case["seed_txn_id"], as_of, ctx)
@@ -214,8 +223,14 @@ def _predict(ack_no: str, as_of: datetime, account: str | None) -> Prediction:
 
 
 def _build_queue():
-    if STATE["queue_cache"] is not None:
-        return STATE["queue_cache"]
+    if STATE["queue_cache"] is None:
+        with _CTX_LOCK:                      # build once, never interleaved with a forecast
+            if STATE["queue_cache"] is None:
+                STATE["queue_cache"] = _compute_queue()
+    return STATE["queue_cache"]
+
+
+def _compute_queue():
     ctx, models = STATE["ctx"], STATE["models"]
     items = []
     for _, case in STATE["complaints"].iterrows():
@@ -241,7 +256,6 @@ def _build_queue():
             p_cashout_10m=cp.p_10m, tier=tier, imminence=round(float(imminence), 3),
             minutes_since_filed=round(mins_since, 1),
             golden_hour_remaining_min=round(golden, 1)))
-    STATE["queue_cache"] = items
     return items
 
 
@@ -445,12 +459,13 @@ def explain_case(ack_no: str, as_of: str | None = None):
         "prediction": pred.model_dump(mode="json"),
         "recommendation": rec.model_dump(mode="json"),
         "narrative": (
-            f"Case {pred.ack_no}: account {pred.account_id} has "
-            f"P(cash-out<=10m)={pred.cashout.p_10m:.2f} with "
+            f"Case {pred.ack_no}: suspected mule account {pred.account_id} has an "
+            f"estimated P(cash-out<=10m)={pred.cashout.p_10m:.2f} with "
             f"Rs{rec.tainted_amount:,.0f} tainted funds. "
-            f"Dominant channel is {dominant_channel}, and the predicted "
-            f"location is {location_district}. "
-            f"Decision: {rec.tier} / {rec.action}."
+            f"Most likely channel is {dominant_channel}, and the most likely "
+            f"cash-out area is {location_district}. "
+            f"Recommended action: {rec.tier} / {rec.action}. "
+            f"This is decision support for investigator review, not evidence."
         ),
     }
 
@@ -713,6 +728,12 @@ def _codename(account_id: str) -> str:
     return f"{word}-{suffix}"
 
 
+@app.get("/codenames")
+def codenames(ids: str = ""):
+    """Stable aliases (the same ones the Mule Network shows) for a comma-separated id list."""
+    return {a: _codename(a) for a in (x.strip() for x in ids.split(",")[:500]) if a}
+
+
 @app.get("/account/{account_id}")
 def account_profile(account_id: str, limit: int = 250):
     ctx = STATE["ctx"]
@@ -796,6 +817,7 @@ def account_profile(account_id: str, limit: int = 250):
     return {
         "account_id": account_id,
         "codename": _codename(account_id),
+        "role": _archetype(ctx, account_id),   # rule-based flow role, same as the Mule Network
         "known_account": known,
         "kyc": {"district": info.get("kyc_district"), "pin": info.get("kyc_pin"),
                 "lat": info.get("kyc_lat"), "lon": info.get("kyc_lon"),
@@ -899,7 +921,10 @@ def mule_network(limit: int = 48):
             "groups": [{"key": "CASHER", "label": "Cash-out specialist"},
                        {"key": "DISTRIBUTOR", "label": "Fan-out distributor"},
                        {"key": "COLLECTOR", "label": "Collector / aggregator"},
-                       {"key": "RELAY", "label": "Pass-through relay"}]}
+                       {"key": "RELAY", "label": "Pass-through relay"}],
+            "note": ("Accounts are picked from the synthetic corpus's ground-truth labels "
+                     "and grouped by fixed flow rules (not a clustering model). "
+                     "A role is a lead for review, not proof of criminal intent.")}
     STATE["network_cache"] = {"limit": limit, "data": data}
     return data
 
