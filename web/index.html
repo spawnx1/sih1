@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -688,6 +688,31 @@
   .net-tip b{font-family:var(--mono);color:#eaf2f6} .net-tip .g{font-family:var(--mono);font-size:10px;color:var(--cyan);letter-spacing:1px}
   .net-tip .hint{color:var(--faint);font-size:10.5px;margin-top:5px}
   .netfoot{font-size:11px;color:var(--faint);margin-top:9px;font-family:var(--mono);letter-spacing:.3px}
+  .netgrid{display:grid;grid-template-columns:minmax(0,1.72fr) minmax(300px,.78fr);gap:12px;align-items:stretch}
+  .netmapbox{position:relative;height:66vh;min-height:460px;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#070b12;box-shadow:inset 0 0 40px rgba(0,0,0,.28)}
+  #nmap{position:absolute;inset:0}
+  #nmap:after{content:"";position:absolute;inset:0;pointer-events:none;z-index:350;background:linear-gradient(rgba(79,173,186,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(79,173,186,.035) 1px,transparent 1px);background-size:42px 42px;mix-blend-mode:screen}
+  .netmaphead{position:absolute;z-index:500;left:12px;right:12px;top:12px;display:flex;justify-content:space-between;gap:10px;pointer-events:none}
+  .netmaptitle{background:rgba(6,10,16,.94);border:1px solid var(--line2);border-radius:10px;padding:9px 11px;font:10px/1 var(--mono);letter-spacing:1.7px;color:var(--cyan);box-shadow:0 8px 22px rgba(0,0,0,.42)}
+  .netmaptitle:before{content:"●";color:var(--green);font-size:8px;margin-right:7px;vertical-align:1px}
+  .netmapmeta{background:rgba(6,10,16,.94);border:1px solid var(--line);border-radius:10px;padding:8px 10px;font:10px/1.45 var(--mono);color:var(--dim);text-align:right;max-width:205px;box-shadow:0 8px 22px rgba(0,0,0,.42)}
+  .netmapmeta b{color:#f1f6f8;font-size:10.5px}
+  .netmapempty{position:absolute;z-index:450;left:50%;top:50%;transform:translate(-50%,-50%);width:245px;text-align:center;padding:16px;background:rgba(7,11,18,.94);border:1px solid var(--line2);border-radius:12px;color:var(--dim);font:10.5px/1.6 var(--mono);pointer-events:none;box-shadow:0 10px 30px rgba(0,0,0,.45)}
+  .netmaplegend{position:absolute;z-index:500;left:12px;bottom:12px;background:rgba(6,10,16,.94);border:1px solid var(--line);border-radius:10px;padding:9px 11px;font:9px/1.55 var(--mono);color:var(--faint);box-shadow:0 8px 22px rgba(0,0,0,.42);pointer-events:none}
+  .netmaplegend .lgrow{display:flex;align-items:center;gap:7px}.netmaplegend .lgdot{width:8px;height:8px;border-radius:50%;display:inline-block}.netmaplegend .gold{background:#d6a95c;box-shadow:0 0 8px rgba(214,169,92,.6)}.netmaplegend .red{background:#e05e72;box-shadow:0 0 8px rgba(224,94,114,.5)}
+  .netmapstats{position:absolute;z-index:500;right:12px;bottom:12px;display:flex;gap:7px;pointer-events:none}
+  .netstat{background:rgba(6,10,16,.94);border:1px solid var(--line);border-radius:9px;padding:7px 9px;min-width:72px;box-shadow:0 8px 22px rgba(0,0,0,.42)}
+  .netstat .k{font:8px var(--mono);letter-spacing:1px;color:var(--faint);text-transform:uppercase}.netstat .v{font:700 13px var(--mono);color:#eaf2f6;margin-top:3px}
+  .netmaptools{position:absolute;z-index:500;right:12px;top:84px;display:flex;flex-direction:column;gap:6px}
+  .netmaptools button{width:34px;height:30px;background:rgba(6,10,16,.94);border:1px solid var(--line2);border-radius:8px;color:var(--cyan);font:700 13px var(--mono);cursor:pointer;box-shadow:0 6px 16px rgba(0,0,0,.35)}
+  .netmaptools button:hover{border-color:var(--cyan);background:rgba(79,173,186,.1)}
+  .nmpin{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;background:#d6a95c;border:2px solid #080d13;box-shadow:0 0 0 3px rgba(214,169,92,.22),0 0 18px rgba(214,169,92,.7);color:#10151b;font:700 9px var(--mono);animation:nmpulse 2s ease-in-out infinite}
+  .nmatm{width:15px;height:15px;border-radius:50%;background:#e05e72;border:2px solid #080d13;box-shadow:0 0 0 3px rgba(224,94,114,.18),0 0 13px rgba(224,94,114,.55)}
+  .nmatm-num{position:absolute;top:-10px;left:9px;background:#080d13;border:1px solid rgba(224,94,114,.65);border-radius:5px;padding:2px 4px;color:#ffb1ba;font:700 8px var(--mono);white-space:nowrap}
+  .nmk-label{background:rgba(6,10,16,.9);border:1px solid rgba(214,169,92,.45);border-radius:6px;color:#ffd98b;font:9px var(--mono);padding:3px 6px;box-shadow:0 5px 14px rgba(0,0,0,.4)}.nmk-label:before{display:none}
+  .nmatm-label{background:rgba(6,10,16,.92);border:1px solid rgba(224,94,114,.42);border-radius:6px;color:#ffb1ba;font:8.5px var(--mono);padding:3px 6px}.nmatm-label:before{display:none}
+  @keyframes nmpulse{0%,100%{box-shadow:0 0 0 3px rgba(214,169,92,.18),0 0 12px rgba(214,169,92,.45)}50%{box-shadow:0 0 0 6px rgba(214,169,92,.05),0 0 22px rgba(214,169,92,.75)}}
+  @media(max-width:980px){.netgrid{grid-template-columns:1fr}.netmapbox{height:430px;min-height:0}}
 </style>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
@@ -908,6 +933,7 @@ async function openMule(id){
   catch(e){ box.innerHTML='<div class="mp-load">Could not load '+id+'.</div>'; return; }
   if(d.detail){ box.innerHTML='<div class="mp-load">'+d.detail+'</div>'; return; }
   box.innerHTML=renderMule(d);
+  focusMuleOnMap(d);
 }
 function closeMule(){ const m=$('muleModal'); if(m)m.classList.remove('on'); }
 function renderMule(d){
@@ -958,6 +984,7 @@ function renderMule(d){
 // ===================== MULE NETWORK — force-directed codenamed entity graph =====================
 const NET_COL={CASHER:'#d6a95c',DISTRIBUTOR:'#4fadba',COLLECTOR:'#8579d6',RELAY:'#6f97a8'};
 let NET_SIM=null, NET_HIDDEN={};
+let NMAP=null, NMAP_MARKERS=[];
 async function showNetwork(){
   VIEW='network';
   if(MAP){try{MAP.remove();}catch(e){}MAP=null;FLOWL=HEATL=MESHL=ATML=MKL=RETL=RSVG=null;}
@@ -969,13 +996,40 @@ async function showNetwork(){
          <span class="netsub">Each node is a mule account under a codename, sized by how many frauds it touches and coloured by behaviour. Lines link mules that worked the same case, moved money to each other, or share a ring. <b>Click a node to open its case file.</b></span></div>
        <div class="netlegend" id="netLegend"></div>
      </div>
-     <div class="netcanvas" id="netCanvas"><div class="netload">Mapping the network&hellip;</div><div class="net-tip" id="netTip"></div></div>
-     <div class="netfoot" id="netFoot"></div>
+     <div class="netgrid">
+       <div>
+         <div class="netcanvas" id="netCanvas"><div class="netload">Mapping the network&hellip;</div><div class="net-tip" id="netTip"></div></div>
+         <div class="netfoot" id="netFoot"></div>
+       </div>
+       <div class="netmapbox">
+         <div id="nmap"></div>
+         <div class="netmaphead">
+           <div class="netmaptitle">LOCATION INTELLIGENCE</div>
+           <div class="netmapmeta" id="netMapMeta">Select a mule account</div>
+         </div>
+         <div class="netmaptools">
+           <button title="Zoom in" onclick="NMAP&&NMAP.zoomIn()">+</button>
+           <button title="Zoom out" onclick="NMAP&&NMAP.zoomOut()">−</button>
+           <button title="Fit selected locations" onclick="fitNetworkMap()">◎</button>
+         </div>
+         <div class="netmapempty" id="netMapEmpty">Select a mule node to reveal its geographic footprint and associated cash-out locations.</div>
+         <div class="netmaplegend">
+           <div class="lgrow"><span class="lgdot gold"></span> MULE KYC AREA</div>
+           <div class="lgrow"><span class="lgdot red"></span> ASSOCIATED ATM</div>
+           <div style="margin-top:3px;opacity:.7">KYC area is district-level, not live GPS</div>
+         </div>
+         <div class="netmapstats" id="netMapStats" style="display:none">
+           <div class="netstat"><div class="k">ATMs</div><div class="v" id="netAtmCount">0</div></div>
+           <div class="netstat"><div class="k">Coverage</div><div class="v" id="netDistrict">—</div></div>
+         </div>
+       </div>
+     </div>
    </div>`;
   setNav();
   let data; try{ data=await (await fetch('/network?limit=54')).json(); }
   catch(e){ const l=document.querySelector('#netCanvas .netload'); if(l)l.textContent='Could not load network.'; return; }
   renderNetwork(data);
+  setTimeout(initNetworkLocationMap,80);
 }
 function renderNetwork(data){
   const canvas=$('netCanvas'); if(!canvas)return;
@@ -1020,6 +1074,78 @@ function renderNetwork(data){
       nodeSel.attr('transform',d=>`translate(${d.x.toFixed(1)},${d.y.toFixed(1)})`);
     });
   $('netFoot').textContent=`${nodes.length} mule accounts · ${links.length} links (shared case · transfer · ring) · showing the busiest mules`;
+}
+async function initNetworkLocationMap(){
+  const el=$('nmap'); if(!el||typeof L==='undefined')return;
+  if(NMAP){try{NMAP.remove();}catch(e){} NMAP=null;}
+  try{
+    NMAP=L.map('nmap',{zoomControl:false,attributionControl:false,preferCanvas:true});
+    const base=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',{maxZoom:16,attribution:'Esri'}).addTo(NMAP);
+    let terr=0; base.on('tileerror',()=>{if(++terr===4){try{NMAP.removeLayer(base);}catch(e){}
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,subdomains:'abc'}).addTo(NMAP);}});
+    L.control.zoom({position:'bottomright'}).addTo(NMAP);
+    if(!HOT) await loadHotspots();
+    const c=HOT&&HOT.district_centroids?Object.values(HOT.district_centroids):[];
+    const ll=c.length?[c.reduce((a,x)=>a+x.lat,0)/c.length,c.reduce((a,x)=>a+x.lon,0)/c.length]:[18.5204,73.8567];
+    NMAP.setView(ll,11);
+    setTimeout(()=>{try{NMAP.invalidateSize();}catch(e){}},120);
+  }catch(e){NMAP=null;}
+}
+function clearNetworkMap(){
+  NMAP_MARKERS.forEach(x=>{try{NMAP.removeLayer(x);}catch(e){}}); NMAP_MARKERS=[];
+}
+async function focusMuleOnMap(d){
+  if(VIEW!=='network'||!$('nmap'))return;
+  if(!NMAP)await initNetworkLocationMap();
+  if(!NMAP)return;
+  try{
+    if(!HOT)await loadHotspots();
+    clearNetworkMap();
+    const k=d.kyc||{};
+    const dist=k.district||d.district||'';
+    const dc=HOT&&HOT.district_centroids&&HOT.district_centroids[dist];
+    const center=dc?[dc.lat,dc.lon]:[18.5204,73.8567];
+    const meta=$('netMapMeta'), empty=$('netMapEmpty'), stats=$('netMapStats');
+    if(meta)meta.innerHTML=`<b>${d.codename||d.account_id}</b><br>${d.account_id}<br>${dist||'District unavailable'}${k.pin?' · PIN '+k.pin:''}`;
+    if(empty)empty.style.display='none';
+    if(stats)stats.style.display='flex';
+
+    const mule=L.marker(center,{icon:L.divIcon({className:'',iconSize:[22,22],iconAnchor:[11,11],html:'<div class="nmpin">M</div>'}),zIndexOffset:3000})
+      .bindTooltip(`${d.codename||d.account_id} · ${dist||'KYC area'}`,{direction:'top',offset:[0,-10],className:'nmk-label'}).addTo(NMAP);
+    NMAP_MARKERS.push(mule);
+
+    // The circle communicates an area-level KYC location rather than fake GPS precision.
+    const area=L.circle(center,{radius:2200,color:'#d6a95c',weight:1,opacity:.62,fillColor:'#d6a95c',fillOpacity:.045,dashArray:'5 7',interactive:false}).addTo(NMAP);
+    NMAP_MARKERS.push(area);
+
+    const atmIds=[...new Set((d.transactions||[]).filter(t=>t.atm_id).map(t=>t.atm_id))];
+    const atms=(HOT&&HOT.atm_markers||[]).filter(a=>atmIds.includes(a.atm_id));
+    const bounds=[center];
+    const usedAtm=atms.slice(0,12);
+    usedAtm.forEach((a,i)=>{
+      const pos=[a.lat,a.lon], km=(NMAP.distance(center,pos)/1000);
+      const iconHtml=`<div class="nmatm"></div><div class="nmatm-num">#${i+1}</div>`;
+      const m=L.marker(pos,{icon:L.divIcon({className:'',iconSize:[30,30],iconAnchor:[7,7],html:iconHtml}),zIndexOffset:1800})
+        .bindTooltip(`#${i+1} · ATM ${a.atm_id}${a.district?' · '+a.district:''}`,{direction:'top',offset:[0,-8],className:'nmatm-label'})
+        .bindPopup(`<b>ATM ${a.atm_id}</b><br>${a.district||'Location available'}<br><span style="color:#aab8c2">${km.toFixed(1)} km from mule KYC centroid</span>`)
+        .addTo(NMAP);
+      NMAP_MARKERS.push(m); bounds.push(pos);
+      const line=L.polyline([center,pos],{color:'#d6a95c',weight:1.2,opacity:.34,dashArray:'4 7',interactive:false}).addTo(NMAP);
+      NMAP_MARKERS.push(line);
+    });
+
+    if($('netAtmCount'))$('netAtmCount').textContent=usedAtm.length;
+    if($('netDistrict'))$('netDistrict').textContent=dist||'—';
+    if(bounds.length>1)NMAP.fitBounds(L.latLngBounds(bounds),{padding:[48,48],maxZoom:13}); else NMAP.setView(center,12);
+    setTimeout(()=>{try{NMAP.invalidateSize();}catch(e){}},80);
+  }catch(e){console.warn('network location map',e);}
+}
+function fitNetworkMap(){
+  if(!NMAP||!NMAP_MARKERS.length)return;
+  const pts=[];
+  NMAP_MARKERS.forEach(x=>{if(x&&typeof x.getLatLng==='function')pts.push(x.getLatLng());});
+  if(pts.length>1)NMAP.fitBounds(L.latLngBounds(pts),{padding:[48,48],maxZoom:13});
+  else if(pts.length===1)NMAP.setView(pts[0],12);
 }
 function netHover(d,on,links,linkSel,nodeSel){
   const tip=$('netTip');
