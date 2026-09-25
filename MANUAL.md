@@ -103,6 +103,34 @@ stolen money**:
   neighbourhood, not the exact ATM"* instead of pretending. Judges love this
   because it's honest.
 
+**The same three models as input → process → output:**
+
+| Model | Input | Process | Output |
+|---|---|---|---|
+| M1 | the account's transactions and position in the money trail, up to *now* | XGBoost (traditional ML) | probability of cash-out in the next 10-60 min |
+| M2 | the same information | XGBoost | chance of ATM / POS / onward transfer / dormant |
+| M3 | candidate ATMs (past withdrawals, ring, KYC area, known fraud ATMs) | XGBoost ranker + abstention | ranked areas: terminal, ~5 km² cell or district |
+| Rules | M1's 10-min probability + stolen amount held | fixed thresholds | RED / AMBER / GREY tier and the police station to alert |
+
+**Graph analysis (used by the console).** Before the models run, the system
+follows the money from the victim through each account it was sent to (the
+*trail*) and describes how each account behaves in that network (how many
+senders, how fast money leaves). These graph facts are inputs to M1 and M2.
+
+**Graph neural networks (offline experiments, not in the console).** The
+`graphx/` folder also has GNN code:
+- **GNN** (technical: GraphSAGE): *a graph model that analyses relationships
+  between connected accounts.*
+- **Temporal GNN** (technical: snapshot temporal GraphSAGE; not a TGN): *a graph
+  model that also considers how the money-flow network changes over time.*
+
+These are research experiments. Their best recorded score (0.79) is below M1
+(0.913), so the console does not use them. Do not present them as live.
+
+**Clustering.** The project does not run a clustering algorithm. The "roles" on
+the Mule Network screen (cash-out specialist, distributor, collector, relay) come
+from simple fixed rules about how money flows in and out of each account.
+
 ---
 
 ## 7. The screen, panel by panel (this is what confused you)
@@ -147,13 +175,18 @@ updates live. This is your best demo moment.
 | **Seed transaction** | The one disputed payment the victim reported. |
 | **Mule account** | A (often rented) bank account used to move stolen money. |
 | **Trail** | The chain of accounts the money passed through. |
-| **Cash-out** | The moment money becomes physical cash (ATM or POS). |
+| **Cash-out** | The moment stolen money becomes physical cash (ATM withdrawal or POS card-cash). Written "cash-out" as a noun, "cash out" as a verb. |
 | **Cell** | A ~5 km² map tile (an "H3" hexagon) — a neighbourhood-sized area. |
 | **Hazard curve** | The rising probability of cash-out over the next hour. |
 | **Tier RED/AMBER/GREY** | RED = freeze now (high chance + big money); AMBER = watch; GREY = keep tracing. |
 | **Abstention** | The model refusing to name one ATM when it isn't sure, and giving the neighbourhood instead. |
 | **Golden hour** | The first 60 minutes after the fraud — best chance to freeze. |
 | **Lead time** | How many minutes *before* the cash-out we raised the alarm. Positive = we were early. |
+| **Cash withdrawal** | One specific cash-out at an ATM (channel `ATM_WDL`). |
+| **Suspected mule account** | An account the system has flagged for review because of how money moves through it. A flag is a lead, **not proof** that the account holder is a criminal. |
+| **Detection vs prediction** | *Detection* = recognising what already happened (the trail). *Prediction* = estimating what may happen next (cash-out, channel, location). |
+| **Probability vs risk tier** | *Probability* = the model's estimated chance (e.g. 0.66 = 66%). *Risk tier* (RED/AMBER/GREY) = a fixed rule on top of that probability and the amount, used to prioritise work. |
+| **Predicted location** | A ranked estimate of where cash may be withdrawn, not a guarantee. The system abstains when unsure. |
 
 ---
 
@@ -252,10 +285,14 @@ to the terminal.
   personal financial information protected by the **DPDP Act 2023** and can't be
   used in an open prototype. Our generator is deliberately *hard* (mules and
   honest people look similar) so the lessons still transfer.
-- **ATM locations are synthetic**, scattered around the real four Jharkhand
-  districts. The code has the exact OpenStreetMap query to drop in real ATMs.
+- **ATM locations are synthetic**, scattered around four real Pune-area
+  districts (Pune City, Pimpri-Chinchwad, Hinjawadi, Hadapsar). The code has the exact OpenStreetMap query to drop in real ATMs.
 - **Alerts are simulated** — we build and log the SMS/email/API payloads; we
   don't actually send them.
+- **GNN / temporal GNN code is experimental** — it lives in `graphx/` and is not
+  used by the console. See the model table in `README.md`.
+- **Outputs are decision support**, not evidence. A RED tier means "review and
+  consider freezing first", not "this person is guilty".
 
 ---
 

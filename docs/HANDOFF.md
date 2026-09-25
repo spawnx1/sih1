@@ -70,6 +70,8 @@ web/index.html: vanilla JS + Leaflet + d3. Views: Command Centre · Case view ·
 
 **Stack:** Python 3.12 · pandas/numpy/pyarrow · scikit-learn + **XGBoost** · networkx · **h3** · FastAPI/uvicorn/pydantic · SQLite · vanilla HTML/CSS/JS + Leaflet.js + d3.js · (PyTorch + PyTorch-Geometric = a *research-only* GNN track, NOT shipping).
 
+What runs in the product vs. what is an offline experiment (GNN, temporal GNN, fusion) is listed in the **"Models"** table in `README.md`. Keep that table in sync; never describe the `graphx/*gnn*` track as live. There is no clustering step; Mule Network roles are rule-based (`api/main.py:_archetype`).
+
 ### Key files
 `config.py` (constants, 4 Pune districts, thresholds) · `contracts.py` (Pydantic) · `gen/{params,atms,generator}.py` · `graphx/{trail,candidates,features}.py` + `graphx/*gnn*` (research) · `ml/{features,panel,train,predict,evaluate}.py` · `api/main.py` · `web/index.html` (~2,300 lines) · `generator/case.py` (per-case synthetic generator) · `tests/test_leakage.py`.
 
