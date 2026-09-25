@@ -91,6 +91,17 @@
   .rail .head{display:flex;align-items:center;justify-content:space-between;padding:13px 14px 9px}
   .rail select{background:var(--solid);color:var(--ink);border:1px solid var(--line);border-radius:7px;padding:5px 7px;font-size:11px;font-family:var(--mono)}
   .cases{overflow:auto;padding:6px 10px 14px;min-height:0}
+  .railsearch{margin:0 10px 6px;background:var(--solid);border:1px solid var(--line2);border-radius:8px;padding:8px 10px;
+    color:var(--ink);font-family:var(--mono);font-size:11.5px}
+  .railsearch:focus{outline:1px solid var(--cyan)}
+  .case .cmule{display:inline-block;margin-top:3px;font-family:var(--mono);font-size:11px;color:var(--cyan);cursor:pointer}
+  .case .cmule:hover{text-decoration:underline}
+  .netsearch{background:var(--solid);border:1px solid var(--line2);border-radius:8px;padding:8px 11px;color:var(--ink);
+    font-family:var(--mono);font-size:12px;min-width:260px}
+  .netsearch:focus{outline:1px solid var(--cyan)}
+  .mulelink{color:var(--cyan);cursor:pointer;font-family:var(--mono);font-weight:650}
+  .mulelink:hover{text-decoration:underline}
+  .mulelink small{display:block;color:var(--faint);font-weight:400;font-size:10.5px}
   .case{position:relative;display:grid;grid-template-columns:6px 1fr auto;gap:11px;align-items:center;
     padding:11px 13px;border:1px solid var(--line);border-radius:12px;margin-bottom:9px;overflow:hidden;
     cursor:pointer;background:rgba(12,18,28,.5);transition:transform .15s,border-color .15s,box-shadow .15s}
@@ -688,6 +699,216 @@
   .net-tip b{font-family:var(--mono);color:#eaf2f6} .net-tip .g{font-family:var(--mono);font-size:10px;color:var(--cyan);letter-spacing:1px}
   .net-tip .hint{color:var(--faint);font-size:10.5px;margin-top:5px}
   .netfoot{font-size:11px;color:var(--faint);margin-top:9px;font-family:var(--mono);letter-spacing:.3px}
+
+  /* ===== BASE MODE — a separate, simple screen for field officers (light or dark). Advanced untouched. ===== */
+  #baseApp{display:none;
+    --b-bg:#f3f5f8;--b-card:#fff;--b-ink:#1c2431;--b-head:#14284b;--b-dim:#5d6878;--b-line:#dfe4ea;--b-line2:#edf0f3;
+    --b-input:#c9d1dc;--b-hover:#f5f8fc;--b-th:#fafbfc;--b-pri:#14284b;--b-link:#1f5fbf;--b-seg:#eef1f5;--b-map:#eef1f4;
+    --b-red:#b3261e;--b-red-bg:#fdeceb;--b-amber:#8a5300;--b-amber-line:#c77700;--b-amber-bg:#fff3dc;
+    --b-grey:#4b5563;--b-grey-bg:#eef1f4;--b-ok:#1e6b43;--b-victim:#1f5fbf;--b-node:#66758a;--b-cash:#3c4757;--b-chip:#fff}
+  #baseApp[data-theme="dark"]{
+    --b-bg:#0f141b;--b-card:#171e27;--b-ink:#e3e8ee;--b-head:#f1f4f8;--b-dim:#9aa6b4;--b-line:#29333f;--b-line2:#212a35;
+    --b-input:#3a4654;--b-hover:#1e2732;--b-th:#141a22;--b-pri:#3d6fb6;--b-link:#8cb9ff;--b-seg:#1d2530;--b-map:#1b222b;
+    --b-red:#f07167;--b-red-bg:rgba(240,113,103,.15);--b-amber:#f2b561;--b-amber-line:#e0a040;--b-amber-bg:rgba(242,181,97,.14);
+    --b-grey:#b2bcc7;--b-grey-bg:#232c37;--b-ok:#62d09a;--b-victim:#5b9bff;--b-node:#8e9bad;--b-cash:#c7cfd8;--b-chip:#1f2833}
+  body.basemode{background:#f3f5f8;overflow:auto}
+  body.basemode.bmdark{background:#0f141b}
+  body.basemode::before,body.basemode::after{display:none}
+  body.basemode>header,body.basemode .bhelp,body.basemode .app,body.basemode .railopen,
+  body.basemode .scanbar,body.basemode .hud{display:none!important}
+  body.basemode #baseApp{display:block;min-height:100vh;background:var(--b-bg);color:var(--b-ink);font:15px/1.55 var(--body);-webkit-font-smoothing:antialiased}
+  #baseApp .bm-top{position:sticky;top:0;z-index:1000;display:flex;align-items:center;gap:12px;padding:12px 28px;background:var(--b-card);border-bottom:1px solid var(--b-line)}
+  #baseApp .bm-brand{font-weight:600;font-size:17px;color:var(--b-head);line-height:1.3}
+  #baseApp .bm-brand small{display:block;font-weight:400;font-size:12.5px;color:var(--b-dim)}
+  #baseApp .bm-demo{margin-left:auto;font-size:12px;color:var(--b-dim);border:1px solid var(--b-line);border-radius:999px;padding:3px 10px;white-space:nowrap}
+  #baseApp .bm-themebtn{background:var(--b-seg);border:1px solid var(--b-line);color:var(--b-ink);border-radius:8px;padding:7px 12px;font:500 13px var(--body);cursor:pointer;white-space:nowrap}
+  #baseApp .modesw{background:var(--b-seg);border:1px solid var(--b-line);margin-left:0}
+  #baseApp .modesw .seg{color:var(--b-dim);font:500 13px var(--body);letter-spacing:0;padding:7px 14px}
+  #baseApp .modesw .seg.on{background:var(--b-pri);color:#fff}
+  #baseApp .bm-wrap{max-width:1180px;margin:0 auto;padding:24px 28px 48px}
+  #baseApp h1{font-size:22px;font-weight:600;margin:0 0 6px;color:var(--b-head);letter-spacing:0}
+  #baseApp h1 small{font-size:14px;font-weight:400;color:var(--b-dim);margin-left:8px}
+  #baseApp .bm-sub{color:var(--b-dim);margin:0 0 16px}
+  #baseApp .bm-pill{display:inline-block;font-size:12.5px;font-weight:600;padding:3px 10px;border-radius:999px;white-space:nowrap;margin-right:4px}
+  #baseApp .bm-pill.RED{background:var(--b-red-bg);color:var(--b-red)}
+  #baseApp .bm-pill.AMBER{background:var(--b-amber-bg);color:var(--b-amber)}
+  #baseApp .bm-pill.GREY{background:var(--b-grey-bg);color:var(--b-grey)}
+  #baseApp .bm-role{display:inline-block;font-size:12px;padding:2px 9px;border-radius:6px;background:var(--b-grey-bg);color:var(--b-grey);white-space:nowrap}
+  #baseApp .bm-search{width:100%;max-width:460px;background:var(--b-card);border:1px solid var(--b-input);border-radius:8px;padding:10px 12px;font:14px var(--body);color:var(--b-ink);margin-bottom:14px}
+  #baseApp .bm-search:focus{outline:2px solid var(--b-link);outline-offset:1px}
+  #baseApp .bm-card{background:var(--b-card);border:1px solid var(--b-line);border-radius:12px;padding:18px 20px}
+  #baseApp .bm-card.flush{padding:0;overflow-x:auto}
+  #baseApp .bm-card h2{font-size:12.5px;font-weight:600;color:var(--b-dim);text-transform:uppercase;letter-spacing:.7px;margin:0 0 10px}
+  #baseApp .bm-tabs{display:flex;gap:2px;border-bottom:1px solid var(--b-line);margin:22px 0 14px}
+  #baseApp .bm-tab{padding:10px 16px;cursor:pointer;color:var(--b-dim);font-weight:600;border-bottom:2px solid transparent;margin-bottom:-1px;user-select:none}
+  #baseApp .bm-tab:hover{color:var(--b-ink)}
+  #baseApp .bm-tab.on{color:var(--b-head);border-bottom-color:var(--b-pri)}
+  #baseApp .bm-tab span{font-weight:500;color:var(--b-dim);margin-left:4px}
+  #baseApp .bm-table{width:100%;border-collapse:collapse;font-size:14px}
+  #baseApp .bm-table th{text-align:left;font-weight:600;font-size:12.5px;color:var(--b-dim);padding:12px 14px;border-bottom:1px solid var(--b-line);background:var(--b-th);white-space:nowrap}
+  #baseApp .bm-table td{padding:12px 14px;border-bottom:1px solid var(--b-line2);vertical-align:middle}
+  #baseApp .bm-table tbody tr{cursor:pointer}
+  #baseApp .bm-table tbody tr:hover td{background:var(--b-hover)}
+  #baseApp .bm-table .r{text-align:right}
+  #baseApp .bm-mono{font-family:ui-monospace,"Cascadia Mono",Consolas,monospace;font-size:13px}
+  #baseApp .bm-open{color:var(--b-link);font-weight:600;white-space:nowrap}
+  #baseApp .bm-empty{text-align:center;color:var(--b-dim);padding:28px}
+  #baseApp .bm-mule{font-weight:600;color:var(--b-link);cursor:pointer;white-space:nowrap}
+  #baseApp .bm-mule:hover{text-decoration:underline}
+  #baseApp .bm-mule small,#baseApp .bm-cell small{display:block;font-weight:400;font-size:12px;color:var(--b-dim);text-decoration:none}
+  #baseApp .bm-foot{color:var(--b-dim);font-size:13px;margin:12px 2px 0}
+  #baseApp .bm-back{display:inline-block;color:var(--b-link);font-weight:600;cursor:pointer;margin-bottom:12px}
+  #baseApp .bm-back:hover{text-decoration:underline}
+  #baseApp .bm-load{color:var(--b-dim);padding:40px 0}
+  #baseApp .bm-meta{color:var(--b-dim);margin:0 0 16px}
+  #baseApp .bm-meta b{color:var(--b-ink);font-weight:600}
+  #baseApp .bm-action{background:var(--b-card);border:1px solid var(--b-line);border-left:5px solid var(--b-node);border-radius:12px;padding:18px 22px;margin:16px 0}
+  #baseApp .bm-action.RED{border-left-color:var(--b-red)} #baseApp .bm-action.AMBER{border-left-color:var(--b-amber-line)}
+  #baseApp .bm-action .t{font-size:20px;font-weight:600;color:var(--b-head)}
+  #baseApp .bm-action.RED .t{color:var(--b-red)}
+  #baseApp .bm-action .s{color:var(--b-ink);opacity:.85;margin:4px 0 14px;max-width:780px}
+  #baseApp .bm-btns{display:flex;gap:10px;flex-wrap:wrap}
+  #baseApp .bm-btn{background:var(--b-pri);color:#fff;border:1px solid var(--b-pri);border-radius:8px;padding:10px 16px;font:600 14px var(--body);cursor:pointer}
+  #baseApp .bm-btn:hover{filter:brightness(1.12)}
+  #baseApp .bm-btn:disabled{opacity:.6;cursor:default}
+  #baseApp .bm-btn.red{background:var(--b-red);border-color:var(--b-red)}
+  #baseApp .bm-btn.ghost{background:var(--b-card);color:var(--b-head);border-color:var(--b-input)}
+  #baseApp .bm-btn.ghost:hover{background:var(--b-hover);filter:none}
+  #baseApp .bm-flash{margin-top:12px;font-size:14px;color:var(--b-dim)}
+  #baseApp .bm-flash:empty{display:none}
+  #baseApp .bm-flash.ok{color:var(--b-ok)} #baseApp .bm-flash.err{color:var(--b-red)}
+  #baseApp .bm-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+  #baseApp .bm-big{font-size:36px;font-weight:600;line-height:1.1;color:var(--b-head)}
+  #baseApp .bm-big.RED{color:var(--b-red)} #baseApp .bm-big.AMBER{color:var(--b-amber)}
+  #baseApp .bm-card p{margin:0 0 8px} #baseApp .bm-card p:last-child{margin-bottom:0}
+  #baseApp .bm-note{color:var(--b-dim);font-size:13.5px}
+  #baseApp .bm-why{margin:0;padding-left:20px} #baseApp .bm-why li{margin-bottom:6px}
+  /* map + side list (map first, like the Advanced console) */
+  #baseApp .bm-mapcard{padding:0;overflow:hidden}
+  #baseApp .bm-mapcard .hd{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;padding:14px 18px 10px}
+  #baseApp .bm-mapcard .hd h2{margin:0}
+  #baseApp .bm-mapcard .hd .bm-note{margin-left:auto}
+  #baseApp .bm-mapgrid{display:grid;grid-template-columns:1fr 340px;border-top:1px solid var(--b-line)}
+  #baseApp .bm-map{height:460px;background:var(--b-map)}
+  #baseApp .bm-side{border-left:1px solid var(--b-line);max-height:460px;overflow:auto;padding:12px 14px}
+  #baseApp .bm-side h3{font-size:12.5px;font-weight:600;color:var(--b-dim);text-transform:uppercase;letter-spacing:.6px;margin:2px 0 8px}
+  #baseApp .bm-legend{display:flex;flex-wrap:wrap;gap:6px 16px;padding:10px 18px;font-size:13px;color:var(--b-dim);border-top:1px solid var(--b-line)}
+  #baseApp .bm-legend span{display:inline-flex;align-items:center;gap:7px}
+  #baseApp .bm-legend i{width:12px;height:12px;border-radius:50%;display:inline-block}
+  #baseApp .bm-legend i.area{border:2px dashed var(--b-red);background:var(--b-red-bg)}
+  #baseApp .bm-legend i.sq{border-radius:2px}
+  #baseApp .bm-legend i.ln{width:18px;height:0;border-radius:0;border-top:2px dashed var(--b-red)}
+  #baseApp .bm-steps{list-style:none;margin:0;padding:0}
+  #baseApp .bm-steps li{display:flex;gap:10px;padding:9px 4px;border-bottom:1px solid var(--b-line2);font-size:13.5px;cursor:pointer;border-radius:6px}
+  #baseApp .bm-steps li:hover{background:var(--b-hover)}
+  #baseApp .bm-steps li:last-child{border-bottom:0}
+  #baseApp .bm-steps .tm{flex:0 0 44px;color:var(--b-dim);font-variant-numeric:tabular-nums}
+  #baseApp .bm-steps .tx{flex:1;min-width:0}
+  #baseApp .bm-steps .tx small{display:block;color:var(--b-dim);font-size:12.5px}
+  #baseApp .bm-steps li.pred{cursor:default;background:var(--b-red-bg)}
+  #baseApp .bm-steps li.pred .tm{color:var(--b-red);font-weight:600}
+  #baseApp .bm-n{display:inline-flex;align-items:center;justify-content:center;min-width:20px;height:20px;border-radius:50%;background:var(--b-node);color:#fff;font:600 11px var(--body);padding:0 4px;vertical-align:1px}
+  #baseApp .bm-n.v{background:var(--b-victim)} #baseApp .bm-n.t{background:var(--b-red)}
+  #baseApp .bm-areas{margin:0;padding-left:22px;font-size:14px}
+  #baseApp .bm-areas li{padding:7px 0;border-bottom:1px solid var(--b-line2)}
+  #baseApp .bm-areas li:last-child{border-bottom:0}
+  #baseApp .bm-areas li span{display:block;font-size:12.5px;color:var(--b-dim)}
+  /* map markers (Leaflet divIcons live inside #baseApp, so they inherit the theme) */
+  #baseApp .bm-node{width:24px;height:24px;border-radius:50%;background:var(--b-node);color:#fff;font:600 11px/20px var(--body);text-align:center;
+    transform:translate(-12px,-12px);border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.35)}
+  #baseApp .bm-node.v{background:var(--b-victim)}
+  #baseApp .bm-node.t{background:var(--b-red);width:30px;height:30px;line-height:26px;font-size:13px;transform:translate(-15px,-15px)}
+  #baseApp .bm-atm{width:14px;height:14px;background:var(--b-cash);border:2px solid #fff;transform:translate(-7px,-7px) rotate(45deg);box-shadow:0 1px 3px rgba(0,0,0,.35)}
+  #baseApp .bm-arrow{width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-bottom:10px solid var(--b-node);transform-origin:50% 50%}
+  #baseApp .bm-arrow.hot{border-bottom-color:var(--b-head)}
+  #baseApp .bm-amt{transform:translate(-50%,-50%);background:var(--b-chip);border:1px solid var(--b-line);border-radius:6px;padding:1px 7px;
+    font:600 11px/1.5 var(--body);color:var(--b-ink);white-space:nowrap;box-shadow:0 1px 3px rgba(0,0,0,.15)}
+  #baseApp .bm-pin{width:24px;height:24px;border-radius:50%;color:#fff;font:600 12px/20px var(--body);text-align:center;
+    transform:translate(-12px,-12px);border:2px solid #fff;box-shadow:0 1px 4px rgba(0,0,0,.3)}
+  #bmMap.leaflet-container,#bmHomeMap.leaflet-container{background:var(--b-map)!important;font-family:var(--body)}
+  #bmMap .leaflet-tile,#bmHomeMap .leaflet-tile{filter:none!important}
+  #baseApp .leaflet-tooltip{background:var(--b-card);color:var(--b-ink);border:1px solid var(--b-input);font:600 12px var(--body);box-shadow:0 1px 4px rgba(0,0,0,.2);text-shadow:none}
+  #baseApp .leaflet-tooltip-top:before{border-top-color:var(--b-input)}
+  #baseApp .leaflet-tooltip-bottom:before{border-bottom-color:var(--b-input)}
+  #baseApp .leaflet-control-zoom a{background:var(--b-card)!important;color:var(--b-head)!important;border-color:var(--b-line)!important;text-shadow:none}
+  /* mule file */
+  #baseApp .bm-chips{display:grid;grid-template-columns:repeat(6,1fr);gap:10px;margin:16px 0}
+  #baseApp .bm-chip{background:var(--b-card);border:1px solid var(--b-line);border-radius:10px;padding:12px 14px}
+  #baseApp .bm-chip b{display:block;font-size:20px;font-weight:600;color:var(--b-head);line-height:1.2}
+  #baseApp .bm-chip span{font-size:12.5px;color:var(--b-dim)}
+  #baseApp .bm-chip.hot b{color:var(--b-red)}
+  #baseApp .bm-links{display:flex;flex-wrap:wrap;gap:8px}
+  #baseApp .bm-link{border:1px solid var(--b-line);border-radius:8px;padding:6px 10px;cursor:pointer;background:var(--b-card);font-size:13.5px}
+  #baseApp .bm-link:hover{border-color:var(--b-link)}
+  #baseApp .bm-link b{color:var(--b-link);font-weight:600}
+  #baseApp .bm-link small{color:var(--b-dim);margin-left:6px}
+  #baseApp .bm-sec{margin-top:18px}
+  #baseApp .bm-tag{font-size:11.5px;font-weight:600;padding:1px 7px;border-radius:5px;margin-left:4px}
+  #baseApp .bm-tag.t{background:var(--b-red-bg);color:var(--b-red)} #baseApp .bm-tag.c{background:var(--b-amber-bg);color:var(--b-amber)}
+  #baseApp .bm-in{color:var(--b-ok)}
+  /* ===== ADVANCED — light theme (body.advlight). Same layout; calmer surfaces, no scanlines or glow. ===== */
+  body.advlight{--bg:#eef1f5;--panel:#ffffff;--panel2:#ffffff;--solid:#ffffff;--line:rgba(24,44,72,.13);--line2:rgba(24,44,72,.24);
+    --ink:#1c2431;--dim:#4f5b6b;--faint:#768292;--cyan:#1b7486;--accent:#1b7486;--red:#c0392b;--amber:#a86a00;--green:#1f8a5b;--violet:#5b4bc4;
+    --glow:none;background:var(--bg)}
+  body.advlight::before,body.advlight::after,body.advlight .scanbar,body.advlight .hud{display:none}
+  body.advlight *{text-shadow:none!important}
+  body.advlight header{background:#fff}
+  body.advlight header::after{display:none}
+  body.advlight .brand .dotlogo{box-shadow:none;animation:none}
+  body.advlight .rail{background:#f7f9fb}
+  body.advlight .case{background:#fff}
+  body.advlight .case.sel{background:#eaf4f6}
+  body.advlight .case::after{display:none}
+  body.advlight .card,body.advlight .kpi,body.advlight details,body.advlight .ovtile,body.advlight .tktile,body.advlight .jarvis{backdrop-filter:none;box-shadow:0 1px 2px rgba(20,40,70,.06)}
+  body.advlight .card h3{color:var(--ink)}
+  body.advlight .kpi::before,body.advlight .ovtile::before{box-shadow:none}
+  body.advlight .kpi .v,body.advlight .ovtile .v,body.advlight .case .risk{text-shadow:none}
+  body.advlight .imp{background:#fff}
+  body.advlight .imp .v{color:var(--ink)}
+  body.advlight .jarvis{background:#fff}
+  body.advlight .btn{background:var(--cyan);color:#fff;box-shadow:none}
+  body.advlight .btn.ghost{background:#fff;color:var(--ink)}
+  body.advlight .navbtn.on,body.advlight .modesw .seg.on{color:#fff}
+  body.advlight .jstep b{color:#fff}
+  body.advlight .chan .track,body.advlight .arow .track{background:#e3e8ee}
+  body.advlight .ovrow,body.advlight .tksearch,body.advlight .rail select{background:#fff}
+  body.advlight .tier.GREY,body.advlight .pri.P3,body.advlight .st.CLOSED{color:#4f5b6b}
+  /* maps: light street map, light chrome over it */
+  body.advlight .leaflet-container,body.advlight #lmap,body.advlight .maphold,body.advlight .maphold.coded,body.advlight #omap{background:#e9edf1!important}
+  body.advlight .leaflet-tile,body.advlight #lmap .leaflet-tile{filter:none!important}
+  body.advlight .maphold::before,body.advlight .maphold::after,body.advlight .mapfx{display:none}
+  body.advlight .legend,body.advlight .maplist,body.advlight .mapnarr,body.advlight .maphold.coded .tgtpanel,body.advlight .mapbtn{background:rgba(255,255,255,.95);color:var(--ink);border-color:var(--line2)}
+  body.advlight .clgr,body.advlight .tgtrow .id,body.advlight .mapnarr .txt{color:var(--ink)}
+  body.advlight .tgtrow .id .sub,body.advlight .tgtpanel .th{color:var(--dim)}
+  body.advlight .maphold.coded .cd-coord,body.advlight .maphold.coded .cd-place{color:#3c4757;text-shadow:none}
+  body.advlight .leaflet-tooltip,body.advlight .leaflet-popup-content-wrapper,body.advlight .leaflet-popup-tip{background:#fff;color:var(--ink);border-color:var(--line2)}
+  body.advlight .leaflet-tooltip.ftip b{color:var(--ink)}
+  body.advlight .leaflet-control-zoom a{background:#fff!important;color:var(--ink)!important}
+  /* inline-SVG charts and graphs drawn with dark-theme text colours */
+  body.advlight .mgnode text,body.advlight #hazBox text,body.advlight #trailBox text{fill:#2c3542}
+  body.advlight .mglegend{color:var(--dim)}
+  /* mule profile + network */
+  body.advlight .mp-hd{background:#fff}
+  body.advlight .mp-id,body.advlight .mp-chip .v,body.advlight .nettitle,body.advlight .netsub b{color:var(--ink)}
+  body.advlight .mp-link{color:var(--ink)}
+  body.advlight .netcanvas{background:#f4f6f9}
+  body.advlight .net-node text{fill:#1c2431;stroke:#f4f6f9}
+  body.advlight .net-tip{background:#fff;color:var(--ink)}
+  body.advlight .net-tip b{color:var(--ink)}
+  body.advlight .ovhead h1,body.advlight .sttitle{color:var(--ink)}
+  @media(max-width:900px){
+    #baseApp .bm-mapgrid{grid-template-columns:1fr} #baseApp .bm-side{border-left:0;border-top:1px solid var(--b-line);max-height:none}
+    #baseApp .bm-chips{grid-template-columns:repeat(3,1fr)}
+  }
+  @media(max-width:760px){
+    #baseApp .bm-top{padding:10px 16px;flex-wrap:wrap} #baseApp .bm-demo{display:none}
+    #baseApp .bm-themebtn{margin-left:auto}
+    #baseApp .bm-wrap{padding:18px 16px 40px} #baseApp .bm-grid{grid-template-columns:1fr}
+    #baseApp .bm-map{height:320px}
+    #baseApp .bm-chips{grid-template-columns:repeat(2,1fr)}
+    #baseApp .bm-table .hm{display:none}
+    #baseApp .bm-table th,#baseApp .bm-table td{padding:11px 10px}
+  }
 </style>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
@@ -695,6 +916,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
 </head>
 <body>
+<div id="baseApp"></div>   <!-- Base mode: simple light screen, rendered by baseHome()/baseCase() -->
 <div class="scanbar"></div>
 <div class="hud"><i></i><i></i><i></i><i></i></div>
 
@@ -710,6 +932,7 @@
   </div>
   <div class="chips" id="chips"><span class="chip">initialising&hellip;</span></div>
   <span class="atgl" id="alertToggle" onclick="toggleAlerts()" title="auto pop-up for new urgent cases">&#128276; alerts on</span>
+  <span class="atgl" id="advThemeBtn" onclick="advToggleTheme()" title="light or dark screen">&#9788; light</span>
   <div class="modesw" id="modesw" title="Base = same console, explained in plain words · Advanced = expert view">
     <span class="seg" onclick="setMode('base')">Base</span>
     <span class="seg on" onclick="setMode('advanced')">Advanced</span>
@@ -739,6 +962,7 @@
       </select>
       <span class="railbtn" id="railBtn" onclick="toggleRail()" title="minimize sidebar">&#171;</span>
     </div>
+    <input class="railsearch" id="railFind" placeholder="Filter: mule name, account, complaint no." oninput="RAIL_Q=this.value;drawRail()">
     <div class="cases" id="cases"></div>
   </aside>
 
@@ -818,13 +1042,22 @@ async function loadQueue(){
   $('chips').innerHTML=`<span class="chip"><b>${items.length}</b> tracking</span>
     <span class="chip"><span class="sw RED"></span><b>${R}</b> freeze now</span>
     <span class="chip"><span class="sw AMBER"></span><b>${A}</b> watch</span>`;
-  $('cases').innerHTML=items.map(i=>`
+  drawRail();
+  bmNames(items.map(i=>i.top_account)).then(drawRail);   // mule names (same aliases as Base + Mule Network)
+}
+// the case rail, filtered by mule name / account / complaint number
+let RAIL_Q='';
+function drawRail(){ const el=$('cases'); if(!el)return;
+  const q=RAIL_Q.trim().toLowerCase();
+  const rows=q?QUEUE.filter(i=>(i.ack_no+' '+(i.top_account||'')+' '+bmName(i.top_account)+' '+i.fraud_category).toLowerCase().includes(q)):QUEUE;
+  el.innerHTML=rows.map(i=>`
     <div class="case ${SEL===i.ack_no?'sel':''}" onclick="selectCase('${i.ack_no}')">
       <div class="bar" style="background:${tierColor(i.tier)};box-shadow:0 0 10px ${tierColor(i.tier)}"></div>
       <div><div class="cid">#${i.ack_no.slice(0,6)} <span class="ftype">${i.fraud_category}</span></div>
-        <div class="cmeta">${money(i.disputed_amount)} &middot; ${i.golden_hour_remaining_min}m left</div></div>
+        <div class="cmeta">${money(i.disputed_amount)} &middot; ${i.golden_hour_remaining_min}m left</div>
+        ${i.top_account?`<div class="cmule" onclick="event.stopPropagation();openMule('${i.top_account}')" title="open this mule's profile">&#9670; ${esc(bmName(i.top_account))}</div>`:''}</div>
       <div class="risk" style="color:${tierColor(i.tier)}">${pct(i.p_cashout_10m)}<small>RISK</small></div>
-    </div>`).join('');
+    </div>`).join('')||`<div class="cap" style="padding:18px 6px">No case matches &ldquo;${esc(RAIL_Q)}&rdquo;.</div>`;
 }
 
 // ---------- URGENT popup (auto for new RED cases + when opening an urgent case) ----------
@@ -895,11 +1128,481 @@ function setNav(){ const o=$('navOverview'),t=$('navTickets'),c=$('navCase'),s=$
 // ===================== BASE MODE — same console, fewer panels (hides .adv) =====================
 let UIMODE=(()=>{try{return localStorage.getItem('uimode')||'advanced';}catch(e){return 'advanced';}})();
 function setMode(m){
+  const prev=UIMODE;
   UIMODE=m; try{localStorage.setItem('uimode',m);}catch(e){}
   document.body.classList.toggle('basemode', m==='base');
-  const sw=$('modesw'); if(sw){const s=sw.querySelectorAll('.seg'); if(s[0])s[0].classList.toggle('on',m==='base'); if(s[1])s[1].classList.toggle('on',m!=='base');}
-  if(m==='base' && VIEW==='studio') showOverview();   // Case Studio is an advanced-only tool
+  document.querySelectorAll('.modesw').forEach(sw=>{const s=sw.querySelectorAll('.seg');
+    if(s[0])s[0].classList.toggle('on',m==='base'); if(s[1])s[1].classList.toggle('on',m!=='base');});
+  if(m==='base'){
+    if(PLAY){clearInterval(PLAY);PLAY=null;REPLAYING=false;}   // the console is hidden: stop replay + voice
+    try{stopVoice();}catch(e){}
+    if(prev!=='base'){ BM_HIST=[];   // mirror the console: same case open, else the overview
+      if(VIEW==='case'&&SEL){BM_VIEW='case';BM_ACK=SEL;} else {BM_VIEW='home';BM_ACK=null;BM_MULE=null;} }
+    if(BM_VIEW==='case'&&BM_ACK) baseCase(BM_ACK,true); else if(BM_VIEW==='mule'&&BM_MULE) baseMule(BM_MULE,true); else baseHome(true);
+  } else {
+    bmDropMap();
+    if(prev==='base'){   // the console was hidden, so redraw its current view (maps need a real size)
+      if(BM_VIEW==='case'&&BM_ACK){SEL=BM_ACK;VIEW='case';}   // keep the same case open across the switch
+      if(VIEW==='case'&&SEL) selectCase(SEL); else if(VIEW==='tickets') showTickets();
+      else if(VIEW==='network') showNetwork(); else if(VIEW==='studio') showStudio(); else showOverview();
+      if(BM_VIEW==='mule'&&BM_MULE) setTimeout(()=>openMule(BM_MULE),300);   // same mule, as the console's profile
+    }
+  }
 }
+// ===================== ADVANCED light / dark theme (Advanced defaults to dark; remembered separately from Base) =====================
+let ADV_THEME=(()=>{try{return localStorage.getItem('themeAdv')||'dark';}catch(e){return 'dark';}})();
+function advTileUrls(){ const t=ADV_THEME==='light'?'Light':'Dark';
+  return {base:`https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_${t}_Gray_Base/MapServer/tile/{z}/{y}/{x}`,
+          ref:`https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_${t}_Gray_Reference/MapServer/tile/{z}/{y}/{x}`}; }
+function advApplyTheme(){ document.body.classList.toggle('advlight',ADV_THEME==='light');
+  const b=$('advThemeBtn'); if(b)b.innerHTML=ADV_THEME==='light'?'&#9790; dark':'&#9788; light'; }
+function advSwapTiles(map, withLabels){ if(!map)return;   // swap the street map in place (no re-render, no voice replay)
+  map.eachLayer(l=>{ if(l instanceof L.TileLayer) map.removeLayer(l); });
+  const u=advTileUrls(); L.tileLayer(u.base,{maxZoom:16}).addTo(map).bringToBack(); if(withLabels) L.tileLayer(u.ref,{maxZoom:16}).addTo(map); }
+function advToggleTheme(){ ADV_THEME=ADV_THEME==='light'?'dark':'light'; try{localStorage.setItem('themeAdv',ADV_THEME);}catch(e){}
+  advApplyTheme(); try{ advSwapTiles(MAP,true); advSwapTiles(OMAP,false); }catch(e){}
+  if(VIEW==='network') showNetwork(); }
+// ===================== BASE MODE — a separate, simple screen for field officers (light or dark) =====================
+// Same API as the Advanced console (/queue, /hotspots, /predict, /trail, /case, /tickets, /network, /account,
+// /codenames, /alerts/dispatch); no second backend. Three pages:
+//   Overview  = risk map + "Cases needing action" + "Mule register" (cases grouped under each suspected mule)
+//   Complaint = map of the money path (numbered, in order) + one action + four plain answers
+//   Mule file = one suspected mule: identity, ATMs it used, every case it is linked to, linked accounts, activity
+let BM_VIEW='home', BM_ACK=null, BM_MULE=null, BM_MAP=null, BM_Q='', BM_TAB='cases', BM_NET=null, BM_NAMES={}, BM_HIST=[], BM_TXALL=null;
+let BM_THEME=(()=>{try{return localStorage.getItem('themeBase')||'light';}catch(e){return 'light';}})();
+const BM_TIER={RED:'Freeze now',AMBER:'Watch',GREY:'No action yet'};
+const BM_TYPE={fast_fanout:'Split across many accounts',layered:'Passed along a chain of accounts',
+  ring_reuse:'Known mule group',pos_out:'Card-machine cash-out',split_hold:'Part moved, part held',
+  cross_district:'Moved to another district',no_cashout:'Kept moving between accounts',smish_burst:'SMS scam burst'};
+const BM_STATUS={NEW:'New',ASSIGNED:'Assigned',INVESTIGATING:'Under review',FREEZE_SENT:'Freeze request sent',RESOLVED:'Resolved',CLOSED:'Closed'};
+const BM_ROLE={CASHER:'Cash-out specialist',DISTRIBUTOR:'Spreads money to many accounts',COLLECTOR:'Collects from many sources',RELAY:'Passes money along'};
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const bmType=t=>BM_TYPE[t]||String(t||'').replace(/_/g,' ');
+function bmWhen(s){ if(!s)return '—'; const d=new Date(String(s).slice(0,19));   // naive IST, shown as-is
+  if(isNaN(d))return String(s).slice(0,16).replace('T',' ');
+  return d.toLocaleDateString('en-IN',{day:'numeric',month:'short'})+', '+d.toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit',hour12:false}); }
+const bmTime=s=>String(s||'').slice(11,16);
+function bmDate(s){ const d=new Date(String(s||'').slice(0,19)); return isNaN(d)?'—':d.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}); }
+function bmDur(min){ min=Math.max(0,Math.round(+min||0)); if(min<60)return min+' min';
+  if(min<1440)return Math.floor(min/60)+' h '+(min%60)+' min'; const d=Math.round(min/1440); return d+' day'+(d===1?'':'s'); }
+const bmCv=n=>getComputedStyle($('baseApp')).getPropertyValue(n).trim();   // current theme colour, for map lines
+// ---- mule names: the same stable aliases the Mule Network uses (e.g. NOMAD-2405), from /codenames ----
+async function bmNames(ids){ const need=[...new Set((ids||[]).filter(i=>i&&!(i in BM_NAMES)))];
+  for(let k=0;k<need.length;k+=200){ try{ Object.assign(BM_NAMES, await jget('/codenames?ids='+encodeURIComponent(need.slice(k,k+200).join(',')))); }catch(e){} } }
+const bmName=id=>BM_NAMES[id]||id;
+const bmMuleLink=id=>`<span class="bm-mule" onclick="event.stopPropagation();baseMule('${esc(id)}')">${esc(bmName(id))}<small>${esc(id)}</small></span>`;
+const bmMuleInline=id=>`<span class="bm-mule" onclick="event.stopPropagation();baseMule('${esc(id)}')">${esc(bmName(id))}</span>`;
+// ---- theme ----
+function bmApplyTheme(){ const a=$('baseApp'); if(a)a.dataset.theme=BM_THEME; document.body.classList.toggle('bmdark',BM_THEME==='dark');
+  const b=$('bmThemeBtn'); if(b)b.innerHTML=BM_THEME==='dark'?'&#9788; Light':'&#9790; Dark'; }
+function bmToggleTheme(){ BM_THEME=BM_THEME==='dark'?'light':'dark'; try{localStorage.setItem('themeBase',BM_THEME);}catch(e){}
+  bmApplyTheme();   // redraw the current map with the matching street map
+  if(BM_VIEW==='case'&&BM_ACK)baseCase(BM_ACK,true); else if(BM_VIEW==='mule'&&BM_MULE)baseMule(BM_MULE,true); else {bmDropMap();bmHomeMap();} }
+function bmShell(){ const a=$('baseApp'); if(!a)return null;
+  if(!$('bmMain')) a.innerHTML=`<div class="bm-top">
+      <div class="bm-brand">Mule Connection<small>Cyber-fraud cash-out alerts &middot; Pune</small></div>
+      <span class="bm-demo">Synthetic demo data</span>
+      <button class="bm-themebtn" id="bmThemeBtn" onclick="bmToggleTheme()" title="Light or dark screen"></button>
+      <div class="modesw" title="Base = simple view &middot; Advanced = full analyst console">
+        <span class="seg on" onclick="setMode('base')">Base</span><span class="seg" onclick="setMode('advanced')">Advanced</span></div>
+    </div><main class="bm-wrap" id="bmMain"></main>`;
+  bmApplyTheme(); return $('bmMain'); }
+function bmDropMap(){ if(BM_MAP){try{BM_MAP.remove();}catch(e){}BM_MAP=null;} }
+function bmTiles(map){   // keyless Esri street map in the current theme; OpenStreetMap if Esri is unreachable
+  const t=BM_THEME==='dark'?'Dark':'Light';
+  const base=L.tileLayer(`https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_${t}_Gray_Base/MapServer/tile/{z}/{y}/{x}`,{maxZoom:16}).addTo(map);
+  const ref=L.tileLayer(`https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_${t}_Gray_Reference/MapServer/tile/{z}/{y}/{x}`,{maxZoom:16}).addTo(map);
+  let terr=0; base.on('tileerror',()=>{ if(++terr===4){ try{map.removeLayer(base);map.removeLayer(ref);}catch(e){}
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,subdomains:'abc'}).addTo(map); } });
+}
+const bmIcon=(html,z)=>({icon:L.divIcon({className:'',iconSize:[0,0],html}),zIndexOffset:z||0});
+function bmFocus(el){ const ll=String(el.dataset.ll||'').split(',').map(Number);
+  if(BM_MAP&&ll.length===2&&!isNaN(ll[0])) BM_MAP.flyTo(ll,Math.max(BM_MAP.getZoom(),14),{duration:.8}); }
+// ---- simple back-stack (Overview -> Complaint -> Mule file -> Complaint ...) ----
+function bmPush(){ BM_HIST.push(BM_VIEW==='case'?{v:'case',id:BM_ACK}:BM_VIEW==='mule'?{v:'mule',id:BM_MULE}:{v:'home'}); if(BM_HIST.length>30)BM_HIST.shift(); }
+function bmBack(){ const s=BM_HIST.pop(); if(!s||s.v==='home')baseHome(true); else if(s.v==='case')baseCase(s.id,true); else baseMule(s.id,true); }
+const bmBackLink=()=>`<a class="bm-back" onclick="bmBack()">&lsaquo; Back</a>`;
+
+// ================= OVERVIEW: risk map first, then cases / mule register =================
+function baseHome(top){
+  const fresh=BM_VIEW!=='home'||!$('bmBody');   // the 30 s poll only refreshes the lists, it keeps the map
+  BM_VIEW='home'; BM_ACK=null; BM_MULE=null; BM_HIST=[];
+  const m=bmShell(); if(!m)return;
+  if(fresh){
+    bmDropMap();
+    m.innerHTML=`<h1>Overview</h1><p class="bm-sub" id="bmSum"></p>
+      <div class="bm-card bm-mapcard">
+        <div class="hd"><h2>Where cash-outs are most likely</h2><span class="bm-note">across open cases &middot; estimates, not certainties</span></div>
+        <div class="bm-mapgrid"><div class="bm-map" id="bmHomeMap"></div>
+          <div class="bm-side"><h3>Districts by predicted risk</h3><ol class="bm-areas" id="bmAreas"></ol>
+            <p class="bm-note" style="margin-top:10px">Numbers on the map rank the districts. Shaded circles are the most likely ~5 km cash-out areas.</p></div></div>
+      </div>
+      <div class="bm-tabs"><span class="bm-tab" id="bmTabCases" onclick="bmSetTab('cases')">Cases needing action<span id="bmNCases"></span></span>
+        <span class="bm-tab" id="bmTabMules" onclick="bmSetTab('mules')">Mule register<span id="bmNMules"></span></span></div>
+      <input id="bmSearch" class="bm-search" oninput="BM_Q=this.value;bmBody()">
+      <div class="bm-card flush" id="bmBody"></div>
+      <p class="bm-foot" id="bmFoot"></p>`;
+    $('bmSearch').value=BM_Q;
+  }
+  bmBody();
+  if(!BM_MAP) bmHomeMap();
+  if(top) window.scrollTo(0,0);
+  if(!BM_NET) jget('/network?limit=120').then(d=>{ BM_NET=d; (d.nodes||[]).forEach(n=>BM_NAMES[n.id]=n.codename); if(BM_VIEW==='home')bmBody(); }).catch(()=>{});
+  bmNames((QUEUE||[]).map(i=>i.top_account)).then(()=>{ if(BM_VIEW==='home'&&BM_TAB==='cases')bmBody(); });
+}
+function bmSetTab(t){ BM_TAB=t; BM_Q=''; const s=$('bmSearch'); if(s)s.value=''; bmBody(); }
+function bmBody(){ const el=$('bmBody'); if(!el)return;
+  const order={RED:0,AMBER:1,GREY:2}, q=BM_Q.trim().toLowerCase();
+  const all=(QUEUE||[]).slice().sort((a,b)=>(order[a.tier]-order[b.tier])||(b.p_cashout_10m-a.p_cashout_10m));
+  const n=t=>all.filter(i=>i.tier===t).length, mules=(BM_NET&&BM_NET.nodes)||[];
+  const s=$('bmSum'); if(s)s.innerHTML=`<span class="bm-pill RED">${n('RED')} freeze now</span><span class="bm-pill AMBER">${n('AMBER')} to watch</span><span class="bm-pill GREY">${n('GREY')} no action yet</span>`;
+  $('bmNCases').textContent=`(${all.length})`; $('bmNMules').textContent=BM_NET?`(${mules.length})`:'';
+  $('bmTabCases').classList.toggle('on',BM_TAB==='cases'); $('bmTabMules').classList.toggle('on',BM_TAB==='mules');
+  $('bmSearch').placeholder=BM_TAB==='cases'?'Find a case by complaint number, mule name or account':'Find a mule by name, account, area or role';
+  const foot=$('bmFoot');
+  if(BM_TAB==='cases'){
+    const rows=q?all.filter(i=>(i.ack_no+' '+(i.top_account||'')+' '+bmName(i.top_account)+' '+(i.victim_account||'')).toLowerCase().includes(q)):all;
+    el.innerHTML=`<table class="bm-table"><thead><tr><th>Status</th><th>Complaint no.</th><th>Mule to act on</th><th class="hm">Type</th>
+        <th class="r">Amount</th><th class="hm">Filed</th><th class="r">Chance of cash-out<br>in 10 min</th><th class="hm"></th></tr></thead><tbody>`
+      +(rows.map(i=>`<tr onclick="baseCase('${i.ack_no}')">
+        <td><span class="bm-pill ${i.tier}">${BM_TIER[i.tier]||i.tier}</span></td>
+        <td class="bm-mono">${i.ack_no}</td><td>${i.top_account?bmMuleLink(i.top_account):'&mdash;'}</td>
+        <td class="hm">${esc(bmType(i.fraud_category))}</td><td class="r">${money(i.disputed_amount)}</td>
+        <td class="hm">${bmWhen(i.filed_ts)}</td><td class="r"><b>${pct(i.p_cashout_10m)}</b></td>
+        <td class="r bm-open hm">Open &rsaquo;</td></tr>`).join('')
+      ||`<tr><td colspan="8" class="bm-empty">No case matches &ldquo;${esc(BM_Q)}&rdquo;.</td></tr>`)+'</tbody></table>';
+    if(foot)foot.textContent='Most urgent first. Click a mule name to see every case linked to that account. Percentages are estimates to help you decide what to review first; they are not proof of a crime.';
+  } else {
+    if(!BM_NET){ el.innerHTML='<div class="bm-empty">Loading the mule register&hellip;</div>'; return; }
+    const alert={}; all.forEach(i=>{ const a=i.top_account; if(a&&(alert[a]==null||order[i.tier]<order[alert[a]]))alert[a]=i.tier; });
+    const rows=mules.filter(m=>!q||(m.codename+' '+m.id+' '+(m.district||'')+' '+(BM_ROLE[m.group]||'')).toLowerCase().includes(q))
+      .sort((a,b)=>(b.n_cases-a.n_cases)||(b.tainted_in-a.tainted_in));
+    el.innerHTML=`<table class="bm-table"><thead><tr><th>Mule</th><th class="hm">Role</th><th class="hm">Registered area</th>
+        <th class="r">Linked cases</th><th class="r">Stolen money received</th><th>Open alert</th><th class="hm"></th></tr></thead><tbody>`
+      +(rows.map(m=>`<tr onclick="baseMule('${m.id}')">
+        <td><span class="bm-mule">${esc(m.codename)}<small>${esc(m.id)}</small></span></td>
+        <td class="hm"><span class="bm-role">${esc(BM_ROLE[m.group]||m.group)}</span></td><td class="hm">${esc(m.district||'—')}</td>
+        <td class="r"><b>${m.n_cases}</b></td><td class="r">${money(m.tainted_in)}</td>
+        <td>${alert[m.id]?`<span class="bm-pill ${alert[m.id]}">${BM_TIER[alert[m.id]]}</span>`:'<span class="bm-note">none</span>'}</td>
+        <td class="r bm-open hm">Open file &rsaquo;</td></tr>`).join('')
+      ||`<tr><td colspan="7" class="bm-empty">No mule matches &ldquo;${esc(BM_Q)}&rdquo;.</td></tr>`)+'</tbody></table>';
+    if(foot)foot.textContent=`The ${mules.length} suspected mule accounts linked to the most complaints in the (synthetic) data, one row per account, most cases first. Open a file to see all of its cases. Roles come from simple rules about how money moves through the account. A listing is a lead for review, not proof of a crime.`;
+  }
+}
+function bmHomeMap(){
+  const el=$('bmHomeMap'); if(!el||typeof L==='undefined'||!HOT)return;
+  try{
+    BM_MAP=L.map(el,{attributionControl:false,scrollWheelZoom:false}); bmTiles(BM_MAP);
+    const red=bmCv('--b-red'), amb=bmCv('--b-amber-line'), gry=bmCv('--b-node');
+    // shaded circles = the most likely ~5 km cells; numbered pins = districts ranked by their share of the risk
+    const cells=HOT.cells||[];
+    cells.slice(0,10).forEach(c=>L.circle([c.lat,c.lon],{radius:1300,color:red,weight:1,opacity:.6,
+      fillColor:red,fillOpacity:.08+.22*(c.risk_norm||0),interactive:false}).addTo(BM_MAP));
+    const agg={}; let tot=0;
+    cells.forEach(c=>{ const a=agg[c.district]||(agg[c.district]={district:c.district,risk:0,lat:0,lon:0});
+      a.risk+=c.risk; a.lat+=c.lat*c.risk; a.lon+=c.lon*c.risk; tot+=c.risk; });
+    const areas=Object.values(agg).filter(a=>a.risk>0).map(a=>({district:a.district,share:a.risk/(tot||1),lat:a.lat/a.risk,lon:a.lon/a.risk}))
+      .sort((a,b)=>b.share-a.share);
+    areas.forEach((a,i)=>L.marker([a.lat,a.lon],bmIcon(`<div class="bm-pin" style="background:${i===0?red:i===1?amb:gry}">${i+1}</div>`,900))
+      .addTo(BM_MAP).bindTooltip(`${esc(a.district)} &middot; ${Math.round(a.share*100)}% of the predicted cash-out risk`,{direction:'top',offset:[0,-12]}));
+    const ar=$('bmAreas'); if(ar) ar.innerHTML=areas.map(a=>`<li><b>${esc(a.district)}</b><span>${Math.round(a.share*100)}% of the predicted cash-out risk</span></li>`).join('')||'<li>No data yet</li>';
+    const ll=(HOT.atm_markers||[]).map(a=>[a.lat,a.lon]);   // frame the whole metro
+    if(ll.length) BM_MAP.fitBounds(L.latLngBounds(ll).pad(0.04)); else BM_MAP.setView([18.55,73.85],11);
+    setTimeout(()=>{try{BM_MAP&&BM_MAP.invalidateSize();}catch(e){}},150);
+  }catch(e){}
+}
+// "~5 km area, 2 km north-east of centre" -- says which part of the district a predicted cell is in
+function bmNear(c){ const ctr=HOT&&HOT.district_centroids&&HOT.district_centroids[c.district];
+  if(!ctr||c.lat==null)return '~5 km area';
+  const km=haversine([ctr.lat,ctr.lon],[c.lat,c.lon]); if(km==null||km<0.8)return '~5 km area around the district centre';
+  const dy=c.lat-ctr.lat, dx=(c.lon-ctr.lon)*Math.cos(ctr.lat*Math.PI/180);
+  const dirs=['east','north-east','north','north-west','west','south-west','south','south-east'];
+  return `~5 km area, ${km.toFixed(km<10?1:0)} km ${dirs[(Math.round(Math.atan2(dy,dx)/(Math.PI/4))+8)%8]} of centre`; }
+
+// ================= COMPLAINT: map of the money path first, then the action and four plain answers =================
+async function baseCase(ack, noPush){
+  if(!noPush&&!(BM_VIEW==='case'&&BM_ACK===ack)) bmPush();
+  BM_VIEW='case'; BM_ACK=ack; BM_MULE=null; bmDropMap();
+  const m=bmShell(); if(!m)return; window.scrollTo(0,0);
+  m.innerHTML=bmBackLink()+`<div class="bm-load">Loading complaint ${esc(ack)}&hellip;</div>`;
+  let p,tr,cs,tk;
+  try{ [p,tr,cs,tk]=await Promise.all([jget('/predict/'+ack),jget('/trail/'+ack),jget('/case/'+ack),jget('/tickets/'+ack).catch(()=>null)]); }
+  catch(e){ m.innerHTML=bmBackLink()+'<div class="bm-load">Could not load this case. Please try again.</div>'; return; }
+  if(BM_VIEW!=='case'||BM_ACK!==ack)return;              // the officer moved on while it loaded
+  if(!p||!p.recommendation){ m.innerHTML=bmBackLink()+'<div class="bm-load">Could not load this case. Please try again.</div>'; return; }
+  const nodes=(tr&&tr.nodes)||[], edges=(tr&&tr.edges)||[];
+  await bmNames(nodes.map(n=>n.account_id));
+  if(BM_VIEW!=='case'||BM_ACK!==ack)return;
+  const r=p.recommendation, c=p.cashout, loc=p.location, acc=p.account_id, k=(cs&&cs.case)||{};
+  const vic=(nodes.find(n=>n.is_victim)||{}).account_id;
+  const nAcc=nodes.filter(n=>!n.is_victim).length;
+  const cashed=edges.filter(e=>e.atm_id).reduce((s,e)=>s+(e.tainted_amount||0),0);
+  const seed=edges.find(e=>e.hop===1)||{};
+  // received = stolen money that reached this account; left = what has not moved on yet (in - out on the trail)
+  const inAmt=edges.filter(e=>e.dst_account===acc).reduce((s,e)=>s+(e.tainted_amount||0),0);
+  const outAmt=edges.filter(e=>e.src_account===acc).reduce((s,e)=>s+(e.tainted_amount||0),0);
+  const held=inAmt||r.tainted_amount||0, left=Math.max(0,inAmt-outAmt), p10=Math.round(c.p_10m*100);
+  const tst=tk&&!tk.detail?tk.status:null, closed=tst==='RESOLVED'||tst==='CLOSED', sent=tst==='FREEZE_SENT';
+  const how=(p.channel.ATM>=p.channel.POS)?'an ATM withdrawal':'a card-machine (POS) cash withdrawal';
+  const movesOn=p.channel.onward_transfer>=Math.max(p.channel.ATM,p.channel.POS,p.channel.dormant);
+  const who=`account ${acc} (${bmName(acc)})`;
+  // number the accounts in the order they first received the money (victim = 1)
+  const first={}; edges.forEach(e=>{ if(e.dst_account&&(!(e.dst_account in first)||String(e.ts)<first[e.dst_account]))first[e.dst_account]=String(e.ts); });
+  const num={}; nodes.slice().sort((a,b)=>(a.is_victim?-1:b.is_victim?1:0)||String(first[a.account_id]||'~').localeCompare(String(first[b.account_id]||'~')))
+    .forEach((n,i)=>num[n.account_id]=i+1);
+  const nb=id=>`<span class="bm-n ${id===vic?'v':id===acc?'t':''}">${num[id]||'?'}</span>`;
+  const lab=id=>id===vic?'Victim':bmMuleInline(id);
+  const pos={}; nodes.forEach(n=>{ if(n.lat!=null)pos[n.account_id]=n.lat+','+n.lon; });
+  // where (the forecast, at the level the model can defend)
+  let whereMain, whereNote;
+  if(loc.granularity==='terminal'&&loc.terminals[0]){ const t=loc.terminals[0];
+    whereMain=`Near ${t.atm_id}, ${t.district}`; whereNote='The most likely ATM. This is an estimate, not a certainty.'; }
+  else if(loc.granularity==='cell'&&loc.cells[0]){
+    whereMain=`${loc.cells[0].district}: ${bmNear(loc.cells[0])}`; whereNote='Not confident enough to name one ATM, so the area is shown instead.'; }
+  else { const d=(loc.districts||[])[0]||{}; whereMain=`${d.district||'Unknown'} district`; whereNote='Only the district can be estimated for now.'; }
+  // the money path, step by step (click a step to find it on the map)
+  const steps=edges.slice().sort((a,b)=>String(a.ts).localeCompare(String(b.ts))).map(e=>{
+    if(e.atm_id){ const ll=ATMXY[e.atm_id], md=ATMMETA[e.atm_id]||{};
+      return `<li data-ll="${ll?ll.join(','):''}" onclick="bmFocus(this)"><span class="tm">${bmTime(e.ts)}</span>
+        <span class="tx">${nb(e.src_account)} ${lab(e.src_account)} withdrew cash<small>${money(e.amount)} at ${esc(e.atm_id)}${md.district?' &middot; '+esc(md.district):''}</small></span></li>`; }
+    return `<li data-ll="${pos[e.dst_account]||''}" onclick="bmFocus(this)"><span class="tm">${bmTime(e.ts)}</span>
+      <span class="tx">${nb(e.src_account)} ${lab(e.src_account)} &rarr; ${nb(e.dst_account)} ${lab(e.dst_account)}
+      <small>${money(e.tainted_amount||e.amount)} by ${esc(e.channel)}${e.hop===1?' &middot; the reported transaction':e.observed?'':' &middot; not yet confirmed by the bank'}</small></span></li>`; }).join('')
+    +(closed?'':`<li class="pred"><span class="tm">Next</span><span class="tx">${nb(acc)} ${lab(acc)}: estimated ${p10}% chance of a cash withdrawal within 10 min<small>likely ${esc(whereMain)}</small></span></li>`);
+  // 1. the action (follows the case status in the Case Centre)
+  let act={RED:{t:`Freeze ${who} now`,
+      s:`Estimated ${p10}% chance the money is withdrawn as cash in the next 10 minutes. This account received ${money(held)} of the stolen money. Freezing first is the fastest way to stop the loss.`},
+    AMBER:{t:`Watch ${who}`,
+      s:c.p_10m>=0.60   // same bar as config.TIER_RED_P: a high chance but a small amount -> watch, not freeze
+        ?`Estimated ${p10}% chance of a cash withdrawal in the next 10 minutes, but this account received only ${money(held)} of the stolen money, so watch it rather than freeze. Check again in 10 to 20 minutes.`
+        :`Estimated ${p10}% chance of a cash withdrawal in the next 10 minutes. Not urgent enough to freeze yet; check again in 10 to 20 minutes.`},
+    GREY:{t:'No action yet: keep tracing the money',
+      s:`Estimated ${p10}% chance of a cash withdrawal in the next 10 minutes. Low for now.`}}[r.tier]||{t:r.action,s:r.reason};
+  let primary=r.tier==='RED'?`<button class="bm-btn red" onclick="bmSend(this,'${ack}','${acc}')">Send freeze request</button>`
+            :r.tier==='AMBER'?`<button class="bm-btn" onclick="bmSend(this,'${ack}','${acc}')">Notify district desk</button>`:'';
+  let barTier=r.tier;
+  if(closed){
+    const out={FROZEN:'account frozen in time',RECOVERED:'money recovered',CASHED_OUT:'cash was withdrawn before a freeze',FALSE_POSITIVE:'false alarm'}[tk.outcome]||'closed';
+    act={t:'This case is closed',s:`Outcome: ${out}${tk.recovered_amount?'; '+money(tk.recovered_amount)+' recovered':''}. No further action is needed.`};
+    primary=''; barTier='GREY';
+  } else if(sent){ act={t:`Freeze request already sent for ${who}`,s:act.s}; primary=''; }
+  // 2. what happened  3. why
+  const happened=`${money(k.disputed_amount||seed.amount||0)} left the victim's account on ${bmWhen(cs&&cs.seed_ts)}${seed.channel?' by '+esc(seed.channel):''}.
+    The complaint was filed ${bmDur(k.reporting_delay_min)} later. Since then the money has moved through ${nAcc} account${nAcc===1?'':'s'}.`
+    +(cashed>0?` About ${money(cashed)} has already been withdrawn as cash.`:'');
+  const why=[], node=nodes.find(n=>n.account_id===acc)||{}, h=node.hop_from_victim;
+  if(h!=null)why.push(`It received the stolen money ${h===1?'directly from the victim':h+' transfers after the victim'}.`);
+  why.push(held&&left/held>=0.5?'Most of that money has not moved on yet.'
+    :left>0?'Part of that money is still in the account.':'It has been passing the money on to other accounts.');
+  if(r.tier!=='GREY')why.push('Its recent activity (money arriving and leaving quickly) is like accounts that withdrew cash soon after.');
+  const srcs=new Set(); (loc.terminals||[]).forEach(t=>(t.sources||[]).forEach(x=>srcs.add(x)));
+  const basis=[]; if(srcs.has('C1')||srcs.has('C2'))basis.push('its own past cash withdrawals');
+  if(srcs.has('C4'))basis.push('ATMs used by its linked accounts'); if(srcs.has('C3'))basis.push('its registered address area');
+  if(srcs.has('C5'))basis.push('ATMs often used in past frauds nearby');
+  if(basis.length)why.push(`The likely area is based on ${basis.join(', ')}.`);
+  const st=tst?(BM_STATUS[tst]||tst)+(tk.assignee?' · '+tk.assignee:''):'New';
+  m.innerHTML=bmBackLink()+`
+    <h1>Complaint ${esc(ack)}</h1>
+    <p class="bm-meta">Filed <b>${bmWhen(k.filed_ts)}</b> &middot; ${esc(bmType(k.fraud_category))} &middot; <b>${money(k.disputed_amount||0)}</b> reported
+      &middot; Case status: <b id="bmStatus">${esc(st)}</b> &middot; Mule to act on: ${bmMuleInline(acc)} (${esc(acc)})</p>
+    <div class="bm-card bm-mapcard">
+      <div class="hd"><h2>How the money moved</h2><span class="bm-note">numbers show the order the accounts received the money &middot; click a step to find it</span></div>
+      <div class="bm-mapgrid"><div class="bm-map" id="bmMap"></div>
+        <div class="bm-side"><h3>Money path</h3><ul class="bm-steps">${steps}</ul></div></div>
+      <div class="bm-legend"><span><i style="background:var(--b-victim)"></i>Victim</span><span><i style="background:var(--b-node)"></i>Mule account (in order)</span>
+        <span><i style="background:var(--b-red)"></i>Account to act on</span><span><i class="sq" style="background:var(--b-cash)"></i>Cash already withdrawn</span>
+        <span><i class="area"></i>Likely cash-out area</span><span>Positions are registered (KYC) areas, not live locations.</span></div>
+    </div>
+    <div class="bm-action ${barTier}">
+      <div class="t">${esc(act.t)}</div><div class="s">${esc(act.s)}</div>
+      <div class="bm-btns">${primary}
+        <button class="bm-btn ghost" onclick="bmReviewed('${ack}')">Mark as reviewed</button>
+        <button class="bm-btn ghost" onclick="baseMule('${acc}')">Open mule file</button>
+        <button class="bm-btn ghost" onclick="bmAdvanced('${ack}')">Open full analysis &rsaquo;</button></div>
+      <div class="bm-flash" id="bmFlash"></div>
+    </div>
+    <div class="bm-grid">
+      <div class="bm-card"><h2>What happened</h2><p>${happened}</p>
+        <p>${bmMuleInline(acc)} (${esc(acc)}) received <b>${money(held)}</b> of it${left>0?`; about <b>${money(left)}</b> has not moved on yet`:' and has passed it on'}.</p></div>
+      <div class="bm-card"><h2>What may happen next</h2>
+        <div class="bm-big ${closed?'':r.tier}">${p10}%</div>
+        <p class="bm-note">estimated chance of a cash withdrawal within 10 minutes</p>
+        <p>Within 30 minutes: <b>${pct(c.p_30m)}</b> &middot; within 1 hour: <b>${pct(c.p_60m)}</b></p>
+        <p>If it happens, most likely by <b>${how}</b>.${movesOn?' The money may first be sent on to another account.':''}</p></div>
+      <div class="bm-card"><h2>Where</h2><p><b>${esc(whereMain)}</b></p><p class="bm-note">${whereNote}</p>
+        ${r.target_station?`<p>Alert goes to: <b>${esc(r.target_station)}</b></p>`:''}</div>
+      <div class="bm-card"><h2>Why this account</h2><ul class="bm-why">${why.map(x=>`<li>${x}</li>`).join('')}</ul>
+        <p class="bm-note" style="margin-top:10px">A flag is a lead for review, not proof that the account holder committed a crime.</p></div>
+    </div>`;
+  bmCaseMap(tr, loc, acc, vic, num);
+}
+function bmArrow(a,b,hot){   // arrowhead 62% along a->b; the angle is the same at every zoom (Web Mercator)
+  const pa=BM_MAP.project(a,12), pb=BM_MAP.project(b,12), ang=Math.atan2(pb.y-pa.y,pb.x-pa.x)*180/Math.PI+90;
+  L.marker([a[0]+(b[0]-a[0])*.62,a[1]+(b[1]-a[1])*.62],Object.assign({interactive:false},
+    bmIcon(`<div class="bm-arrow${hot?' hot':''}" style="transform:translate(-5px,-5px) rotate(${ang.toFixed(1)}deg)"></div>`,600))).addTo(BM_MAP); }
+function bmChip(a,b,txt){ L.marker([(a[0]+b[0])/2,(a[1]+b[1])/2],Object.assign({interactive:false},bmIcon(`<div class="bm-amt">${txt}</div>`,650))).addTo(BM_MAP); }
+function bmCaseMap(tr, loc, acc, vic, num){
+  const el=$('bmMap'); if(!el||typeof L==='undefined'||!tr)return;
+  try{
+    BM_MAP=L.map(el,{attributionControl:false,scrollWheelZoom:false}); bmTiles(BM_MAP);
+    const col={node:bmCv('--b-node'),head:bmCv('--b-head'),red:bmCv('--b-red'),cash:bmCv('--b-cash')};
+    const nodes=tr.nodes||[], edges=tr.edges||[], pos={}, pts=[];
+    nodes.forEach(n=>{ if(n.lat!=null&&n.lon!=null)pos[n.account_id]=[n.lat,n.lon]; });
+    // the transfers that brought the money from the victim to the account to act on are drawn stronger
+    const onPath=new Set(); let cur=acc, guard=0;
+    while(cur&&cur!==vic&&guard++<12){ const e=edges.filter(x=>x.dst_account===cur).sort((a,b)=>String(a.ts).localeCompare(String(b.ts)))[0];
+      if(!e)break; onPath.add(e.txn_id); cur=e.src_account; }
+    // amount labels only on the victim -> target path (the step list beside the map has every amount)
+    edges.forEach(e=>{ const a=pos[e.src_account], b=e.atm_id?ATMXY[e.atm_id]:pos[e.dst_account]; if(!a||!b)return; pts.push(b);
+      const hot=onPath.has(e.txn_id);
+      if(e.atm_id){
+        L.polyline([a,b],{color:col.cash,weight:2,dashArray:'2 6',opacity:.9,interactive:false}).addTo(BM_MAP);
+        L.marker(b,bmIcon('<div class="bm-atm"></div>',500)).addTo(BM_MAP)
+          .bindTooltip(`Cash withdrawn &middot; ${money(e.amount)} &middot; ${esc(e.atm_id)} &middot; ${bmTime(e.ts)}`);
+        return; }
+      L.polyline([a,b],{color:hot?col.head:col.node,weight:hot?3:2,opacity:hot?.9:.65,interactive:false}).addTo(BM_MAP);
+      bmArrow(a,b,hot);
+      if(hot) bmChip(a,b,money(e.tainted_amount||e.amount)+' &middot; '+bmTime(e.ts)); });
+    nodes.forEach(n=>{ const ll=pos[n.account_id]; if(!ll)return; pts.push(ll);
+      const cls=n.account_id===vic?'v':n.account_id===acc?'t':'';
+      const nm=n.account_id===vic?'Victim':bmName(n.account_id);
+      const mk=L.marker(ll,bmIcon(`<div class="bm-node ${cls}">${num[n.account_id]||''}</div>`,cls==='t'?900:cls==='v'?800:700)).addTo(BM_MAP);
+      const info=`<b>${num[n.account_id]}. ${esc(nm)}</b><br>${esc(n.account_id)}${n.district?' &middot; '+esc(n.district):''}<br>received ${money(n.tainted_amount)}`;
+      mk.bindPopup(info+(n.account_id!==vic?`<br><a style="cursor:pointer;color:var(--b-link);font-weight:600" onclick="baseMule('${n.account_id}')">Open mule file &rsaquo;</a>`:''));
+      if(cls) mk.bindTooltip(cls==='v'?'Victim':'Act on: '+esc(nm),{permanent:true,direction:'top',offset:[0,cls==='t'?-16:-13]});
+      else mk.bindTooltip(info); });
+    // the forecast: likely ATM (if confident) or likely ~5 km area, with a dashed line from the account to act on
+    let area=null;
+    if(loc.granularity==='terminal'&&loc.terminals[0]){ const t=loc.terminals[0]; area=[t.lat,t.lon];
+      L.circleMarker(area,{radius:9,color:col.red,weight:2.5,fillColor:col.red,fillOpacity:.15}).addTo(BM_MAP)
+        .bindTooltip('Likely ATM &middot; '+esc(t.atm_id),{permanent:true,direction:'bottom',offset:[0,9]});   // below: never covers the account label
+      (loc.terminals||[]).slice(1,4).forEach((o,i)=>{ L.circleMarker([o.lat,o.lon],{radius:6,color:col.red,weight:1.5,fill:false,dashArray:'3 3'}).addTo(BM_MAP)
+        .bindTooltip(`Possible ATM ${i+2} &middot; ${esc(o.atm_id)} &middot; ${pct(o.p)}`); pts.push([o.lat,o.lon]); }); }
+    else { const c=(loc.granularity==='cell'&&loc.cells[0])?loc.cells[0]:((loc.districts||[])[0]||null);
+      if(c&&c.lat!=null){ area=[c.lat,c.lon];
+        L.circle(area,{radius:loc.granularity==='cell'?1300:3500,color:col.red,weight:2,dashArray:'6 6',fillColor:col.red,fillOpacity:.08,interactive:false})
+          .addTo(BM_MAP).bindTooltip('Likely cash-out area',{permanent:true,direction:'bottom',offset:[0,8]}); } }
+    if(area){ pts.push(area); const from=pos[acc]; if(from)L.polyline([from,area],{color:col.red,weight:2.5,dashArray:'7 6',interactive:false}).addTo(BM_MAP); }
+    if(pts.length)BM_MAP.fitBounds(L.latLngBounds(pts).pad(0.15),{maxZoom:15});
+    setTimeout(()=>{try{BM_MAP&&BM_MAP.invalidateSize();}catch(e){}},150);
+  }catch(e){}
+}
+
+// ================= MULE FILE: one suspected mule and every case it is linked to =================
+async function baseMule(id, noPush){
+  if(!noPush&&!(BM_VIEW==='mule'&&BM_MULE===id)) bmPush();
+  BM_VIEW='mule'; BM_MULE=id; BM_ACK=null; bmDropMap();
+  const m=bmShell(); if(!m)return; window.scrollTo(0,0);
+  m.innerHTML=bmBackLink()+`<div class="bm-load">Loading the file for ${esc(bmName(id))}&hellip;</div>`;
+  let d; try{ d=await jget('/account/'+encodeURIComponent(id)+'?limit=2000'); }
+  catch(e){ m.innerHTML=bmBackLink()+'<div class="bm-load">Could not load this file. Please try again.</div>'; return; }
+  if(BM_VIEW!=='mule'||BM_MULE!==id)return;
+  if(!d||d.detail){ m.innerHTML=bmBackLink()+`<div class="bm-load">No record found for ${esc(id)}.</div>`; return; }
+  BM_NAMES[id]=d.codename;
+  const cps=(d.top_counterparties||[]).filter(c=>c.account);
+  await bmNames([...(d.ring_members||[]),...cps.map(c=>c.account),...(d.linked_cases||[]).map(c=>c.victim_account)]);
+  if(BM_VIEW!=='mule'||BM_MULE!==id)return;
+  const s=d.stats||{}, k=d.kyc||{}, tx=d.transactions||[];
+  const role=BM_ROLE[d.role]||null;
+  const asMule=(d.linked_cases||[]).filter(c=>c.role==='MULE'), asVictim=(d.linked_cases||[]).filter(c=>c.role==='VICTIM');
+  const kind=asMule.length?'Suspected mule account':asVictim.length?'Victim account':'Account';
+  const cash=tx.filter(t=>t.cashout&&t.direction==='out'), stolenCash=cash.filter(t=>t.tainted).reduce((a,t)=>a+t.amount,0);
+  const atms={}; cash.forEach(t=>{ if(!t.atm_id)return; const a=atms[t.atm_id]||(atms[t.atm_id]={id:t.atm_id,n:0,stolen:0,last:t.ts});
+    a.n++; if(t.tainted)a.stolen++; if(t.ts>a.last)a.last=t.ts; });
+  const atmList=Object.values(atms).sort((a,b)=>b.n-a.n);
+  const order={RED:0,AMBER:1,GREY:2}, open=(QUEUE||[]).filter(q=>q.top_account===id).sort((a,b)=>order[a.tier]-order[b.tier]);
+  BM_TXALL=tx;
+  const chip=(lab,val,hot)=>`<div class="bm-chip${hot?' hot':''}"><b>${val}</b><span>${lab}</span></div>`;
+  const caseRows=(d.linked_cases||[]).map(c=>`<tr ${c.ack_no?`onclick="baseCase('${c.ack_no}')"`:''}>
+      <td class="bm-mono">${esc(c.ack_no||c.case_ref)}</td><td>${c.role==='MULE'?'Mule':'Victim'}</td>
+      <td class="hm">${c.role==='MULE'&&c.victim_account?esc(c.victim_account):'&mdash;'}</td>
+      <td class="r">${c.disputed_amount!=null?money(c.disputed_amount):'&mdash;'}</td><td class="hm">${esc(bmType(c.fraud_category))}</td>
+      <td class="hm">${bmWhen(c.filed_ts)}</td><td>${c.ticket?esc(BM_STATUS[c.ticket.status]||c.ticket.status):'<span class="bm-note">not in open list</span>'}</td>
+      <td class="r bm-open hm">${c.ack_no?'Open &rsaquo;':''}</td></tr>`).join('');
+  const links=[...(d.ring_members||[]).map(a=>`<span class="bm-link" onclick="baseMule('${a}')"><b>${esc(bmName(a))}</b><small>${esc(a)} &middot; same group</small></span>`),
+    ...cps.filter(c=>!(d.ring_members||[]).includes(c.account)).slice(0,10).map(c=>`<span class="bm-link" onclick="baseMule('${c.account}')"><b>${esc(bmName(c.account))}</b><small>${esc(c.account)} &middot; ${c.n} transfer${c.n===1?'':'s'} &middot; ${money(c.amount)}</small></span>`)].join('');
+  m.innerHTML=bmBackLink()+`
+    <h1>${esc(d.codename)}<small>${kind} &middot; ${esc(id)}</small></h1>
+    <p class="bm-meta">Bank <b>${esc(k.bank_code||'—')}</b> &middot; Registered area <b>${esc(k.district||'—')}</b>${k.pin?' (PIN '+esc(k.pin)+')':''}
+      &middot; Account opened <b>${bmDate(k.open_date)}</b>${role?` &middot; Role <b>${esc(role)}</b>`:''}${k.ring_id?` &middot; Mule group <b>${esc(k.ring_id)}</b>`:''}</p>
+    ${open.length?`<div class="bm-action ${open[0].tier}"><div class="t">${BM_TIER[open[0].tier]}: this is the account to act on in ${open.length} open case${open.length===1?'':'s'}</div>
+      <div class="s">Open the complaint to see the forecast and send the request.</div>
+      <div class="bm-btns">${open.map(q=>`<button class="bm-btn ${q.tier==='RED'?'red':'ghost'}" onclick="baseCase('${q.ack_no}')">Complaint ${q.ack_no} &middot; ${pct(q.p_cashout_10m)} &rsaquo;</button>`).join('')}</div></div>`:''}
+    <div class="bm-card bm-mapcard">
+      <div class="hd"><h2>Where this account operates</h2><span class="bm-note">registered area and every ATM it has withdrawn cash from</span></div>
+      <div class="bm-mapgrid"><div class="bm-map" id="bmMap"></div>
+        <div class="bm-side"><h3>ATMs used (${atmList.length})</h3><ul class="bm-steps">${atmList.map(a=>{ const md=ATMMETA[a.id]||{}, ll=ATMXY[a.id];
+          return `<li data-ll="${ll?ll.join(','):''}" onclick="bmFocus(this)"><span class="tx"><b>${esc(a.id)}</b>${a.stolen?`<span class="bm-tag t">${a.stolen} with stolen money</span>`:''}
+            <small>${esc(md.district||'')} &middot; ${a.n} withdrawal${a.n===1?'':'s'} &middot; last ${bmWhen(a.last)}</small></span></li>`; }).join('')||'<li class="bm-note">No cash withdrawals recorded.</li>'}</ul></div></div>
+      <div class="bm-legend"><span><i style="background:var(--b-red)"></i>Registered (KYC) area</span><span><i class="sq" style="background:var(--b-cash)"></i>ATM used</span>
+        <span><i class="sq" style="background:var(--b-red)"></i>ATM used with stolen money</span></div>
+    </div>
+    <div class="bm-chips">
+      ${chip('Linked cases',asMule.length,asMule.length>1)}${chip('Victims',(d.victims||[]).length,(d.victims||[]).length>0)}
+      ${chip('Stolen money received',moneyC(s.tainted_inflow||0),s.tainted_inflow>0)}${chip('Stolen cash withdrawn',moneyC(stolenCash),stolenCash>0)}
+      ${chip('ATMs used',atmList.length)}${chip('Accounts dealt with',s.unique_counterparties||0)}
+    </div>
+    <div class="bm-sec"><div class="bm-card flush"><div style="padding:14px 18px 4px"><h2>Linked cases (${(d.linked_cases||[]).length})</h2></div>
+      <table class="bm-table"><thead><tr><th>Complaint no.</th><th>Role</th><th class="hm">Victim account</th><th class="r">Amount</th><th class="hm">Type</th><th class="hm">Filed</th><th>Case status</th><th class="hm"></th></tr></thead>
+      <tbody>${caseRows||'<tr><td colspan="8" class="bm-empty">No complaints linked to this account.</td></tr>'}</tbody></table></div></div>
+    ${links?`<div class="bm-sec bm-card"><h2>Linked accounts</h2><div class="bm-links">${links}</div></div>`:''}
+    <div class="bm-sec"><div class="bm-card flush"><div style="padding:14px 18px 4px"><h2>Account activity (${tx.length})</h2></div>
+      <div id="bmTx">${bmTxTable(tx.slice(0,12))}</div>
+      ${tx.length>12?`<div style="padding:12px 18px"><button class="bm-btn ghost" onclick="$('bmTx').innerHTML=bmTxTable(BM_TXALL);this.remove()">Show all ${tx.length}</button></div>`:''}</div></div>
+    <p class="bm-foot">A file is a lead for review, not proof that the account holder committed a crime. All data is synthetic.</p>`;
+  bmMuleMap(k, atmList);
+}
+function bmTxTable(rows){
+  return `<table class="bm-table"><thead><tr><th>When</th><th>Direction</th><th>With</th><th class="r">Amount</th><th class="hm">Channel</th><th class="hm">Note</th></tr></thead><tbody>`
+    +rows.map(t=>`<tr style="cursor:default"><td>${bmWhen(t.ts)}</td><td class="${t.direction==='in'?'bm-in':''}">${t.direction==='in'?'Received':'Sent'}</td>
+      <td>${t.cashout?'Cash at '+esc(t.atm_id||'ATM'):t.counterparty?esc(t.counterparty):'&mdash;'}</td><td class="r">${money(t.amount)}</td>
+      <td class="hm">${esc(t.channel)}</td><td class="hm">${t.tainted?'<span class="bm-tag t">Stolen money</span>':''}${t.cashout?'<span class="bm-tag c">Cash withdrawal</span>':''}</td></tr>`).join('')
+    +'</tbody></table>'; }
+function bmMuleMap(k, atmList){
+  const el=$('bmMap'); if(!el||typeof L==='undefined')return;
+  try{
+    BM_MAP=L.map(el,{attributionControl:false,scrollWheelZoom:false}); bmTiles(BM_MAP);
+    const col={cash:bmCv('--b-cash'),red:bmCv('--b-red')}, pts=[];
+    const home=k.lat!=null?[k.lat,k.lon]:null;
+    atmList.forEach(a=>{ const ll=ATMXY[a.id]; if(!ll)return; pts.push(ll);
+      if(home) L.polyline([home,ll],{color:a.stolen?col.red:col.cash,weight:a.stolen?2:1.2,opacity:a.stolen?.7:.45,dashArray:'3 5',interactive:false}).addTo(BM_MAP);
+      L.marker(ll,bmIcon(`<div class="bm-atm" style="${a.stolen?'background:var(--b-red)':''}"></div>`,a.stolen?600:500)).addTo(BM_MAP)
+        .bindTooltip(`${esc(a.id)} &middot; ${a.n} withdrawal${a.n===1?'':'s'}${a.stolen?' &middot; '+a.stolen+' with stolen money':''}`); });
+    if(home){ pts.push(home); L.marker(home,bmIcon('<div class="bm-node t"></div>',900)).addTo(BM_MAP)
+      .bindTooltip('Registered area',{permanent:true,direction:'top',offset:[0,-16]}); }
+    if(pts.length) BM_MAP.fitBounds(L.latLngBounds(pts).pad(0.2),{maxZoom:14}); else BM_MAP.setView([18.55,73.85],11);
+    setTimeout(()=>{try{BM_MAP&&BM_MAP.invalidateSize();}catch(e){}},150);
+  }catch(e){}
+}
+// ---- actions ----
+// two-step send: the first click arms the button, the second sends (no accidental freeze requests)
+async function bmSend(btn, ack, acc){
+  if(!btn.dataset.armed){ const lbl=btn.textContent; btn.dataset.armed='1'; btn.textContent='Click again to confirm';
+    setTimeout(()=>{ if(btn.isConnected&&btn.dataset.armed){ delete btn.dataset.armed; btn.textContent=lbl; } },5000); return; }
+  delete btn.dataset.armed; btn.disabled=true;
+  const f=$('bmFlash'); if(f){f.className='bm-flash';f.textContent='Sending…';}
+  let r; try{ r=await jpost(`/alerts/dispatch?ack_no=${ack}&account=${encodeURIComponent(acc)}`); }
+  catch(e){ if(f){f.className='bm-flash err';f.textContent='Could not send. Please try again.';} btn.disabled=false; return; }
+  const rec=r.recommendation||{}; let msg;
+  if(r.deduped) msg='A request for this account was already sent in the last 15 minutes.';
+  else if(r.dispatched&&r.dispatched.length){
+    if(rec.tier==='RED'){ msg=`Freeze request sent to the bank, and ${rec.target_station||'the district cyber police station'} alerted by SMS.`;
+      try{ await jpatch(`/tickets/${ack}?status=FREEZE_SENT&actor=${encodeURIComponent('officer (Base)')}`); }catch(e){} }
+    else msg=`Monitoring note emailed to the ${rec.target_district||'district'} desk.`;
+  } else msg='No alert is needed at this risk level.';
+  if(f){f.className='bm-flash ok';f.textContent=msg+' (Demo: no real message is sent.)';}
+  bmStatus(ack);
+}
+async function bmReviewed(ack){
+  const f=$('bmFlash');
+  try{ await jpostB(`/tickets/${ack}/note`,{text:'Reviewed by officer in Base view.',actor:'officer (Base)'}); }
+  catch(e){ if(f){f.className='bm-flash err';f.textContent='Could not save. Please try again.';} return; }
+  if(f){f.className='bm-flash ok';f.textContent='Marked as reviewed and saved to the case history.';}
+  bmStatus(ack);
+}
+async function bmStatus(ack){ try{ const t=await jget('/tickets/'+ack); const el=$('bmStatus');
+  if(el&&!t.detail)el.textContent=(BM_STATUS[t.status]||t.status)+(t.assignee?' · '+t.assignee:''); }catch(e){} }
+function bmAdvanced(ack){ SEL=ack; VIEW='case'; setMode('advanced'); }   // same case, full analyst console
 // ===================== MULE / ACCOUNT PROFILE — persistent entity view =====================
 async function openMule(id){
   const m=$('muleModal'), box=$('muleProf'); if(!m||!box)return;
@@ -907,6 +1610,7 @@ async function openMule(id){
   let d; try{ d=await (await fetch('/account/'+encodeURIComponent(id))).json(); }
   catch(e){ box.innerHTML='<div class="mp-load">Could not load '+id+'.</div>'; return; }
   if(d.detail){ box.innerHTML='<div class="mp-load">'+d.detail+'</div>'; return; }
+  await bmNames([...(d.ring_members||[]),...(d.top_counterparties||[]).map(c=>c.account)]);   // show names, not bare ids
   box.innerHTML=renderMule(d);
 }
 function closeMule(){ const m=$('muleModal'); if(m)m.classList.remove('on'); }
@@ -920,8 +1624,8 @@ function renderMule(d){
     return `<tr><td><span class="mp-role ${c.role}">${c.role}</span></td>
       <td>${c.victim_account||'&mdash;'}</td><td>${amt}</td><td>${c.fraud_category||'&mdash;'}</td>
       <td>${(c.filed_ts||'').replace('T',' ').slice(0,16)}</td><td>${tk}</td><td>${open}</td></tr>`;}).join('');
-  const ring=d.ring_members.length?d.ring_members.map(a=>`<span class="mp-link" onclick="openMule('${a}')">${a}</span>`).join(''):'<span class="cap">none recorded</span>';
-  const links=d.top_counterparties.length?d.top_counterparties.map(c=>`<span class="mp-link" onclick="openMule('${c.account}')">${c.account} <b style="color:var(--faint)">&times;${c.n}</b></span>`).join(''):'<span class="cap">none</span>';
+  const ring=d.ring_members.length?d.ring_members.map(a=>`<span class="mp-link" onclick="openMule('${a}')">${esc(bmName(a))} <b style="color:var(--faint)">${a}</b></span>`).join(''):'<span class="cap">none recorded</span>';
+  const links=d.top_counterparties.length?d.top_counterparties.map(c=>`<span class="mp-link" onclick="openMule('${c.account}')">${esc(bmName(c.account))} <b style="color:var(--faint)">${c.account} &times;${c.n}</b></span>`).join(''):'<span class="cap">none</span>';
   const tx=d.transactions.map(t=>{
     const cp=t.counterparty||(t.atm_id?('ATM '+t.atm_id):'&mdash;');
     const flag=(t.tainted?'<span class="taint">TAINTED</span>':'')+(t.cashout?' <span class="taint" style="color:var(--amber)">CASH-OUT</span>':'');
@@ -957,11 +1661,15 @@ function renderMule(d){
 }
 // ===================== MULE NETWORK — force-directed codenamed entity graph =====================
 const NET_COL={CASHER:'#d6a95c',DISTRIBUTOR:'#4fadba',COLLECTOR:'#8579d6',RELAY:'#6f97a8'};
-let NET_SIM=null, NET_HIDDEN={};
+let NET_SIM=null, NET_HIDDEN={}, NET_Q='';
+const NET_GL={CASHER:'Cash-out specialist',DISTRIBUTOR:'Fan-out distributor',COLLECTOR:'Collector / aggregator',RELAY:'Pass-through relay'};
+// search: mule name, account, registered area or role (same matching in the graph and the register)
+const netHit=n=>{ const q=NET_Q.trim().toLowerCase();
+  return !q||(n.codename+' '+n.id+' '+(n.district||'')+' '+n.group+' '+(NET_GL[n.group]||'')).toLowerCase().includes(q); };
 async function showNetwork(){
   VIEW='network';
   if(MAP){try{MAP.remove();}catch(e){}MAP=null;FLOWL=HEATL=MESHL=ATML=MKL=RETL=RSVG=null;}
-  if(NET_SIM){try{NET_SIM.stop();}catch(e){}NET_SIM=null;} NET_HIDDEN={};
+  if(NET_SIM){try{NET_SIM.stop();}catch(e){}NET_SIM=null;} NET_HIDDEN={}; NET_Q='';
   $('stage').innerHTML=`
    <div class="netview">
      <div class="nethead">
@@ -969,10 +1677,20 @@ async function showNetwork(){
          <span class="netsub">Each node is a mule account under a codename, sized by how many frauds it touches and coloured by behaviour. Lines link mules that worked the same case, moved money to each other, or share a ring. <b>Click a node to open its case file.</b></span></div>
        <div class="netlegend" id="netLegend"></div>
      </div>
+     <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:0 0 10px">
+       <input class="netsearch" id="netQ" placeholder="Find a mule: name, account, area or role" oninput="netFilter(this.value)">
+       <span class="cap" id="netMatch" style="margin:0"></span></div>
      <div class="netcanvas" id="netCanvas"><div class="netload">Mapping the network&hellip;</div><div class="net-tip" id="netTip"></div></div>
      <div class="netfoot" id="netFoot"></div>
+     <div class="card" style="margin-top:14px;padding:14px">
+       <h3>&#9776; Mule register</h3>
+       <div class="cap">suspected mule accounts, one row per account, most linked complaints first &middot; the search above filters this list too &middot; click a row for the full file with every linked case</div>
+       <div style="overflow:auto;max-height:56vh"><table class="tktable"><thead><tr><th>Mule</th><th>Role</th><th>Registered area</th>
+         <th>Linked cases</th><th>Stolen money in</th><th>Open alert</th><th></th></tr></thead><tbody id="netRows"><tr><td colspan="7" class="cap">loading&hellip;</td></tr></tbody></table></div>
+     </div>
    </div>`;
   setNav();
+  (BM_NET?Promise.resolve(BM_NET):jget('/network?limit=120')).then(d=>{ BM_NET=d; (d.nodes||[]).forEach(n=>BM_NAMES[n.id]=n.codename); netRows(); }).catch(()=>{});
   let data; try{ data=await (await fetch('/network?limit=54')).json(); }
   catch(e){ const l=document.querySelector('#netCanvas .netload'); if(l)l.textContent='Could not load network.'; return; }
   renderNetwork(data);
@@ -985,7 +1703,7 @@ function renderNetwork(data){
   const nodes=data.nodes.map(n=>Object.assign({},n));
   const links=data.edges.map(e=>Object.assign({},e));
   const rOf=n=>6+Math.sqrt(n.n_cases||1)*3.2;
-  const groups=data.groups.map(g=>g.key);
+  const groups=data.groups.map(g=>g.key).filter(k=>nodes.some(n=>n.group===k));   // only roles present, so the graph centres
   const gx={}; groups.forEach((g,i)=>gx[g]=W*(0.26+0.48*(groups.length<=1?0.5:i/(groups.length-1))));
   $('netLegend').innerHTML=data.groups.map(g=>`<span class="netlg" data-g="${g.key}" onclick="netToggle('${g.key}')"><span class="d" style="background:${NET_COL[g.key]||'#889'}"></span>${g.label}</span>`).join('')
     +`<span class="netlg" style="cursor:default"><span class="d" style="background:transparent;border:1px solid var(--faint)"></span>bigger = more cases</span>`;
@@ -1021,6 +1739,23 @@ function renderNetwork(data){
     });
   $('netFoot').textContent=`${nodes.length} mule accounts · ${links.length} links (shared case · transfer · ring) · showing the busiest mules`;
 }
+function netFilter(q){ NET_Q=q||'';
+  if(typeof d3!=='undefined'){ d3.selectAll('.net-node').style('opacity',n=>netHit(n)?1:.12);
+    d3.selectAll('.net-node text').style('opacity',n=>(NET_Q.trim()?netHit(n):n.n_cases>=6)?1:0); }
+  const gn=typeof d3!=='undefined'?d3.selectAll('.net-node').data():[];
+  const m=$('netMatch'); if(m) m.textContent=NET_Q.trim()?`${gn.filter(netHit).length} of ${gn.length} mules in the graph match`:'';
+  netRows(); }
+function netRows(){ const tb=$('netRows'); if(!tb||!BM_NET)return;
+  const order={RED:0,AMBER:1,GREY:2}, alert={};
+  (QUEUE||[]).forEach(i=>{ const a=i.top_account; if(a&&(alert[a]==null||order[i.tier]<order[alert[a]]))alert[a]=i.tier; });
+  const rows=(BM_NET.nodes||[]).filter(netHit).sort((a,b)=>(b.n_cases-a.n_cases)||(b.tainted_in-a.tainted_in));
+  tb.innerHTML=rows.map(n=>`<tr style="cursor:pointer" onclick="openMule('${n.id}')">
+      <td><span class="mulelink">${esc(n.codename)}<small>${esc(n.id)}</small></span></td>
+      <td><span style="color:${NET_COL[n.group]||'var(--dim)'}">&#9679;</span> ${esc(NET_GL[n.group]||n.group)}</td>
+      <td>${esc(n.district||'—')}</td><td class="mono"><b>${n.n_cases}</b></td><td class="mono">${money(n.tainted_in)}</td>
+      <td>${alert[n.id]?`<span class="tier ${alert[n.id]}" style="padding:3px 8px">${alert[n.id]}</span>`:'<span class="cap" style="margin:0">none</span>'}</td>
+      <td><span class="mulelink">file &rsaquo;</span></td></tr>`).join('')
+    ||`<tr><td colspan="7" class="cap" style="padding:18px;text-align:center">No mule matches &ldquo;${esc(NET_Q)}&rdquo;.</td></tr>`; }
 function netHover(d,on,links,linkSel,nodeSel){
   const tip=$('netTip');
   if(on){
@@ -1034,7 +1769,8 @@ function netHover(d,on,links,linkSel,nodeSel){
       const w=$('netCanvas').clientWidth;
       tip.style.left=Math.min(w-236,Math.max(6,d.x+14))+'px'; tip.style.top=Math.max(6,d.y-8)+'px'; }
   } else {
-    nodeSel.style('opacity',1); nodeSel.selectAll('text').style('opacity',n=>n.n_cases>=6?1:0);
+    nodeSel.style('opacity',n=>netHit(n)?1:.12);   // back to the current search, not all-on
+    nodeSel.selectAll('text').style('opacity',n=>(NET_Q.trim()?netHit(n):n.n_cases>=6)?1:0);
     linkSel.attr('stroke-opacity',l=>0.16+0.06*l.weight);
     if(tip)tip.style.display='none';
   }
@@ -1243,7 +1979,7 @@ function buildOverviewMap(){
   if(OMAP){try{OMAP.remove();}catch(e){}OMAP=null;OHEAT=null;}
   try{
     OMAP=L.map('omap',{zoomControl:false,attributionControl:false,preferCanvas:true});
-    const base=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',{maxZoom:16,attribution:'Esri'}).addTo(OMAP);
+    const base=L.tileLayer(advTileUrls().base,{maxZoom:16,attribution:'Esri'}).addTo(OMAP);
     let terr=0; base.on('tileerror',()=>{if(++terr===4){try{OMAP.removeLayer(base);}catch(e){}
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,subdomains:'abc'}).addTo(OMAP);}});
     L.control.zoom({position:'bottomright'}).addTo(OMAP);
@@ -1290,22 +2026,26 @@ async function renderTickets(){
       </div>
       <div class="card" style="padding:14px">
         <div class="tktoolbar" style="margin-bottom:12px">
-          <input class="tksearch" id="tkSearch" placeholder="Search incident id, type, analyst, status…" oninput="filterTickets()">
+          <input class="tksearch" id="tkSearch" placeholder="Search incident id, mule name or account, type, analyst, status…" oninput="filterTickets()">
           <a class="btn ghost sm" href="${API}/tickets.csv" download>&#8681; Export CSV</a>
         </div>
         <div style="overflow:auto;max-height:60vh">
           <table class="tktable"><thead><tr>
-            <th>Incident ID</th><th>Alert</th><th>Priority</th><th>Status</th><th>Assigned analyst</th><th>Outcome</th><th>₹ at risk</th><th>Action</th>
+            <th>Incident ID</th><th>Mule to act on</th><th>Alert</th><th>Priority</th><th>Status</th><th>Assigned analyst</th><th>Outcome</th><th>₹ at risk</th><th>Action</th>
           </tr></thead><tbody id="tkRows"></tbody></table>
         </div>
       </div>
     </div>`;
   drawTicketRows(TICKETS);
+  bmNames(TICKETS.map(t=>tkMule(t.ack_no))).then(filterTickets);   // mule names for the new column
 }
+// the account to act on for a ticket = the queue's top account for that complaint
+const tkMule=ack=>((QUEUE||[]).find(q=>q.ack_no===ack)||{}).top_account||null;
 function drawTicketRows(rows){
   const tb=$('tkRows'); if(!tb)return;
-  tb.innerHTML=rows.map(t=>`<tr>
+  tb.innerHTML=rows.map(t=>{ const mu=tkMule(t.ack_no); return `<tr>
     <td><span class="tkid">INC-${t.ack_no.slice(0,12)}</span></td>
+    <td>${mu?`<span class="mulelink" onclick="openMule('${mu}')">${esc(bmName(mu))}<small>${esc(mu)}</small></span>`:'—'}</td>
     <td>${t.fraud_category||'—'}</td>
     <td>${priBadge(t.priority)}</td>
     <td>${stBadge(t.status)}</td>
@@ -1313,10 +2053,11 @@ function drawTicketRows(rows){
     <td>${t.outcome?('<span class="mono" style="color:var(--dim)">'+t.outcome.replace('_',' ')+'</span>'):'<span class="mono" style="color:var(--faint)">—</span>'}</td>
     <td class="mono">${money(t.disputed_amount||0)}</td>
     <td><button class="btn sm" onclick="selectCase('${t.ack_no}')">&#128269; Investigate</button></td>
-  </tr>`).join('')||'<tr><td colspan="8" class="cap" style="padding:24px;text-align:center">No incidents match.</td></tr>';
+  </tr>`; }).join('')||'<tr><td colspan="9" class="cap" style="padding:24px;text-align:center">No incidents match.</td></tr>';
 }
-function filterTickets(){const q=($('tkSearch').value||'').toLowerCase();
-  drawTicketRows(TICKETS.filter(t=>!q||((t.ack_no+' '+(t.fraud_category||'')+' '+(t.assignee||'')+' '+t.status+' '+t.priority).toLowerCase().includes(q))));}
+function filterTickets(){const s=$('tkSearch'); if(!s)return; const q=(s.value||'').toLowerCase();
+  drawTicketRows(TICKETS.filter(t=>{ const mu=tkMule(t.ack_no)||'';
+    return !q||((t.ack_no+' '+mu+' '+bmName(mu)+' '+(t.fraud_category||'')+' '+(t.assignee||'')+' '+t.status+' '+t.priority).toLowerCase().includes(q)); }));}
 
 // ---- per-case ticket lifecycle (on the case view) ----
 let CURTICKET=null;
@@ -1556,8 +2297,8 @@ function drawFlow(trail, loc){
     const isHold = topMule && n.account_id===topMule.account_id;
     items.push({ll:p, kind:isV?'v':(n.is_leaf?'m leaf':'m'), icon:_SVG_PERSON,
       size:isV?30:(isHold?30:22), z:isV?920:(isHold?910:880), labelIt: isV||isHold||showLabels,
-      code:_shortCode(n.account_id,isV?'AC':'MU'), role:isV?'VICTIM':(n.is_leaf?'MULE · HOLDING':'MULE'),
-      tip:`<b>${_shortCode(n.account_id,isV?'AC':'MU')}</b> &middot; ${isV?'VICTIM':(n.is_leaf?'MULE (holding cash)':'MULE')}<br>${money(n.tainted_amount)} held${nodePlace(n)?'<br>'+nodePlace(n):''}`}); });
+      code:isV?_shortCode(n.account_id,'AC'):(BM_NAMES[n.account_id]||_shortCode(n.account_id,'MU')), role:isV?'VICTIM':(n.is_leaf?'MULE · HOLDING':'MULE'),
+      tip:`<b>${isV?_shortCode(n.account_id,'AC'):esc(BM_NAMES[n.account_id]||_shortCode(n.account_id,'MU'))}</b> &middot; ${isV?'':esc(n.account_id)+' &middot; '} ${isV?'VICTIM':(n.is_leaf?'MULE (holding cash)':'MULE')}<br>${money(n.tainted_amount)} held${nodePlace(n)?'<br>'+nodePlace(n):''}`}); });
   if(revealPreds) preds.forEach(pr=>{ const risk=Math.round((pr.p!=null?pr.p:((pr.meta&&pr.meta.fraud_rate)||0))*100);
     items.push({ll:pr.ll, kind:'atm', icon:_SVG_BANK, size:Math.max(20,36-(pr.rank-1)*3),
       rank:pr.cell?null:pr.rank, focus:pr.rank===1, z:905-pr.rank, labelIt:showLabels,
@@ -1773,12 +2514,10 @@ function setupMap(){const svg=$('map'),lm=$('lmap');
     try{
       if(svg)svg.style.display='none'; lm.style.display='block';
       MAP=L.map('lmap',{zoomControl:false,attributionControl:false,renderer:L.svg({padding:0.6})});  // SVG renderer = animatable + auto-sized flow lines (no clipping)
-      // Esri Dark Gray Canvas -- a real dark street map, KEYLESS (no API key).
-      const base=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
-        {maxZoom:16, attribution:'Esri'}).addTo(MAP);
+      // Esri Gray Canvas (dark or light theme) -- a real street map, KEYLESS (no API key).
+      const base=L.tileLayer(advTileUrls().base,{maxZoom:16, attribution:'Esri'}).addTo(MAP);
       // labels/roads reference on top so the officer can READ the area (Hinjawadi, Kharadi, ...)
-      const labels=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}',
-        {maxZoom:16});
+      const labels=L.tileLayer(advTileUrls().ref,{maxZoom:16});
       try{labels.addTo(MAP);}catch(e){}
       let terr=0; base.on('tileerror',()=>{ if(++terr===4){ try{MAP.removeLayer(base);MAP.removeLayer(labels);}catch(e){}
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,subdomains:'abc'}).addTo(MAP); } });
@@ -1894,7 +2633,7 @@ function muleGraphSVG(tr){
   let nodes='';
   tr.nodes.forEach(n=>{const p=pos[n.account_id];if(!p)return;
     const col=n.is_victim?'#4aa3ff':n.is_leaf?'#ff5a6e':'#ffbe4d';
-    const nm=n.is_victim?'VICTIM':n.is_leaf?'MULE ✦':'MULE';
+    const nm=n.is_victim?'VICTIM':(BM_NAMES[n.account_id]||'MULE')+(n.is_leaf?' ✦':'');
     const role=n.is_victim?'VICTIM (source)':n.is_leaf?'MULE · holding cash NOW':'MULE (pass-through)';
     nodes+=`<g class="mgnode ${n.is_leaf?'leaf':''}" style="color:${col};cursor:pointer" onclick="openMule('${n.account_id}')">
       <circle cx="${p.x}" cy="${p.y}" r="${p.r.toFixed(1)}" fill="${col}" fill-opacity=".92" stroke="#fff" stroke-width="1.4" style="filter:drop-shadow(0 0 6px ${col})">
@@ -1938,7 +2677,7 @@ function buildBrief(p){
   const howWord = top==='ATM'?'an ATM withdrawal':top==='POS (card cash)'?'a POS card-cash out':
     top==='keeps moving'?'another onward transfer':'sitting idle';
   // narrative
-  let n=`Complaint ${p.ack_no.slice(0,6)}. ${amt} has been traced to account ${acct}, which is holding the stolen funds right now. `;
+  let n=`Complaint ${p.ack_no.slice(0,6)}. ${amt} has been traced to account ${acct}${BM_NAMES[acct]?' ('+BM_NAMES[acct]+')':''}, which is holding the stolen funds right now. `;
   if(top==='keeps moving'){
     n+=`The money is still moving — most likely ${howWord} in the next ${c.window_minutes[1]} minutes, so do not deploy anyone yet. `;
   } else if(top==='sits idle'){
@@ -1978,7 +2717,7 @@ function evidenceHTML(p, trail){
   if(trail && trail.nodes){
     const node=trail.nodes.find(n=>n.account_id===p.account_id);
     if(node){ const h=node.hop_from_victim;
-      b.push(`Traced <b>${h} hop${h===1?'':'s'}</b> from the victim to <b>${p.account_id}</b>, now holding <b>${money(node.tainted_amount)}</b>.`);
+      b.push(`Traced <b>${h} hop${h===1?'':'s'}</b> from the victim to <b>${p.account_id}</b>${BM_NAMES[p.account_id]?' ('+esc(BM_NAMES[p.account_id])+')':''}, now holding <b>${money(node.tainted_amount)}</b>.`);
       b.push(node.is_leaf ? `The money is <b>still sitting here</b> — a window to freeze before it clears.`
                           : `The money is <b>being forwarded onward</b> — trace the next hop.`);
     }
@@ -2051,6 +2790,7 @@ function renderBriefing(p, clockHTML, speakNow){
     <div class="stagehead">
       <span class="cid">#${p.ack_no.slice(0,8)}</span>
       <span class="ftype">${(SELMETA&&SELMETA.fraud_category)||''}</span>
+      <span class="mulelink" style="font-size:12px" onclick="openMule('${p.account_id}')" title="open this mule's profile: every linked case">&#9670; ${esc(bmName(p.account_id))} <span style="color:var(--faint);font-weight:400">${p.account_id}</span></span>
       <span class="tier ${r.tier}" id="tierBadge">${r.tier}</span>
       <div class="replay adv">
         <button class="btn" id="playbtn" onclick="togglePlay()">&#9654; Replay simulation</button>
@@ -2193,7 +2933,8 @@ function renderBriefing(p, clockHTML, speakNow){
   updateNarr(p);
   typeInto($('jtext'), b.narr);
   if(speakNow) playBrief(p.ack_no, b.narr+' Priority action: '+b.steps[0]);
-  if(!p._trail) jget(`/trail/${p.ack_no}`).then(tr=>{p._trail=tr; drawFlow(tr, loc); setTimeout(()=>frameCase(tr, loc), 260);
+  if(!p._trail) jget(`/trail/${p.ack_no}`).then(async tr=>{ await bmNames((tr.nodes||[]).map(n=>n.account_id));
+    p._trail=tr; drawFlow(tr, loc); setTimeout(()=>frameCase(tr, loc), 260);
     const el=$('trailBox');if(el)el.innerHTML=trailSVG(tr);
     const mb=$('muleBox');if(mb)mb.innerHTML=muleGraphSVG(tr);
     const w=$('jwhy');if(w)w.innerHTML=evidenceHTML(p, tr);});
@@ -2243,7 +2984,7 @@ async function selectCase(ack){
   VIEW='case'; if(OMAP){try{OMAP.remove();}catch(e){}OMAP=null;OHEAT=null;}   // leave the overview
   SEL=ack;REPLAY_T=0;loadQueue(); setNav();
   const q=await jget(`/queue?limit=60`);SELMETA=q.find(x=>x.ack_no===ack);
-  const p=await jget(`/predict/${ack}`);renderBriefing(p, null, true);
+  const p=await jget(`/predict/${ack}`); await bmNames([p.account_id]); renderBriefing(p, null, true);
   loadTicket(ack);   // hydrate the case-management panel + timeline
   // (no auto-popup on click -- opening a case just shows it; urgent alerts are opt-in)
 }
@@ -2275,7 +3016,7 @@ function togglePlay(){const b=$('playbtn');
 async function scrubTo(t){REPLAY_T=+t;if(!SEL)return;
   REPLAYING=true;
   const st=await jget(`/replay/state?case=${SEL}&t=${t}`);
-  const p=st.prediction;p._trail=st.trail;
+  const p=st.prediction;p._trail=st.trail; bmNames(((st.trail||{}).nodes||[]).map(n=>n.account_id));   // names for accounts the replay reveals
   updateBriefing(p, st.as_of.slice(11,19));}
 
 // ---------- init ----------
@@ -2285,11 +3026,12 @@ async function scrubTo(t){REPLAY_T=+t;if(!SEL)return;
     const ro=$('railOpen'); if(ro)ro.style.display='block'; } }catch(e){}
   const b=$('alertToggle'); if(b){b.className='atgl'+(ALERTS_ON?'':' off');
     b.innerHTML=(ALERTS_ON?'&#128276; alerts on':'&#128277; alerts off');}
+  advApplyTheme();                       // Advanced light/dark preference (before anything draws)
   populateVoices();await loadQueue();await loadHotspots();
   showOverview();                        // land on the command centre, not a single case
   if(UIMODE==='base') setMode('base');   // restore the simple operator view if it was chosen
   // no pop-up on load. Only genuinely NEW red cases (via the poll) alert, throttled.
-  POLL=setInterval(async()=>{await loadQueue();if(VIEW==='overview')renderOverview();
+  POLL=setInterval(async()=>{await loadQueue();if(UIMODE!=='base'&&VIEW==='overview')renderOverview();
     if(UIMODE==='base'&&BM_VIEW==='home')baseHome();checkNewUrgent();}, 30000);
   document.addEventListener('keydown',e=>{if(e.key==='Escape'){dismissUrgent();closeMule();}});})();
 </script>
