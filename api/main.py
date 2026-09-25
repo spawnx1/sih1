@@ -18,6 +18,7 @@ station covering the top-ranked CELL, not the top-ranked terminal.
 """
 from __future__ import annotations
 
+import hashlib
 import os
 import uuid
 from datetime import datetime, timedelta
@@ -656,6 +657,251 @@ def resolve_ticket(ack_no: str, outcome: str = Body(..., embed=True),
     con.commit()
     d = _fetch_ticket(con, ack_no); con.close()
     return d
+
+
+# ==========================================================================
+# CASE STUDIO -- generate a SYNTHETIC demo case on demand (generator.case).
+# Everything returned is clearly synthetic; ground_truth is a SEPARATE key the
+# front-end only reveals after the models have "predicted" (it is never fed in).
+# ==========================================================================
+@app.get("/studio/scenarios")
+def studio_scenarios():
+    from generator.case import SCENARIOS
+    return {"scenarios": list(SCENARIOS)}
+
+
+@app.get("/studio/generate")
+def studio_generate(scenario: str = "cashout", seed: int | None = None,
+                    accounts: int = 40):
+    from generator.case import SCENARIOS, generate_case
+    if scenario not in SCENARIOS:
+        raise HTTPException(status_code=400, detail=f"bad scenario; use {list(SCENARIOS)}")
+    accounts = max(6, min(400, int(accounts)))
+    case = generate_case(scenario, seed=seed, accounts=accounts, case_number=seed)
+    # model input = everything except ground_truth; ground_truth returned alongside
+    # for the reveal step ONLY. The two are separate objects, never merged.
+    model_case = {k: v for k, v in case.items() if k != "ground_truth"}
+    return {"input": model_case, "ground_truth": case["ground_truth"]}
+
+
+# ==========================================================================
+# PERSISTENT MULE / ACCOUNT PROFILE  (audit req #1 + #2)
+# A read-only entity view: ONE account_id, all of its activity across the whole
+# corpus, and every fraud case it is linked to -- so an investigator can see that
+# "Mule A -> Victim 1 / 2 / 3" and "Mule A -> Mule B -> Mule C" are the SAME
+# entity. Assembled entirely from the existing FeatureContext + ticket store;
+# no new data model, no second case system.
+# ==========================================================================
+def _iso_ts(t) -> str:
+    return pd.Timestamp(t).strftime("%Y-%m-%dT%H:%M:%S")
+
+
+# deterministic, memorable codename for an account (stable across restarts)
+_CODEWORDS = ["VIPER", "HERON", "JACKAL", "ORACLE", "RAVEN", "COBRA", "FALCON",
+              "WRAITH", "HYDRA", "LYNX", "OSPREY", "MAMBA", "KESTREL", "NOMAD",
+              "CIPHER", "PHANTOM", "BASILISK", "MAGPIE", "SABLE", "ONYX", "VULTURE",
+              "SCARAB", "TALON", "GRYPHON", "JAGUAR", "ADDER", "HORNET", "SPECTRE",
+              "CARACAL", "IBIS", "RONIN", "MANTIS", "DRAKE", "CRANE", "PYTHON",
+              "SHRIKE", "GOSHAWK", "MARLIN", "COYOTE", "SERAPH"]
+
+
+def _codename(account_id: str) -> str:
+    h = int(hashlib.md5(account_id.encode()).hexdigest(), 16)
+    word = _CODEWORDS[h % len(_CODEWORDS)]
+    digits = "".join(c for c in account_id if c.isdigit())
+    suffix = digits[-4:] if digits else f"{h % 9999:04d}"
+    return f"{word}-{suffix}"
+
+
+@app.get("/account/{account_id}")
+def account_profile(account_id: str, limit: int = 250):
+    ctx = STATE["ctx"]
+    out_pos = list(ctx.src_pos.get(account_id, []))   # this account is the sender
+    in_pos = list(ctx.dst_pos.get(account_id, []))    # this account is the receiver
+    known = account_id in ctx.acc.index
+    if not out_pos and not in_pos and not known:
+        raise HTTPException(status_code=404, detail=f"unknown account: {account_id}")
+
+    events = [(int(p), "out") for p in out_pos] + [(int(p), "in") for p in in_pos]
+    events.sort(key=lambda e: ctx.ts[e[0]])           # chronological
+
+    total_in = round(float(sum(ctx.amount[p] for p in in_pos)), 2)
+    total_out = round(float(sum(ctx.amount[p] for p in out_pos)), 2)
+    counterparties: dict[str, dict] = {}
+    atms_used: set[str] = set()
+    cases: dict[str, dict] = {}                        # ack_no -> linkage info
+    tx_rows = []
+
+    for p, direction in events:
+        other = ctx.dst[p] if direction == "out" else ctx.src[p]
+        other = None if (other is None or pd.isna(other)) else str(other)
+        atm = None if (ctx.atm_id[p] is None or pd.isna(ctx.atm_id[p])) else str(ctx.atm_id[p])
+        cashout = bool(ctx.is_cashout[p])
+        tainted = bool(ctx._label_tainted[p])
+        cid = ctx._label_case[p]
+        cid = None if (cid is None or pd.isna(cid)) else str(cid)
+        amt = round(float(ctx.amount[p]), 2)
+        if other:
+            c = counterparties.setdefault(other, {"account": other, "n": 0, "amount": 0.0})
+            c["n"] += 1; c["amount"] = round(c["amount"] + amt, 2)
+        if cashout and atm:
+            atms_used.add(atm)
+        if tainted and cid:
+            cs = cases.setdefault(cid, {"ack_no": cid, "n_txns": 0, "first_ts": _iso_ts(ctx.ts[p])})
+            cs["n_txns"] += 1
+        tx_rows.append({"txn_id": str(ctx.txn_id[p]), "ts": _iso_ts(ctx.ts[p]),
+                        "direction": direction, "counterparty": other, "amount": amt,
+                        "channel": str(ctx.channel[p]), "atm_id": atm,
+                        "cashout": cashout, "tainted": tainted, "case_id": cid})
+
+    # linked cases are keyed by the fraud's SEED transaction (label_case_id);
+    # resolve each to its filed complaint (ack_no) + role + any existing ticket.
+    if "case_by_seed" not in STATE:
+        STATE["case_by_seed"] = STATE["complaints"].set_index("seed_txn_id")
+    sb = STATE["case_by_seed"]
+    acks = list({str(sb.loc[s]["ack_no"]) for s in cases if s in sb.index})
+    ticket_status = {}
+    if acks:
+        try:
+            con = _tdb()
+            qs = ",".join("?" * len(acks))
+            for row in con.execute(f"SELECT ack_no,status,priority FROM tickets WHERE ack_no IN ({qs})", acks):
+                ticket_status[row[0]] = {"status": row[1], "priority": row[2]}
+            con.close()
+        except Exception:
+            pass
+    linked_cases = []
+    for seed, cs in cases.items():
+        comp = sb.loc[seed] if seed in sb.index else None
+        ack = str(comp["ack_no"]) if comp is not None else None
+        victim = str(comp["victim_account"]) if comp is not None else None
+        role = "VICTIM" if (victim and victim == account_id) else "MULE"
+        linked_cases.append({
+            "case_ref": ack or seed, "ack_no": ack, "reported": comp is not None,
+            "role": role, "victim_account": victim,
+            "disputed_amount": round(float(comp["disputed_amount"]), 2) if comp is not None else None,
+            "fraud_category": str(comp["fraud_category"]) if comp is not None else None,
+            "filed_ts": _iso_ts(comp["filed_ts"]) if comp is not None else cs["first_ts"],
+            "n_txns_here": cs["n_txns"],
+            "ticket": ticket_status.get(ack) if ack else None})
+    linked_cases.sort(key=lambda c: c["filed_ts"])
+    victims = sorted({c["victim_account"] for c in linked_cases
+                      if c["role"] == "MULE" and c["victim_account"]})
+
+    info = ctx.account_info(account_id)
+    ring = [m for m in ctx.ring_members(account_id) if m != account_id]
+    tainted_in = round(float(sum(ctx.amount[p] for p in in_pos if ctx._label_tainted[p])), 2)
+
+    top_links = sorted(counterparties.values(), key=lambda c: c["amount"], reverse=True)[:10]
+    return {
+        "account_id": account_id,
+        "codename": _codename(account_id),
+        "known_account": known,
+        "kyc": {"district": info.get("kyc_district"), "pin": info.get("kyc_pin"),
+                "lat": info.get("kyc_lat"), "lon": info.get("kyc_lon"),
+                "bank_code": info.get("bank_code"),
+                "open_date": _iso_ts(info["open_date"]) if info.get("open_date") is not None else None,
+                "ring_id": (None if info.get("ring_id") is None or pd.isna(info.get("ring_id")) else str(info.get("ring_id")))},
+        "stats": {
+            "n_transactions": len(tx_rows),
+            "n_incoming": len(in_pos), "n_outgoing": len(out_pos),
+            "total_inflow": total_in, "total_outflow": total_out,
+            "tainted_inflow": tainted_in,
+            "unique_counterparties": len(counterparties),
+            "distinct_atms": len(atms_used),
+            "n_linked_cases": len(linked_cases),
+            "first_activity": tx_rows[0]["ts"] if tx_rows else None,
+            "last_activity": tx_rows[-1]["ts"] if tx_rows else None},
+        "linked_cases": linked_cases,          # the SAME entity across many complaints
+        "victims": victims,                    # everyone this mule helped defraud
+        "ring_members": ring,
+        "top_counterparties": top_links,
+        "transactions": list(reversed(tx_rows[-limit:])),   # newest first, capped
+    }
+
+
+# ==========================================================================
+# MULE NETWORK  -- the codenamed entity graph. Nodes = the busiest mule accounts
+# (ranked by how many fraud cases they appear in), grouped by BEHAVIOUR archetype,
+# connected where they collaborate (shared case / direct transfer / same ring).
+# Click a node -> that mule's profile (/account/{id}). Cached after first build.
+# ==========================================================================
+def _archetype(ctx, acc: str) -> str:
+    """Behavioural role from the account's own flow shape."""
+    out_pos = ctx.src_pos.get(acc, [])
+    in_pos = ctx.dst_pos.get(acc, [])
+    n_out = len(out_pos)
+    n_out_co = int(sum(bool(ctx.is_cashout[p]) for p in out_pos))
+    in_cp = len({str(ctx.src[p]) for p in in_pos if not pd.isna(ctx.src[p])})
+    out_cp = len({str(ctx.dst[p]) for p in out_pos if not pd.isna(ctx.dst[p])})
+    co_ratio = n_out_co / max(1, n_out)
+    if co_ratio >= 0.6:
+        return "CASHER"          # pulls the money out as cash
+    if out_cp > in_cp and out_cp >= 4:
+        return "DISTRIBUTOR"     # fans money out to many accounts
+    if in_cp >= out_cp and in_cp >= 4:
+        return "COLLECTOR"       # gathers money from many sources
+    return "RELAY"               # simple pass-through
+
+
+@app.get("/network")
+def mule_network(limit: int = 48):
+    limit = max(8, min(120, int(limit)))
+    if STATE.get("network_cache", {}).get("limit") == limit:
+        return STATE["network_cache"]["data"]
+    ctx = STATE["ctx"]
+    tx = ctx.tx
+    t = tx[tx["label_is_tainted"] & tx["label_case_id"].notna()]
+    recv = t.dropna(subset=["dst_account"])
+    mcases = recv.groupby("dst_account")["label_case_id"].apply(lambda s: set(s))
+    top = list(mcases.apply(len).sort_values(ascending=False).index[:limit])
+    topset = set(top)
+
+    nodes = []
+    for a in top:
+        in_pos = ctx.dst_pos.get(a, [])
+        tainted_in = float(sum(ctx.amount[p] for p in in_pos if ctx._label_tainted[p]))
+        nodes.append({"id": a, "codename": _codename(a), "group": _archetype(ctx, a),
+                      "n_cases": len(mcases[a]), "tainted_in": round(tainted_in, 2),
+                      "district": ctx.account_info(a).get("kyc_district")})
+
+    edges: dict = {}
+    def _add(a, b, kind, w=1):
+        if a == b:
+            return
+        key = tuple(sorted((a, b)))
+        e = edges.setdefault(key, {"source": key[0], "target": key[1], "weight": 0, "kinds": set()})
+        e["weight"] += w
+        e["kinds"].add(kind)
+
+    # shared fraud case = a working cell
+    for i, a in enumerate(top):
+        for b in top[i + 1:]:
+            sh = len(mcases[a] & mcases[b])
+            if sh:
+                _add(a, b, "cell", sh)
+    # direct tainted transfer between two ranked mules
+    mm = t[(t["src_account"].isin(topset)) & (t["dst_account"].isin(topset))]
+    for (s, d) in mm.groupby(["src_account", "dst_account"]).groups:
+        _add(str(s), str(d), "transfer", 1)
+    # same ring
+    ring_of = {a: (ctx.acc.loc[a, "label_ring_id"] if a in ctx.acc.index else None) for a in top}
+    for i, a in enumerate(top):
+        for b in top[i + 1:]:
+            ra = ring_of[a]
+            if ra is not None and not pd.isna(ra) and ra == ring_of[b]:
+                _add(a, b, "ring", 2)
+
+    elist = [{"source": e["source"], "target": e["target"], "weight": min(e["weight"], 6),
+              "kind": ("ring" if "ring" in e["kinds"] else "transfer" if "transfer" in e["kinds"] else "cell")}
+             for e in edges.values()]
+    data = {"nodes": nodes, "edges": elist,
+            "groups": [{"key": "CASHER", "label": "Cash-out specialist"},
+                       {"key": "DISTRIBUTOR", "label": "Fan-out distributor"},
+                       {"key": "COLLECTOR", "label": "Collector / aggregator"},
+                       {"key": "RELAY", "label": "Pass-through relay"}]}
+    STATE["network_cache"] = {"limit": limit, "data": data}
+    return data
 
 
 # serve the officer console at / (mount last so API routes win)

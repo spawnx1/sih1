@@ -1,0 +1,384 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>SIH26184 — The Field Guide</title>
+<style>
+:root{
+  --ink:#1b2431; --sub:#47566a; --faint:#7a8697; --line:#dbe2ea; --soft:#f4f7f9;
+  --navy:#1f3350; --accent:#2f6f7e; --accent-d:#245863; --amber:#9a6b12; --red:#a83a49; --green:#2f7d57;
+}
+*{box-sizing:border-box}
+html{font-size:10.7pt}
+body{margin:0;color:var(--ink);background:#fff;font-family:Georgia,"Iowan Old Style","Times New Roman",serif;line-height:1.52;
+  -webkit-print-color-adjust:exact;print-color-adjust:exact}
+@page{ size:A4; margin:18mm 16mm 18mm 16mm }
+@page cover{ margin:0 }
+
+h1,h2,h3,h4{font-family:"Segoe UI",system-ui,sans-serif;color:var(--navy);line-height:1.18;font-weight:700}
+p{margin:0 0 .55em}
+h1.part{ break-before:page; font-size:20pt; margin:0 0 2pt; color:var(--accent-d) }
+.partnum{font-family:"Segoe UI",sans-serif;font-size:8.5pt;letter-spacing:2.5px;color:var(--accent);font-weight:700;text-transform:uppercase}
+.partline{height:2.5px;width:52px;background:var(--accent);margin:6pt 0 11pt;border-radius:2px}
+h2{font-size:12.5pt;margin:13pt 0 5pt;padding-bottom:2pt;border-bottom:1px solid var(--line)}
+h3{font-size:10.8pt;margin:9pt 0 3pt;color:var(--accent-d)}
+h2,h3{break-after:avoid}
+ul,ol{margin:.15em 0 .55em;padding-left:1.3em}
+li{margin:.1em 0}
+strong{color:#12202f}
+code{font-family:Consolas,monospace;font-size:8.8pt;background:var(--soft);border:1px solid var(--line);border-radius:3px;padding:.4pt 2.5pt;color:#2a3a4d}
+.lead{font-size:11pt;color:var(--sub)}
+.small{font-size:8.4pt;color:var(--faint)}
+pre{font-family:Consolas,monospace;font-size:8.5pt;line-height:1.4;background:#0f1b28;color:#d7e2ee;border-radius:6px;padding:8pt 10pt;white-space:pre-wrap;margin:5pt 0 8pt;break-inside:avoid}
+pre .c{color:#7f93a8}
+table{width:100%;border-collapse:collapse;margin:5pt 0 9pt;font-size:8.7pt;break-inside:avoid}
+th{background:var(--navy);color:#fff;text-align:left;font-family:"Segoe UI",sans-serif;font-weight:600;padding:4.5pt 6pt;font-size:8.3pt}
+td{padding:4pt 6pt;border-bottom:1px solid var(--line);vertical-align:top}
+tr:nth-child(even) td{background:var(--soft)}
+table.k td:first-child{font-family:Consolas,monospace;font-size:8pt;color:var(--accent-d);white-space:nowrap;width:1%}
+.box{border:1px solid var(--line);border-left:4px solid var(--accent);background:var(--soft);border-radius:0 6px 6px 0;padding:7pt 11pt;margin:7pt 0 10pt;break-inside:avoid}
+.box.warn{border-left-color:var(--amber);background:#fdf7ec}
+.box.rule{border-left-color:var(--red);background:#fbf0f1}
+.box.key{border-left-color:var(--green);background:#eef7f1}
+.box h4{margin:0 0 2pt;font-family:"Segoe UI",sans-serif;font-size:8.6pt;letter-spacing:.8px;text-transform:uppercase;color:var(--accent-d)}
+.box.warn h4{color:var(--amber)} .box.rule h4{color:var(--red)} .box.key h4{color:var(--green)}
+.box p:last-child{margin-bottom:0}
+figure{margin:8pt 0 10pt;break-inside:avoid;text-align:center}
+figure svg{max-width:100%;height:auto}
+figcaption{font-family:"Segoe UI",sans-serif;font-size:7.6pt;color:var(--faint);margin-top:3pt}
+.q{font-style:italic;color:var(--accent-d);border-left:3px solid var(--accent);padding-left:9pt;margin:7pt 0}
+
+.cover{page:cover;break-after:page;height:297mm;position:relative;color:#eaf1f6;overflow:hidden;background:linear-gradient(160deg,#122436 0%,#0d2f38 55%,#0a1c28 100%)}
+.cover .grid{position:absolute;inset:0;opacity:.5;background-image:linear-gradient(rgba(120,200,210,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(120,200,210,.07) 1px,transparent 1px);background-size:20mm 20mm}
+.cover .glow{position:absolute;width:120mm;height:120mm;border-radius:50%;top:-30mm;right:-30mm;background:radial-gradient(circle,rgba(63,138,151,.5),transparent 70%)}
+.cover .inner{position:absolute;inset:0;padding:32mm 24mm;display:flex;flex-direction:column}
+.cover .tag{font-family:"Segoe UI",sans-serif;letter-spacing:5px;font-size:9pt;color:#7fd0c0;text-transform:uppercase}
+.cover h1{font-family:"Segoe UI",sans-serif;font-size:36pt;line-height:1.05;margin:6mm 0 0;color:#fff;font-weight:800;letter-spacing:-.5px}
+.cover .sub{font-family:"Segoe UI",sans-serif;font-size:13pt;color:#bcd3d8;margin-top:5mm}
+.cover .rule{height:3px;width:66mm;background:linear-gradient(90deg,#3f8a97,transparent);margin:9mm 0}
+.cover .meta{font-family:"Segoe UI",sans-serif;font-size:10pt;color:#9fb6bd;line-height:1.9}
+.cover .badge{display:inline-block;border:1px solid rgba(150,200,210,.4);border-radius:20px;padding:3pt 10pt;font-size:8.5pt;letter-spacing:1px;color:#bfe0e4;margin-right:6pt}
+.cover .foot{margin-top:auto;font-family:"Segoe UI",sans-serif;font-size:9pt;color:#8aa1a8;border-top:1px solid rgba(150,190,200,.25);padding-top:5mm;display:flex;justify-content:space-between}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:0 16pt}
+</style>
+</head>
+<body>
+
+<section class="cover">
+  <div class="grid"></div><div class="glow"></div>
+  <div class="inner">
+    <div class="tag">Ministry of Home Affairs · I4C · SIH26184</div>
+    <h1>Cash-out Forecast<br>Console</h1>
+    <div class="sub">The Field Guide — everything important about the project, in fifteen pages.</div>
+    <div class="rule"></div>
+    <div class="meta">
+      <span class="badge">Forecast, don't just detect</span>
+      <span class="badge">Honesty-first ML</span><br><br>
+      Predictive Analytics for Cybercrime Cash-out Forecasting.<br>
+      The fast, portable companion to the Complete Manual.
+    </div>
+    <div class="foot"><div>Quick reference &amp; pitch companion</div><div>Version 1.0 · Pune pilot</div></div>
+  </div>
+</section>
+
+<!-- 1 -->
+<h1 class="part">1 · The problem &amp; the big idea</h1>
+<span class="partnum">Field Guide</span><div class="partline"></div>
+
+<p class="lead">When someone is scammed, the fraudster instantly moves the money through a chain of "mule" bank accounts and pulls it out as cash at an ATM — usually within minutes. Once it's cash, it's gone. This system takes a fraud complaint, traces where the money went, and forecasts, for each account still holding stolen funds: <strong>will it be cashed out, when, how, and roughly where.</strong></p>
+
+<div class="q">"We don't just detect fraud after the fact — we forecast the cash-out, so police can freeze the account in time, and when they can't, we tell them which area to watch."</div>
+
+<h3>Why a forecast, not a report</h3>
+<p>The money reaches an ATM in minutes, but the average complaint is filed ~110 minutes after the fraud. So the winning move is not "catch them at the ATM" — it's <strong>"freeze the account before the ATM."</strong> Freezing takes seconds; a dispatch takes tens of minutes. The whole system optimises for a fast, well-justified freeze, with a geographic fallback for when freezing fails.</p>
+
+<div class="box warn"><h4>The honest reality</h4>
+<p>In ~66% of complaints the money was already cashed out before the complaint was even filed. We are useful in the cases where action is still possible — and we use that number to argue for the real fixes: faster reporting and proactive freezing.</p></div>
+
+<!-- 2 -->
+<h1 class="part">2 · How it works — the five steps</h1>
+<span class="partnum">Field Guide</span><div class="partline"></div>
+
+<figure>
+<svg viewBox="0 0 700 120" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI,sans-serif">
+  <defs><marker id="a" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#2f6f7e"/></marker></defs>
+  <g font-size="8.5">
+  <rect x="6" y="40" width="120" height="52" rx="7" fill="#dfeef0" stroke="#245863"/><text x="66" y="62" text-anchor="middle" font-weight="700" fill="#1f3350">1 COMPLAINT</text><text x="66" y="78" text-anchor="middle" fill="#47566a">victim + seed txn</text>
+  <line x1="126" y1="66" x2="150" y2="66" stroke="#2f6f7e" stroke-width="2" marker-end="url(#a)"/>
+  <rect x="152" y="40" width="120" height="52" rx="7" fill="#eef4f6" stroke="#2f6f7e"/><text x="212" y="62" text-anchor="middle" font-weight="700" fill="#1f3350">2 TRACE</text><text x="212" y="78" text-anchor="middle" fill="#47566a">money hop-by-hop</text>
+  <line x1="272" y1="66" x2="296" y2="66" stroke="#2f6f7e" stroke-width="2" marker-end="url(#a)"/>
+  <rect x="298" y="34" width="130" height="64" rx="7" fill="#dfeef0" stroke="#245863" stroke-width="2"/><text x="363" y="54" text-anchor="middle" font-weight="700" fill="#1f3350">3 FORECAST</text><text x="363" y="70" text-anchor="middle" fill="#47566a">will/when/how/where</text><text x="363" y="84" text-anchor="middle" fill="#2f7d57">or abstain</text>
+  <line x1="428" y1="66" x2="452" y2="66" stroke="#2f6f7e" stroke-width="2" marker-end="url(#a)"/>
+  <rect x="454" y="40" width="118" height="52" rx="7" fill="#eef4f6" stroke="#2f6f7e"/><text x="513" y="62" text-anchor="middle" font-weight="700" fill="#1f3350">4 DECIDE</text><text x="513" y="78" text-anchor="middle" fill="#a83a49">RED/AMBER/GREY</text>
+  <line x1="572" y1="66" x2="596" y2="66" stroke="#2f6f7e" stroke-width="2" marker-end="url(#a)"/>
+  <rect x="598" y="40" width="96" height="52" rx="7" fill="#dfeef0" stroke="#245863"/><text x="646" y="62" text-anchor="middle" font-weight="700" fill="#1f3350">5 ALERT</text><text x="646" y="78" text-anchor="middle" fill="#47566a">to the station</text>
+  </g>
+</svg>
+<figcaption>Complaint → trace → forecast → decide → alert. The graph is rebuilt fresh for every prediction.</figcaption>
+</figure>
+
+<p>A complaint names one victim and one disputed "seed" transaction. A time-respecting breadth-first walk (<code>graphx/trail.py</code>) reconstructs where the money went, attributing "taint" proportionally through each split and flagging accounts that are <strong>still holding</strong> stolen funds — the freeze targets. For each target, three models forecast the cash-out. Plain rules turn that into an action. An alert routes to the covering police station.</p>
+
+<h3>The four I4C deliverables</h3>
+<table><tr><th>#</th><th>Deliverable</th><th>Where</th></tr>
+<tr><td>1</td><td>Predictive engine (M1/M2/M3)</td><td><code>ml/</code></td></tr>
+<tr><td>2</td><td>GIS risk map with filtering</td><td><code>/hotspots</code> + Leaflet map</td></tr>
+<tr><td>3</td><td>Law-enforcement interface</td><td><code>api/</code> + console</td></tr>
+<tr><td>4</td><td>Alert &amp; notification system</td><td><code>/alerts/dispatch</code></td></tr></table>
+
+<!-- 3 -->
+<h1 class="part">3 · The money trail &amp; the graph signal</h1>
+<span class="partnum">Field Guide</span><div class="partline"></div>
+
+<p class="lead">Before any model runs, the system reconstructs where the stolen money went. This is done fresh for every prediction — there is no giant precomputed graph, because that would leak the future.</p>
+
+<figure>
+<svg viewBox="0 0 640 150" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI,sans-serif" font-size="8">
+  <defs><marker id="t" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#7a8697"/></marker></defs>
+  <circle cx="50" cy="75" r="20" fill="#dfeef0" stroke="#245863" stroke-width="1.5"/><text x="50" y="78" text-anchor="middle" font-weight="700" fill="#1f3350">victim</text>
+  <line x1="70" y1="75" x2="118" y2="60" stroke="#c19a3a" stroke-width="2.5" marker-end="url(#t)"/>
+  <circle cx="145" cy="55" r="17" fill="#fff" stroke="#2f6f7e" stroke-width="1.5"/><text x="145" y="58" text-anchor="middle" fill="#1f3350">mule A</text>
+  <line x1="70" y1="80" x2="118" y2="98" stroke="#c19a3a" stroke-width="2" marker-end="url(#t)"/>
+  <circle cx="145" cy="100" r="17" fill="#fff" stroke="#2f6f7e" stroke-width="1.5"/><text x="145" y="103" text-anchor="middle" fill="#1f3350">mule B</text>
+  <line x1="162" y1="55" x2="240" y2="50" stroke="#c19a3a" stroke-width="2" marker-end="url(#t)"/>
+  <circle cx="268" cy="48" r="19" fill="#fbe9ea" stroke="#a83a49" stroke-width="2"/><text x="268" y="45" text-anchor="middle" font-weight="700" fill="#a83a49">HOLDING</text><text x="268" y="56" text-anchor="middle" fill="#a83a49">mule C</text>
+  <line x1="287" y1="48" x2="360" y2="40" stroke="#a83a49" stroke-width="2" stroke-dasharray="4 3" marker-end="url(#t)"/>
+  <rect x="362" y="26" width="54" height="28" rx="4" fill="#dfeef0" stroke="#245863"/><text x="389" y="44" text-anchor="middle" fill="#1f3350">ATM?</text>
+  <text x="470" y="45" fill="#a83a49" font-weight="700">freeze target</text>
+  <text x="470" y="60" fill="#47566a">= still holds stolen cash</text>
+  <text x="470" y="90" fill="#7a8697">gold = observed flow</text>
+  <text x="470" y="103" fill="#7a8697">red dashed = predicted route</text>
+</svg>
+<figcaption>A trail: taint flows victim → mules; an account that received more than it forwarded is "holding" — the thing a freeze can still save.</figcaption>
+</figure>
+
+<p>A time-respecting breadth-first walk follows only edges timestamped before the as-of moment, ignores dust (&lt;5% of the seed), attributes "taint" proportionally through each split, and stops at 4 hops or a cash-out. On top of the trail, nine <strong>graph features</strong> capture where an account sits in the fraud structure — the signal you cannot get from its own transactions alone.</p>
+
+<table class="k"><tr><th>Graph feature</th><th>Reads</th></tr>
+<tr><td>hop_from_victim</td><td>how deep in the laundering chain</td></tr>
+<tr><td>in/out_deg_1h</td><td>fan-in and fan-out in the last hour</td></tr>
+<tr><td>dispersion / flow_concentration</td><td>how widely money spreads; how concentrated inflows are</td></tr>
+<tr><td>ring_size / ring_prior_cashout_rate</td><td>the co-operating ring and its history</td></tr>
+<tr><td>n_tainted_predecessors</td><td>how many upstream accounts carry stolen money</td></tr>
+<tr><td>mule_score</td><td>a logistic "how mule-like" over features 1–8</td></tr></table>
+
+<!-- 4 -->
+<h1 class="part">4 · The three models</h1>
+<span class="partnum">Field Guide</span><div class="partline"></div>
+<p>Three questions asked about one account that just received stolen money:</p>
+
+<h3>M1 — will it be cashed out, and when?</h3>
+<p>A discrete-time hazard model scored at 10, 20, 30, 45, 60 minutes, stitched into a rising cumulative "hazard curve." From it we read the <strong>action window</strong> (steepest-rise interval) and a severity: imminent / soon / later / unlikely. The 10-minute probability drives the decision.</p>
+
+<h3>M2 — how will the money leave?</h3>
+<p>Four classes: <strong>ATM</strong>, <strong>POS</strong>, <strong>onward_transfer</strong>, <strong>dormant</strong>. The last two stop police rushing an ATM when the money is about to move again or is going nowhere.</p>
+
+<h3>M3 — where? (and the part we're proudest of)</h3>
+<p>M3 ranks candidate ATMs, but only commits to the precision it can defend:</p>
+<div class="box rule"><h4>R5 — hierarchical abstention</h4>
+<p>If the top ATM's probability ≥ 0.22 and entropy ≤ 2.60 → name a <strong>terminal</strong> (top-5 ATMs). Else if the top cell ≥ 0.30 → name a <strong>~5 km² cell</strong> and record it abstained. Else → name only the <strong>district</strong>. The output always says <em>why</em> it abstained. The system knows what it doesn't know.</p></div>
+
+<h3>Candidates set the ceiling</h3>
+<p>M3 only ranks a shortlist of ATMs, built from five sources: the account's own past ATMs (C1), ATMs near its withdrawal centroid (C2) and its KYC PIN (C3), <strong>its ring co-members' ATMs (C4 — the differentiator)</strong>, and the district's top fraud ATMs (C5). Recall@50 = <strong>0.82</strong> — the hard ceiling on location accuracy.</p>
+
+<!-- 4 -->
+<h1 class="part">5 · The six honesty rules</h1>
+<span class="partnum">Field Guide</span><div class="partline"></div>
+<p class="lead">This is what makes the project credible. Six rules keep the science honest, and each is enforced by machinery — not by trust.</p>
+
+<table><tr><th>Rule</th><th>Forbids</th><th>Enforced by</th></tr>
+<tr><td><strong>R1 as-of</strong></td><td>using data from after the prediction moment</td><td>every feature reads only <code>ts&lt;as_of</code>; the leakage test rebuilds a truncated corpus and asserts identical features</td></tr>
+<tr><td><strong>R2 label prefix</strong></td><td>a label reaching a model</td><td><code>drop_leaky_columns</code> strips all <code>label_*</code></td></tr>
+<tr><td><strong>R3 no live location</strong></td><td>a suspect's real-time GPS</td><td>only KYC centroid + historical footprint; true home coords never shipped</td></tr>
+<tr><td><strong>R4 honest metrics</strong></td><td>suspiciously high scores</td><td>target 0.86–0.92; audit any single feature scoring &gt;0.85 alone</td></tr>
+<tr><td><strong>R5 abstention</strong></td><td>naming a place on a flat distribution</td><td>district→cell→terminal gates in M3</td></tr>
+<tr><td><strong>R6 naive IST</strong></td><td>timezone bugs</td><td>naive IST internally; <code>+05:30</code> only at JSON output</td></tr></table>
+
+<div class="box key"><h4>The one-line pitch</h4>
+<p>"We don't ask you to trust that we didn't cheat — we wrote tests that fail the build if we did, and they run on every change."</p></div>
+
+<div class="box warn"><h4>Why R4 is backwards on purpose</h4>
+<p>Most teams chase the highest accuracy. We <em>capped</em> ours at 86–92% and treat a single feature scoring above 0.85 as a leak to hunt. In this domain, a too-good number almost always means the model peeked at the answer.</p></div>
+
+<!-- 5 -->
+<h1 class="part">6 · The data</h1>
+<span class="partnum">Field Guide</span><div class="partline"></div>
+
+<p>Every row is synthetic, generated by <code>gen/</code>. This is a legal necessity — real money-mule records are personal financial data protected under the <strong>DPDP Act 2023</strong> and cannot go into an open prototype — and, done right, a strength.</p>
+
+<h3>The world</h3>
+<p>8,000 accounts (~6% mules in rings of 3), ~250,000 transactions, 600 complaints, ~700 ATMs across four Pune districts (Pune City, Pimpri-Chinchwad, Hinjawadi, Hadapsar), indexed with H3 hexagons (res-7 ≈ 5 km² cells). The generator is <strong>deliberately hard</strong>: mules and honest customers overlap heavily (six legitimate archetypes that look mule-like), some edges are unobserved, and labels carry noise — so the model learns real behaviour, not a watermark.</p>
+
+<div class="box key"><h4>The sealed corpus — the anti-cheating proof</h4>
+<p>The model is also tested on a <em>deliberately different</em> distribution it never trained on (different hotspots, slower forwarding, rarer fraud, a fraud type absent from training). Accuracy barely drops — <strong>0.913 → 0.879</strong>. A memoriser would collapse; ours generalises.</p></div>
+
+<!-- 6 -->
+<h1 class="part">7 · The numbers &amp; how to defend them</h1>
+<span class="partnum">Field Guide</span><div class="partline"></div>
+
+<table><tr><th>Number</th><th>Meaning</th><th>Defence</th></tr>
+<tr><td><strong>0.913</strong></td><td>M1 ROC-AUC</td><td>honest, not inflated — capped target, audited features</td></tr>
+<tr><td><strong>0.879</strong></td><td>on the sealed set</td><td>barely drops → generalises, not memorises</td></tr>
+<tr><td><strong>0.82</strong></td><td>candidate recall@50</td><td>the true ATM is in our shortlist 82% of the time</td></tr>
+<tr><td><strong>~0.7 km</strong></td><td>median error when we name a place</td><td>neighbourhood-accurate when we commit</td></tr>
+<tr><td><strong>50% → 91%</strong></td><td>rules vs our model</td><td>the whole answer to "why not just rules?"</td></tr>
+<tr><td><strong>~12 min</strong></td><td>median lead time when we can act</td><td>enough to freeze</td></tr>
+<tr><td><strong>~66%</strong></td><td>already cashed out before filing</td><td>the honest case for faster reporting</td></tr></table>
+
+<p><strong>Splits:</strong> chronological 0.913 · unseen-account 0.916 · sealed 0.879. <strong>Baselines:</strong> rule engine 0.500, logistic 0.840, most-frequent-ATM location 0.198 vs M3 0.207.</p>
+
+<!-- 7 -->
+<h1 class="part">8 · Architecture &amp; the technology stack</h1>
+<span class="partnum">Field Guide</span><div class="partline"></div>
+
+<p>One Python backend, built from offline artefacts, serving one browser console over REST/JSON. No database server, no cloud, no keys — it runs from a folder of Parquet files and trained models.</p>
+
+<figure>
+<svg viewBox="0 0 640 130" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI,sans-serif" font-size="8">
+  <defs><marker id="ax" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#5a6b7d"/></marker></defs>
+  <rect x="6" y="20" width="150" height="90" rx="7" fill="#f4f7f9" stroke="#c3ccd7"/><text x="81" y="36" text-anchor="middle" font-weight="700" fill="#1f3350">OFFLINE (build once)</text>
+  <text x="81" y="54" text-anchor="middle" fill="#47566a">gen/ → data/ (Parquet)</text><text x="81" y="70" text-anchor="middle" fill="#47566a">ml.train → models/</text><text x="81" y="86" text-anchor="middle" fill="#47566a">ml.evaluate → reports/</text>
+  <line x1="156" y1="65" x2="196" y2="65" stroke="#5a6b7d" stroke-width="1.6" marker-end="url(#ax)"/>
+  <rect x="198" y="14" width="200" height="102" rx="8" fill="#eef4f6" stroke="#2f6f7e" stroke-width="2"/><text x="298" y="32" text-anchor="middle" font-weight="800" fill="#1f3350">api/main.py — FastAPI</text>
+  <text x="298" y="50" text-anchor="middle" fill="#47566a">FeatureContext (as-of store)</text><text x="298" y="65" text-anchor="middle" fill="#47566a">trail → candidates → M1·M2·M3</text><text x="298" y="80" text-anchor="middle" fill="#47566a">decision rules · alerts · tickets</text><text x="298" y="97" text-anchor="middle" fill="#47566a">REST + StaticFiles</text>
+  <line x1="398" y1="65" x2="438" y2="65" stroke="#5a6b7d" stroke-width="1.6" marker-end="url(#ax)"/>
+  <rect x="440" y="24" width="192" height="82" rx="8" fill="#dfeef0" stroke="#245863" stroke-width="2"/><text x="536" y="42" text-anchor="middle" font-weight="800" fill="#1f3350">web/index.html</text>
+  <text x="536" y="60" text-anchor="middle" fill="#47566a">Command Centre · Case view</text><text x="536" y="75" text-anchor="middle" fill="#47566a">Leaflet map · Case Centre</text><text x="536" y="92" text-anchor="middle" fill="#7a8697">HTTP / JSON</text>
+</svg>
+<figcaption>Offline build → in-memory FastAPI backend → single-page console.</figcaption>
+</figure>
+
+<table class="k">
+<tr><th>Layer</th><th>Tools</th></tr>
+<tr><td>Language</td><td>Python 3.12</td></tr>
+<tr><td>Data</td><td>pandas, numpy, pyarrow (Parquet), h3 (spatial hex index)</td></tr>
+<tr><td>Models</td><td>scikit-learn, xgboost (M1 &amp; M3), networkx (graph), joblib</td></tr>
+<tr><td>Service</td><td>FastAPI, uvicorn, pydantic (contracts), SQLite (tickets), StaticFiles</td></tr>
+<tr><td>Console</td><td>vanilla HTML/CSS/JS, Leaflet.js (map), SVG overlay (flow lines)</td></tr>
+<tr><td>Plots &amp; tests</td><td>matplotlib, pytest (leakage suite), Make</td></tr>
+<tr><td>Research track</td><td>PyTorch + PyTorch Geometric (temporal &amp; hetero GNN experiments)</td></tr>
+</table>
+
+<h3>Repository at a glance</h3>
+<table class="k">
+<tr><td>config.py</td><td>constants: districts, thresholds, tiers, horizons</td></tr>
+<tr><td>contracts.py</td><td>Pydantic data contracts</td></tr>
+<tr><td>gen/</td><td>synthetic world (params, atms, generator)</td></tr>
+<tr><td>graphx/</td><td>trail, graph features, candidates, GNN research</td></tr>
+<tr><td>ml/</td><td>feature store, train, predict, evaluate</td></tr>
+<tr><td>api/main.py</td><td>FastAPI backend + decision rules + tickets</td></tr>
+<tr><td>web/index.html</td><td>the single-page console</td></tr>
+<tr><td>tests/</td><td>leakage guarantees</td></tr>
+</table>
+
+<!-- 9 -->
+<h1 class="part">9 · Decision, alerts &amp; the API</h1>
+<span class="partnum">Field Guide</span><div class="partline"></div>
+
+<p>The models produce probabilities; plain, readable <strong>rules</strong> — deliberately not another model — turn them into an action an officer can audit.</p>
+
+<table><tr><th>Tier</th><th>Rule</th><th>Action</th></tr>
+<tr><td><strong style="color:#a83a49">RED</strong></td><td><code>p_10m ≥ 0.60</code> AND tainted ≥ ₹5,000</td><td>FREEZE now + alert</td></tr>
+<tr><td><strong style="color:#9a6b12">AMBER</strong></td><td><code>0.30 ≤ p_10m &lt; 0.60</code></td><td>watch / email brief</td></tr>
+<tr><td><strong style="color:#5a6b7d">GREY</strong></td><td>below AMBER</td><td>keep tracing</td></tr></table>
+
+<p>Every recommendation carries a plain-English reason (the rule trace). Alerts route by district to the covering cyber police station (SHO), de-duplicated to one per account per 15 minutes. Alerts are <em>simulated</em> — payloads are built and logged, not actually sent.</p>
+
+<h3>The API (interactive docs at <code>/docs</code>)</h3>
+<table class="k">
+<tr><td>GET /queue</td><td>triage queue, sorted by imminence</td></tr>
+<tr><td>GET /predict/{ack}</td><td>full forecast: cashout + channel + location + recommendation</td></tr>
+<tr><td>GET /trail/{ack}</td><td>the reconstructed money flow</td></tr>
+<tr><td>GET /hotspots</td><td>risk per H3 cell + ATM markers (date/amount/channel filters)</td></tr>
+<tr><td>GET /explain/{ack}</td><td>human-readable forecast + rule trace</td></tr>
+<tr><td>POST /alerts/dispatch · GET /alerts</td><td>build/log an alert; the delivery log</td></tr>
+<tr><td>/tickets · /tickets/{ack} (+PATCH, /note, /resolve)</td><td>the Case Centre ticket lifecycle + CSV export</td></tr>
+</table>
+
+<!-- 10 -->
+<h1 class="part">10 · The console</h1>
+<span class="partnum">Field Guide</span><div class="partline"></div>
+
+<p>One HTML file, no build step, three views. A calm, mature command-console look (muted steel-teal, red = act, amber = watch).</p>
+
+<ul>
+<li><strong>Command Centre</strong> — the overview: cases tracked, freeze-now count, money at risk, window left, metro risk map, and the urgency-sorted case queue.</li>
+<li><strong>Case view</strong> — one case: the live money-flow map, the ranked target-ATM menu, the hazard/channel/location forecast, the freeze recommendation, and the cinematic replay.</li>
+<li><strong>Case Centre</strong> — SOAR-style ticket lifecycle: priority, status, assignee, notes, resolution, audit trail, printable report and CSV export (backed by SQLite).</li>
+</ul>
+
+<h3>The live money-flow map</h3>
+<p>Leaflet with a dark Esri base + labels. Nodes are clean circular icons (victim, mules, ranked ATMs). Money is drawn as animated "waypoint" lines — gold for observed flow (victim→mules), red for the predicted routes (holding mule→each ATM). The lines are drawn in a <strong>screen-space SVG overlay</strong> glued to the map's pixel coordinates and trimmed to each circle's edge, so they stay pixel-perfect through zoom/pan and never bury the icons.</p>
+
+<div class="box key"><h4>The best demo moment</h4>
+<p>Press <em>Replay simulation</em>: the case re-runs in fast motion inside a cinematic frame with a timecode and act labels. The gold flow traces first; the red target routes reveal at the cash-out climax — turning a probability into a visible, tense story.</p></div>
+
+<!-- 11 -->
+<h1 class="part">11 · Run it &amp; demo it</h1>
+<span class="partnum">Field Guide</span><div class="partline"></div>
+
+<h3>From zero</h3>
+<pre>python -m venv .venv &amp;&amp; .venv\Scripts\activate
+pip install pandas numpy scikit-learn xgboost networkx \
+            fastapi uvicorn pydantic pyarrow h3 matplotlib pytest
+
+python -m gen.atms &amp;&amp; python -m gen.generator          <span class="c"># build data</span>
+python -m gen.generator --sealed                        <span class="c"># sealed test set</span>
+python -m ml.train &amp;&amp; python -m ml.evaluate             <span class="c"># train + evaluate</span>
+python -m pytest tests/ -q                              <span class="c"># leakage suite must pass</span>
+
+python demo.py                                          <span class="c"># headless story</span>
+python -m uvicorn api.main:app --port 8000              <span class="c"># open http://localhost:8000</span></pre>
+<p class="small">Or: <code>make all &amp;&amp; make test &amp;&amp; make demo &amp;&amp; make api</code>.</p>
+
+<h3>The 3-minute demo</h3>
+<ol>
+<li>Open the console → "officer's screen; queue sorted by urgency."</li>
+<li>Click the top RED case → "traced to this account, holding ₹X."</li>
+<li>Hazard curve → "high chance of cash-out in ten minutes."</li>
+<li>Map + location → "this neighbourhood — and it <em>abstains</em> from naming one ATM. Honest AI."</li>
+<li>Recommendation → "action is FREEZE, alert routes to this station."</li>
+<li>Replay → "watch the money move and the risk rise."</li>
+<li>Close → "91% vs 50% for rules — and it tells us when it doesn't know."</li>
+</ol>
+<div class="box warn"><h4>Safety net</h4><p>If the browser dies on stage, <code>python demo.py</code> prints the whole story to the terminal.</p></div>
+
+<!-- 12 -->
+<h1 class="part">12 · Limitations &amp; roadmap</h1>
+<span class="partnum">Field Guide</span><div class="partline"></div>
+
+<p>Named plainly, because credibility comes from owning your weaknesses first.</p>
+<table><tr><th>Known limitation</th><th>The path forward</th></tr>
+<tr><td>ATM coordinates are synthetic (around real centroids)</td><td>swap in real OpenStreetMap <code>amenity=atm</code> nodes — query already in <code>gen/atms.py</code></td></tr>
+<tr><td>All data is synthetic (DPDP Act 2023)</td><td>the generator is deliberately hard, so the lessons transfer; real deployment integrates with bank/complaint systems</td></tr>
+<tr><td>Alerts are simulated (built &amp; logged, not sent)</td><td>wire real SMS/email/webhook gateways and a real account-freeze API</td></tr>
+<tr><td>Location ranker is the simple softmax version</td><td>add a pairwise ranker; the GNN research track (PyTorch Geometric, temporal GNN) is the documented accuracy upgrade</td></tr>
+<tr><td>~66% of cases already cashed out before filing</td><td>the biggest win is upstream — bank-side auto-alerts that shrink the ~110-min reporting delay</td></tr>
+</table>
+<div class="box"><h4>Not evidence</h4><p>Outputs are decision-support for authorised investigators, not a licensed forecast of any real person or account.</p></div>
+
+<!-- 13 -->
+<h1 class="part">13 · Glossary</h1>
+<span class="partnum">Field Guide</span><div class="partline"></div>
+<table class="k">
+<tr><td>ack_no</td><td>the 14-digit complaint id — a case's primary key</td></tr>
+<tr><td>seed transaction</td><td>the one disputed payment the victim reported</td></tr>
+<tr><td>mule / ring</td><td>a rented account moving stolen money; rings (size 3) share ATMs</td></tr>
+<tr><td>trail / taint</td><td>the reconstructed money chain; the stolen portion of a balance</td></tr>
+<tr><td>leaf / holding</td><td>an account still holding stolen funds — a freeze target</td></tr>
+<tr><td>cash-out</td><td>the moment money becomes cash (ATM/POS) — the end of the trail</td></tr>
+<tr><td>as-of</td><td>the prediction moment; features may read only earlier data</td></tr>
+<tr><td>hazard curve</td><td>rising cash-out probability over the next 10–60 min (M1)</td></tr>
+<tr><td>cell / terminal</td><td>a ~5 km² H3 area / a single ATM</td></tr>
+<tr><td>abstention</td><td>refusing to name one ATM when unsure; giving the cell instead</td></tr>
+<tr><td>golden hour</td><td>the first 60 min after the fraud — best chance to freeze</td></tr>
+<tr><td>lead time</td><td>minutes between the alarm and the cash-out (positive = early)</td></tr>
+<tr><td>tier</td><td>RED = freeze now · AMBER = watch · GREY = keep tracing</td></tr>
+<tr><td>sealed corpus</td><td>a different test dataset the model never trained on</td></tr>
+</table>
+
+<div style="height:1px;background:var(--line);margin:12pt 0"></div>
+<p class="small">SIH26184 · Predictive Analytics for Cybercrime Cash-out Forecasting · The Field Guide · Version 1.0. All data synthetic by design. Decision-support for authorised investigators, not evidence. Read the Complete Manual for the full detail. Generated with Claude Code.</p>
+
+</body>
+</html>

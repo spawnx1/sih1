@@ -4,36 +4,41 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Cash-out Forecast Console -- SIH26184</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Michroma&family=Share+Tech+Mono&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root{
     --bg:#05070d; --panel:rgba(12,18,28,.66); --panel2:rgba(16,24,36,.7);
-    --solid:#0a0f18; --line:rgba(84,150,180,.20); --line2:rgba(84,150,180,.34);
-    --ink:#e2edf5; --dim:#8598ab; --faint:#5b6d80;
-    --red:#ff5a6e; --amber:#ffbe4d; --green:#37e6a6; --cyan:#35e0e6; --accent:#35e0e6;
-    --violet:#8a7bff;
-    --mono:ui-monospace,"Cascadia Mono","JetBrains Mono",Consolas,monospace;
-    --glow:0 0 18px rgba(53,224,230,.16);
+    --solid:#0a0f18; --line:rgba(84,150,180,.18); --line2:rgba(84,150,180,.30);
+    --ink:#dce6ef; --dim:#8193a6; --faint:#586a7c;
+    --red:#e05e72; --amber:#d6a95c; --green:#46c495; --cyan:#4fadba; --accent:#4fadba;
+    --violet:#8579d6;
+    --sans:"Michroma","Inter",system-ui,"Segoe UI",sans-serif;              /* display / titles (wide HUD) */
+    --body:"Inter",system-ui,"Segoe UI",Roboto,sans-serif;                  /* long readable prose fallback */
+    --mono:"Share Tech Mono",ui-monospace,"Cascadia Mono",Consolas,monospace;/* data / telemetry readouts (terminal) */
+    --glow:0 0 14px rgba(79,173,186,.10);
   }
   *{box-sizing:border-box}
   html,body{height:100%}
   body{margin:0;background:var(--bg);color:var(--ink);position:relative;overflow:hidden;
-    font:13.5px/1.5 system-ui,"Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+    font:13.5px/1.55 var(--body);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
 
   body::before{content:"";position:fixed;inset:0;z-index:0;pointer-events:none;
     background:
-      radial-gradient(900px 520px at 86% -10%, rgba(53,224,230,.10), transparent 60%),
-      radial-gradient(760px 520px at -6% 112%, rgba(138,123,255,.09), transparent 60%),
-      linear-gradient(rgba(53,224,230,.035) 1px, transparent 1px) 0 0/42px 42px,
-      linear-gradient(90deg, rgba(53,224,230,.035) 1px, transparent 1px) 0 0/42px 42px;
-    animation:breathe 9s ease-in-out infinite alternate}
-  @keyframes breathe{from{opacity:.72}to{opacity:1}}
-  body::after{content:"";position:fixed;inset:0;z-index:6;pointer-events:none;opacity:.5;
-    background:repeating-linear-gradient(0deg, transparent 0 2px, rgba(0,10,14,.16) 3px)}
-  .scanbar{position:fixed;left:0;right:0;height:140px;z-index:5;pointer-events:none;opacity:.05;
-    background:linear-gradient(180deg,transparent,rgba(53,224,230,.9),transparent);animation:sweep 7.5s linear infinite}
+      radial-gradient(900px 520px at 86% -10%, rgba(79,173,186,.06), transparent 60%),
+      radial-gradient(760px 520px at -6% 112%, rgba(138,123,255,.05), transparent 60%),
+      linear-gradient(rgba(79,173,186,.022) 1px, transparent 1px) 0 0/42px 42px,
+      linear-gradient(90deg, rgba(79,173,186,.022) 1px, transparent 1px) 0 0/42px 42px;
+    animation:breathe 11s ease-in-out infinite alternate}
+  @keyframes breathe{from{opacity:.6}to{opacity:.85}}
+  body::after{content:"";position:fixed;inset:0;z-index:6;pointer-events:none;opacity:.35;
+    background:repeating-linear-gradient(0deg, transparent 0 2px, rgba(0,10,14,.14) 3px)}
+  .scanbar{position:fixed;left:0;right:0;height:140px;z-index:5;pointer-events:none;opacity:.03;
+    background:linear-gradient(180deg,transparent,rgba(79,173,186,.8),transparent);animation:sweep 9s linear infinite}
   @keyframes sweep{0%{top:-20%}100%{top:120%}}
   .hud{position:fixed;inset:0;pointer-events:none;z-index:7}
-  .hud i{position:absolute;width:24px;height:24px;border:2px solid rgba(53,224,230,.45);filter:drop-shadow(0 0 4px rgba(53,224,230,.5))}
+  .hud i{position:absolute;width:24px;height:24px;border:2px solid rgba(79,173,186,.45);filter:drop-shadow(0 0 4px rgba(79,173,186,.5))}
   .hud i:nth-child(1){top:9px;left:9px;border-right:0;border-bottom:0}
   .hud i:nth-child(2){top:9px;right:9px;border-left:0;border-bottom:0}
   .hud i:nth-child(3){bottom:9px;left:9px;border-right:0;border-top:0}
@@ -41,8 +46,8 @@
 
   ::-webkit-scrollbar{width:9px;height:9px}
   ::-webkit-scrollbar-track{background:transparent}
-  ::-webkit-scrollbar-thumb{background:rgba(53,224,230,.22);border-radius:6px}
-  ::-webkit-scrollbar-thumb:hover{background:rgba(53,224,230,.42)}
+  ::-webkit-scrollbar-thumb{background:rgba(79,173,186,.22);border-radius:6px}
+  ::-webkit-scrollbar-thumb:hover{background:rgba(79,173,186,.42)}
 
   .mono{font-family:var(--mono)}
   .lbl{font-family:var(--mono);font-size:10px;letter-spacing:1.6px;text-transform:uppercase;color:var(--faint)}
@@ -53,10 +58,10 @@
   header::after{content:"";position:absolute;left:-40%;bottom:0;width:40%;height:2px;
     background:linear-gradient(90deg,transparent,var(--cyan),transparent);filter:drop-shadow(0 0 6px var(--cyan));animation:hscan 5.5s linear infinite}
   @keyframes hscan{0%{left:-40%}100%{left:100%}}
-  .brand{display:flex;align-items:center;gap:11px;font-weight:750;letter-spacing:1.5px;
-    font-family:var(--mono);font-size:15px;text-shadow:0 0 14px rgba(53,224,230,.35)}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:400;letter-spacing:1px;
+    font-family:var(--sans);font-size:11.5px;text-shadow:0 0 14px rgba(79,173,186,.35)}
   .brand .dotlogo{width:11px;height:11px;border-radius:50%;background:var(--cyan);
-    box-shadow:0 0 12px var(--cyan),0 0 24px rgba(53,224,230,.6);animation:blink 2.4s ease-in-out infinite}
+    box-shadow:0 0 12px var(--cyan),0 0 24px rgba(79,173,186,.6);animation:blink 2.4s ease-in-out infinite}
   @keyframes blink{0%,100%{opacity:1}50%{opacity:.45}}
   .brand small{color:var(--faint);font-weight:400;letter-spacing:.5px;font-family:system-ui}
   .chips{margin-left:auto;display:flex;gap:18px;align-items:center;font-family:var(--mono);font-size:12px}
@@ -77,8 +82,8 @@
   .railbtn:hover{color:var(--cyan);border-color:var(--cyan)}
   .railopen{position:fixed;left:12px;top:64px;z-index:20;display:none;background:rgba(10,16,25,.94);
     color:var(--cyan);border:1px solid var(--line2);border-radius:9px;padding:9px 12px;font-family:var(--mono);
-    font-size:11px;letter-spacing:1.4px;cursor:pointer;box-shadow:0 0 16px rgba(53,224,230,.25)}
-  .railopen:hover{border-color:var(--cyan);box-shadow:0 0 22px rgba(53,224,230,.45)}
+    font-size:11px;letter-spacing:1.4px;cursor:pointer;box-shadow:0 0 16px rgba(79,173,186,.25)}
+  .railopen:hover{border-color:var(--cyan);box-shadow:0 0 22px rgba(79,173,186,.45)}
   .atgl{cursor:pointer;user-select:none;display:flex;align-items:center;gap:5px;color:var(--dim);
     font-family:var(--mono);font-size:12px;padding:3px 9px;border:1px solid var(--line);border-radius:7px}
   .atgl:hover{border-color:var(--cyan);color:var(--ink)}
@@ -89,15 +94,15 @@
   .case{position:relative;display:grid;grid-template-columns:6px 1fr auto;gap:11px;align-items:center;
     padding:11px 13px;border:1px solid var(--line);border-radius:12px;margin-bottom:9px;overflow:hidden;
     cursor:pointer;background:rgba(12,18,28,.5);transition:transform .15s,border-color .15s,box-shadow .15s}
-  .case::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(53,224,230,.08));opacity:0;transition:.15s}
+  .case::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(79,173,186,.08));opacity:0;transition:.15s}
   .case:hover{border-color:var(--line2);transform:translateY(-1px)}
   .case:hover::after{opacity:1}
-  .case.sel{border-color:var(--cyan);background:rgba(14,26,34,.8);box-shadow:var(--glow),0 0 0 1px rgba(53,224,230,.3) inset}
+  .case.sel{border-color:var(--cyan);background:rgba(14,26,34,.8);box-shadow:var(--glow),0 0 0 1px rgba(79,173,186,.3) inset}
   .case .bar{width:6px;height:40px;border-radius:6px}
   .case .cid{font-family:var(--mono);font-weight:650;font-size:13px}
   .case .ftype{color:var(--faint);font-size:11px;font-family:var(--mono)}
   .case .cmeta{color:var(--dim);font-size:11.5px;margin-top:2px}
-  .case .risk{font-family:var(--mono);font-weight:750;font-size:16px;text-align:right;text-shadow:0 0 12px currentColor}
+  .case .risk{font-family:var(--mono);font-weight:750;font-size:16px;text-align:right;text-shadow:0 0 6px currentColor}
   .case .risk small{display:block;font-size:9px;color:var(--faint);font-weight:400;letter-spacing:1px;text-shadow:none}
 
   .stage{overflow:auto;min-height:0;padding:18px 20px 28px}
@@ -105,16 +110,16 @@
   .stagehead .cid{font-family:var(--mono);font-size:22px;font-weight:900;letter-spacing:1px}
   .stagehead .ftype{color:var(--faint);font-family:var(--mono);font-size:12px}
   .tier{font-family:var(--mono);font-size:11px;font-weight:800;padding:5px 11px;border-radius:6px;letter-spacing:2px}
-  .tier.RED{background:rgba(255,90,110,.14);color:var(--red);box-shadow:0 0 0 1px rgba(255,90,110,.5) inset,0 0 16px rgba(255,90,110,.25)}
+  .tier.RED{background:rgba(224,94,114,.14);color:var(--red);box-shadow:0 0 0 1px rgba(224,94,114,.5) inset,0 0 16px rgba(224,94,114,.25)}
   .tier.AMBER{background:rgba(255,190,77,.13);color:var(--amber);box-shadow:0 0 0 1px rgba(255,190,77,.5) inset,0 0 16px rgba(255,190,77,.2)}
   .tier.GREY{background:rgba(91,109,128,.18);color:#9fb0c2;box-shadow:0 0 0 1px rgba(91,109,128,.45) inset}
 
   .replay{margin-left:auto;display:flex;align-items:center;gap:11px}
-  .replay .clock{font-family:var(--mono);font-size:15px;font-weight:700;min-width:88px;text-align:right;color:var(--cyan);text-shadow:0 0 12px rgba(53,224,230,.5)}
+  .replay .clock{font-family:var(--mono);font-size:15px;font-weight:700;min-width:88px;text-align:right;color:var(--cyan);text-shadow:0 0 12px rgba(79,173,186,.5)}
   .replay input[type=range]{width:150px;accent-color:var(--cyan)}
   .btn{background:linear-gradient(180deg,#3ff0f6,#22c3c9);color:#04181a;border:0;border-radius:8px;padding:9px 14px;
-    font-weight:750;cursor:pointer;font-size:12px;font-family:var(--mono);letter-spacing:.5px;box-shadow:0 0 16px rgba(53,224,230,.3);transition:.15s}
-  .btn:hover{filter:brightness(1.1);box-shadow:0 0 22px rgba(53,224,230,.5)}
+    font-weight:750;cursor:pointer;font-size:12px;font-family:var(--mono);letter-spacing:.5px;box-shadow:0 0 16px rgba(79,173,186,.3);transition:.15s}
+  .btn:hover{filter:brightness(1.1);box-shadow:0 0 22px rgba(79,173,186,.5)}
   .btn:disabled{opacity:.45;cursor:default;box-shadow:none}
   .btn.ghost{background:rgba(16,26,36,.8);color:var(--ink);border:1px solid var(--line2);box-shadow:none}
 
@@ -133,27 +138,27 @@
   .jsteps{margin-top:11px;display:grid;gap:7px}
   .jstep{display:flex;gap:10px;align-items:flex-start;font-size:12.5px;color:var(--dim);line-height:1.45}
   .jstep b{font-family:var(--mono);color:#04181a;background:var(--cyan);min-width:20px;height:20px;border-radius:5px;
-    display:flex;align-items:center;justify-content:center;font-size:11px;box-shadow:0 0 10px rgba(53,224,230,.45);flex:0 0 auto;margin-top:1px}
+    display:flex;align-items:center;justify-content:center;font-size:11px;box-shadow:0 0 10px rgba(79,173,186,.45);flex:0 0 auto;margin-top:1px}
   .jstep.red b{background:var(--red);box-shadow:0 0 10px var(--red);color:#1a0206}
   .jstep.ev b{background:var(--violet);box-shadow:0 0 10px var(--violet);color:#0a0618}
   .jstep.ev span b{background:none;box-shadow:none;color:var(--ink);display:inline;min-width:0;height:auto;padding:0}
 
   .action{position:relative;border-radius:14px;padding:16px 18px;margin-bottom:16px;overflow:hidden;display:flex;align-items:center;gap:16px;animation:fadeUp .28s ease both}
   .action::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px}
-  .action.RED{background:linear-gradient(90deg,rgba(255,90,110,.16),transparent 70%);border:1px solid rgba(255,90,110,.4)}
+  .action.RED{background:linear-gradient(90deg,rgba(224,94,114,.16),transparent 70%);border:1px solid rgba(224,94,114,.4)}
   .action.RED::before{background:var(--red);box-shadow:0 0 18px var(--red)}
   .action.AMBER{background:linear-gradient(90deg,rgba(255,190,77,.14),transparent 70%);border:1px solid rgba(255,190,77,.4)}
   .action.AMBER::before{background:var(--amber);box-shadow:0 0 18px var(--amber)}
   .action.GREY{background:linear-gradient(90deg,rgba(91,109,128,.14),transparent 70%);border:1px solid var(--line2)}
   .action.GREY::before{background:var(--faint)}
-  .action .big{font-size:23px;font-weight:800;letter-spacing:1px;font-family:var(--mono);text-shadow:0 0 16px currentColor}
+  .action .big{font-size:23px;font-weight:800;letter-spacing:1px;font-family:var(--mono);text-shadow:0 0 8px currentColor}
   .action .why{color:var(--dim);font-size:12px;margin-top:4px}
 
   .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:13px;margin-bottom:16px}
   .kpi{position:relative;background:var(--panel);border:1px solid var(--line);border-radius:13px;padding:14px 15px;overflow:hidden;backdrop-filter:blur(6px);animation:fadeUp .28s ease both}
   .kpi:nth-child(2){animation-delay:.05s}.kpi:nth-child(3){animation-delay:.1s}.kpi:nth-child(4){animation-delay:.15s}
   .kpi::before{content:"";position:absolute;left:0;top:0;height:2px;width:100%;background:linear-gradient(90deg,var(--cyan),transparent);box-shadow:0 0 10px var(--cyan)}
-  .kpi .v{font-family:var(--mono);font-size:27px;font-weight:750;line-height:1.05;margin-top:8px;text-shadow:0 0 14px currentColor;transition:color .25s}
+  .kpi .v{font-family:var(--mono);font-size:27px;font-weight:750;line-height:1.05;margin-top:8px;text-shadow:0 0 7px currentColor;transition:color .25s}
   .kpi .s{color:var(--dim);font-size:11.5px;margin-top:5px}
 
   .cols{display:grid;grid-template-columns:1fr 360px;gap:14px}
@@ -164,9 +169,9 @@
 
   .maphold{position:relative;height:400px;border-radius:11px;overflow:hidden;background:#070b12;border:1px solid var(--line)}
   .maphold::before{content:"";position:absolute;inset:0;z-index:0;
-    background:linear-gradient(rgba(53,224,230,.055) 1px,transparent 1px) 0 0/30px 30px,linear-gradient(90deg,rgba(53,224,230,.055) 1px,transparent 1px) 0 0/30px 30px}
+    background:linear-gradient(rgba(79,173,186,.055) 1px,transparent 1px) 0 0/30px 30px,linear-gradient(90deg,rgba(79,173,186,.055) 1px,transparent 1px) 0 0/30px 30px}
   .maphold::after{content:"";position:absolute;top:50%;left:50%;width:150%;height:150%;z-index:0;transform-origin:top left;
-    transform:translate(-50%,-50%);border-radius:50%;background:conic-gradient(from 0deg,rgba(53,224,230,.12),transparent 22%);animation:radar 7s linear infinite}
+    transform:translate(-50%,-50%);border-radius:50%;background:conic-gradient(from 0deg,rgba(79,173,186,.12),transparent 22%);animation:radar 7s linear infinite}
   @keyframes radar{to{transform:translate(-50%,-50%) rotate(360deg)}}
   .maphold>svg{position:relative;z-index:1}
   #mapg{transition:transform .6s cubic-bezier(.4,.1,.2,1)}
@@ -187,7 +192,7 @@
 
   .loc{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(84,150,180,.12)}
   .loc:last-child{border:0}
-  .loc .p{font-family:var(--mono);font-weight:700;color:var(--cyan);text-shadow:0 0 10px rgba(53,224,230,.4)}
+  .loc .p{font-family:var(--mono);font-weight:700;color:var(--cyan);text-shadow:0 0 10px rgba(79,173,186,.4)}
   .loc small{color:var(--faint)}
   .abstain{font-size:11.5px;color:var(--amber);background:rgba(255,190,77,.08);border:1px solid rgba(255,190,77,.28);border-radius:9px;padding:9px 11px;margin-top:10px;line-height:1.45}
   .ok{font-size:11.5px;color:var(--green);margin-top:8px}
@@ -195,7 +200,7 @@
   .chan{display:flex;align-items:center;gap:8px;margin:6px 0}
   .chan .nm{width:110px;color:var(--dim);font-size:12px}
   .chan .track{flex:1;height:7px;background:rgba(20,29,41,.9);border-radius:5px;overflow:hidden}
-  .chan .track>i{display:block;height:100%;background:linear-gradient(90deg,var(--violet),var(--cyan));box-shadow:0 0 10px rgba(53,224,230,.5);transition:width .3s ease}
+  .chan .track>i{display:block;height:100%;background:linear-gradient(90deg,var(--violet),var(--cyan));box-shadow:0 0 10px rgba(79,173,186,.5);transition:width .3s ease}
   .chan .pc{width:38px;text-align:right;font-family:var(--mono);font-size:12px}
 
   details{margin-top:14px;border:1px solid var(--line);border-radius:12px;background:var(--panel);backdrop-filter:blur(6px)}
@@ -215,13 +220,13 @@
   .leaflet-tile{filter:brightness(1.02) contrast(1.18) saturate(.68) hue-rotate(-8deg)}  /* ctOS surveillance look */
   .leaflet-heatmap-layer{opacity:.5}   /* dim heat so the network lines stand out */
   .leaflet-control-zoom a{background:rgba(10,16,24,.92)!important;color:var(--cyan)!important;
-    border-color:var(--line)!important;text-shadow:0 0 6px rgba(53,224,230,.5)}
+    border-color:var(--line)!important;text-shadow:0 0 6px rgba(79,173,186,.5)}
   .leaflet-tooltip{background:rgba(6,10,16,.92);border:1px solid var(--line2);color:var(--ink);
     font-family:var(--mono);font-size:10px;box-shadow:0 0 10px rgba(0,0,0,.6)}
   .leaflet-tooltip-top:before{border-top-color:var(--line2)}
   .numpin{width:24px;height:24px;border-radius:50%;background:var(--cyan);color:#04181a;
     font:800 13px var(--mono);display:flex;align-items:center;justify-content:center;
-    box-shadow:0 0 14px rgba(53,224,230,.9),0 0 0 2px #04181a;border:2px solid #fff}
+    box-shadow:0 0 14px rgba(79,173,186,.9),0 0 0 2px #04181a;border:2px solid #fff}
   /* bold, labelled hotspot pin for the command-centre map */
   .hotpin{display:flex;align-items:center;transform:translate(-14px,-14px);pointer-events:auto}
   .hotpin .n{width:28px;height:28px;border-radius:50%;color:#0a0405;font:900 14px var(--mono);flex:0 0 auto;
@@ -236,14 +241,14 @@
   @keyframes retping{0%{width:14px;height:14px;opacity:.9}100%{width:46px;height:46px;opacity:0}}
   .mapfx{position:absolute;inset:0;z-index:2;pointer-events:none;
     background:
-      linear-gradient(rgba(53,224,230,.05) 1px,transparent 1px) 0 0/44px 44px,
-      linear-gradient(90deg,rgba(53,224,230,.05) 1px,transparent 1px) 0 0/44px 44px,
+      linear-gradient(rgba(79,173,186,.05) 1px,transparent 1px) 0 0/44px 44px,
+      linear-gradient(90deg,rgba(79,173,186,.05) 1px,transparent 1px) 0 0/44px 44px,
       radial-gradient(130% 130% at 50% 45%,transparent 56%,rgba(0,6,12,.66) 100%),
       repeating-linear-gradient(0deg,transparent 0 2px,rgba(0,12,16,.10) 3px);
-    box-shadow:inset 0 0 80px rgba(53,224,230,.09)}
+    box-shadow:inset 0 0 80px rgba(79,173,186,.09)}
   /* ctOS corner brackets on the live map */
   .maphold.hero::before,.maphold.hero .mapfx::after{content:"";position:absolute;z-index:5;pointer-events:none;
-    width:26px;height:26px;border:2px solid rgba(53,224,230,.5);filter:drop-shadow(0 0 5px rgba(53,224,230,.5))}
+    width:26px;height:26px;border:2px solid rgba(79,173,186,.5);filter:drop-shadow(0 0 5px rgba(79,173,186,.5))}
   .maphold.hero::before{top:10px;left:10px;border-right:0;border-bottom:0;z-index:5}
   .maphold.hero .mapfx::after{bottom:10px;right:10px;border-left:0;border-top:0}
   .maphold .mapbtn,.maphold .maplist,.maphold .legend{z-index:6}
@@ -266,8 +271,8 @@
   .cinehud .rec{display:flex;align-items:center;gap:7px;color:#ff5a6e;font:800 11px var(--mono);letter-spacing:2.5px}
   .cinehud .rec .dot{width:9px;height:9px;border-radius:50%;background:#ff5a6e;box-shadow:0 0 10px #ff5a6e;animation:blink 1s ease-in-out infinite}
   .cinehud .tc{color:#fff;font:900 28px/1 var(--mono);letter-spacing:2px;margin-top:5px;text-shadow:0 0 16px rgba(0,0,0,.9)}
-  .cinehud .act{color:var(--cyan);font:800 11px var(--mono);letter-spacing:3.5px;margin-top:5px;text-shadow:0 0 12px rgba(53,224,230,.6)}
-  .maphold.cinema.climax .cinehud .act{color:#ff8a97;text-shadow:0 0 12px rgba(255,90,110,.7)}
+  .cinehud .act{color:var(--cyan);font:800 11px var(--mono);letter-spacing:3.5px;margin-top:5px;text-shadow:0 0 12px rgba(79,173,186,.6)}
+  .maphold.cinema.climax .cinehud .act{color:#ff8a97;text-shadow:0 0 12px rgba(224,94,114,.7)}
   .maphold.cinema{box-shadow:inset 0 0 120px rgba(0,0,0,.65)}
   /* clean cinematic frame -- hide map chrome while filming */
   .maphold.cinema .maplist,.maphold.cinema .legend,.maphold.cinema .mapbtn{opacity:0;pointer-events:none;transition:opacity .4s}
@@ -278,14 +283,14 @@
   .mapnarr{position:absolute;left:11px;right:11px;bottom:11px;z-index:6;background:rgba(6,10,16,.88);
     border:1px solid var(--line2);border-radius:10px;padding:10px 13px;font-family:var(--mono);font-size:12.5px;
     color:var(--ink);backdrop-filter:blur(4px);display:flex;align-items:center;gap:12px;box-shadow:0 0 20px rgba(0,0,0,.5)}
-  .mapnarr .t{color:var(--cyan);font-weight:700;text-shadow:0 0 10px rgba(53,224,230,.5)}
+  .mapnarr .t{color:var(--cyan);font-weight:700;text-shadow:0 0 10px rgba(79,173,186,.5)}
   .mapnarr .txt{color:var(--dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .mapnarr .a{margin-left:auto;font-weight:800;letter-spacing:1px;padding:3px 10px;border-radius:6px;flex:0 0 auto}
-  .mapnarr .a.RED{background:rgba(255,90,110,.16);color:var(--red);box-shadow:0 0 0 1px rgba(255,90,110,.5) inset}
+  .mapnarr .a.RED{background:rgba(224,94,114,.16);color:var(--red);box-shadow:0 0 0 1px rgba(224,94,114,.5) inset}
   .mapnarr .a.AMBER{background:rgba(255,190,77,.14);color:var(--amber);box-shadow:0 0 0 1px rgba(255,190,77,.5) inset}
   .mapnarr .a.GREY{background:rgba(91,109,128,.18);color:#9fb0c2}
   path.flowpulse{animation:cellpulse 1.4s ease-in-out infinite}
-  path.meshline{animation:meshdash 3.2s linear infinite;filter:drop-shadow(0 0 2px rgba(53,224,230,.7))}
+  path.meshline{animation:meshdash 3.2s linear infinite;filter:drop-shadow(0 0 2px rgba(79,173,186,.7))}
   @keyframes meshdash{to{stroke-dashoffset:-24}}
   path.flowline{animation:flowdash 1s linear infinite;filter:drop-shadow(0 0 3px currentColor)}
   @keyframes flowdash{to{stroke-dashoffset:-22}}
@@ -301,22 +306,119 @@
   .mglegend i.dia{border-radius:2px;transform:rotate(45deg)}
   /* distance chips floating on the flow lines */
   .leaflet-tooltip.distlbl{background:rgba(6,10,16,.82);border:none;padding:1px 6px;border-radius:999px;
-    font:800 9.5px/1.3 var(--mono);letter-spacing:.3px;box-shadow:0 0 0 1px rgba(53,224,230,.25),0 0 8px rgba(0,0,0,.6)}
+    font:800 9.5px/1.3 var(--mono);letter-spacing:.3px;box-shadow:0 0 0 1px rgba(79,173,186,.25),0 0 8px rgba(0,0,0,.6)}
   .leaflet-tooltip.distlbl:before{display:none}
-  .leaflet-tooltip.distlbl.out{color:#ff9aa6;box-shadow:0 0 0 1px rgba(255,90,110,.35),0 0 8px rgba(0,0,0,.6)}
+  .leaflet-tooltip.distlbl.out{color:#ff9aa6;box-shadow:0 0 0 1px rgba(224,94,114,.35),0 0 8px rgba(0,0,0,.6)}
   .leaflet-tooltip.distlbl.hop{color:#7fe8ec}
   /* always-on NAME tags on each pointer (click a pointer for full PIN + coordinates) */
   .leaflet-tooltip.namelbl{background:rgba(4,8,14,.92);border:none;color:#fff;padding:3px 9px;border-radius:7px;
     font:800 11px/1.25 var(--mono);letter-spacing:.7px;text-transform:uppercase;box-shadow:0 0 0 1.5px rgba(84,150,180,.5),0 0 10px rgba(0,0,0,.75)}
   .leaflet-tooltip.namelbl:before{display:none}
   .leaflet-tooltip.namelbl.v{color:#8fc6ff;box-shadow:0 0 0 1.5px rgba(74,163,255,.85),0 0 12px rgba(74,163,255,.35)}
-  .leaflet-tooltip.namelbl.a,.leaflet-tooltip.namelbl.c{color:#ff9aa8;box-shadow:0 0 0 1.5px rgba(255,90,110,.9),0 0 12px rgba(255,90,110,.4)}
+  .leaflet-tooltip.namelbl.a,.leaflet-tooltip.namelbl.c{color:#ff9aa8;box-shadow:0 0 0 1.5px rgba(224,94,114,.9),0 0 12px rgba(224,94,114,.4)}
   .leaflet-tooltip.namelbl.m{color:#ffd27a;box-shadow:0 0 0 1.5px rgba(255,190,77,.8),0 0 12px rgba(255,190,77,.35)}
   .leaflet-popup-content-wrapper{background:rgba(8,13,20,.96);color:var(--ink);border:1px solid var(--line2);
     border-radius:10px;font-family:var(--mono);font-size:11px;box-shadow:0 0 20px rgba(0,0,0,.6)}
   .leaflet-popup-tip{background:rgba(8,13,20,.96);border:1px solid var(--line2)}
   .leaflet-popup-content{margin:9px 12px;line-height:1.5}
   .leaflet-popup-close-button{color:var(--faint)!important}
+
+  /* ================= CODED noir theme (case-view money-flow map) ================= */
+  #lmap .leaflet-tile{filter:brightness(.98) contrast(1.04) saturate(.78)!important}  /* calm, muted cartography -- roads/labels still read clearly */
+  /* Watch-Dogs ctOS data-stream flow lines: travelling-pip dash animation (used by #flowlay streams) */
+  @keyframes wdflow{to{stroke-dashoffset:-34}}
+  .maphold.coded{background:#0b0d10}
+  .maphold.coded .mapfx{background:radial-gradient(130% 130% at 50% 45%,transparent 66%,rgba(0,0,0,.5) 100%)!important;box-shadow:none!important}
+  /* node = ring + icon + label chip */
+  .cnode{display:flex;align-items:center;gap:8px;transform:translate(-14px,-14px)}
+  .cnode .cring{width:28px;height:28px;border-radius:50%;flex:0 0 auto;display:flex;align-items:center;justify-content:center;
+    color:#e6b34a;border:2px solid currentColor;background:rgba(12,12,14,.92);box-shadow:0 0 8px rgba(0,0,0,.6)}
+  .cnode.v .cring,.cnode.atm .cring{color:#f25555}
+  .cnode .cring svg{width:14px;height:14px;display:block}
+  .cnode .cring.sm{width:17px;height:17px;opacity:.72;box-shadow:none}
+  .cnode .cring.sm svg{width:9px;height:9px}
+  .cnode.leaf .cring{animation:codedpulse 1.8s ease-in-out infinite}
+  @keyframes codedpulse{0%,100%{box-shadow:0 0 6px rgba(0,0,0,.6)}50%{box-shadow:0 0 14px currentColor}}
+  .cnode .clab{background:rgba(10,11,13,.94);border:1px solid rgba(255,255,255,.14);border-radius:6px;padding:4px 9px;white-space:nowrap;line-height:1.25;box-shadow:0 2px 8px rgba(0,0,0,.5)}
+  .cnode .clab b{display:block;font:700 12px var(--mono);color:#f3f5f7;letter-spacing:.4px}
+  .cnode .clab i{font-style:normal;font:600 8.5px var(--mono);letter-spacing:1.4px}
+  .cnode.v .clab i,.cnode.atm .clab i{color:#f27a7a} .cnode.m .clab i,.cnode.leaf .clab i{color:#e6b34a}
+  /* amount chip on an observed edge */
+  .camt{transform:translate(-50%,-50%);background:rgba(6,6,8,.94);border:1px solid rgba(255,255,255,.1);border-radius:5px;
+    padding:3px 9px;white-space:nowrap;font:700 10.5px var(--mono);color:#efdcae;box-shadow:0 2px 8px rgba(0,0,0,.6);text-align:center}
+  .camt small{display:block;color:#8f8676;font-size:8.5px;font-weight:600;letter-spacing:.3px;margin-top:1px}
+  /* directional arrowhead */
+  .carrow{width:0;height:0;border-left:6px solid transparent;border-right:6px solid transparent;border-bottom:10px solid #e9b84a;
+    transform-origin:center;filter:drop-shadow(0 0 4px rgba(233,184,74,.7))}
+  .carrow.pred{border-bottom-color:#ff3b3b;filter:drop-shadow(0 0 4px rgba(207,80,86,.7))}
+  /* CODED flow line animation classes */
+  path.obsflow{animation:flowdash 1.5s linear infinite;filter:drop-shadow(0 0 3px rgba(255,224,138,.7))}
+  path.predflow{animation:flowdash 1.1s linear infinite;filter:drop-shadow(0 0 3px rgba(207,80,86,.6))}
+  /* map HUD: coordinates, place, compass, corner brackets */
+  .maphold.coded .cd-coord{position:absolute;top:14px;left:16px;z-index:6;font:600 10.5px/1.35 var(--mono);color:#9aa2ac;letter-spacing:.4px;text-shadow:0 0 8px #000}
+  .maphold.coded .cd-place{position:absolute;top:31px;left:16px;z-index:6;font:700 9.5px var(--mono);color:#7f8791;letter-spacing:1.5px;text-shadow:0 0 8px #000}
+  .maphold.coded .cd-compass{display:none}
+  .maphold.coded .cd-br{position:absolute;width:18px;height:18px;z-index:6;border:1.5px solid rgba(154,162,172,.4);pointer-events:none}
+  .maphold.coded .cd-br.tl{top:10px;left:10px;border-right:0;border-bottom:0}
+  .maphold.coded .cd-br.tr{top:10px;right:10px;border-left:0;border-bottom:0}
+  .maphold.coded .cd-br.bl{bottom:10px;left:10px;border-right:0;border-top:0}
+  .maphold.coded .cd-br.br{bottom:10px;right:10px;border-left:0;border-top:0}
+  /* CODED legend */
+  .clg{display:flex;flex-direction:column;gap:6px}
+  .clgr{display:flex;align-items:center;gap:8px;font:600 10.5px var(--mono);color:#c9c2b4}
+  .clgr .d{width:13px;height:13px;border-radius:50%;border:2px solid #e9b84a;flex:0 0 auto}
+  .clgr .d.v,.clgr .d.atm{border-color:#ff3b3b}
+  .clgr .ln{width:22px;height:0;border-top:2px solid #e9b84a;flex:0 0 auto}
+  .clgr .ln.pred{border-top:2px dashed #ff3b3b}
+  .maphold.coded .leaflet-control-scale-line{background:rgba(6,6,8,.8);color:#c9c2b4;border-color:rgba(201,194,180,.4);font-family:var(--mono)}
+  /* ---- SCHEMATIC flow overlay (clean left->right chain over a dimmed map) ---- */
+  #flowlay{position:absolute;inset:0;z-index:5;pointer-events:none}   /* transparent -> the live map shows through */
+  #flowlay .flowsvg{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+  /* dark rails sit under the streams to give the waypoint wire depth */
+  #flowlay path.rsobs{fill:none;stroke:#453619;stroke-width:6;stroke-linecap:round;stroke-linejoin:round;opacity:.45}
+  #flowlay path.rspred{fill:none;stroke:#5f2529;stroke-width:7;stroke-linecap:round;stroke-linejoin:round;opacity:.55}
+  #flowlay path.rsobs.pri{stroke:#5c4518;stroke-width:8}
+  #flowlay path.rspred.pri{stroke-width:9}
+  /* muted animated WAYPOINT streams (travelling pips), above the dots -- calm, not neon */
+  #flowlay path.fsobs{fill:none;stroke:#c6a659;stroke-width:2.8;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:10 8;animation:wdflow .9s linear infinite;filter:drop-shadow(0 0 2.5px rgba(198,166,89,.4))}
+  #flowlay path.fspred{fill:none;stroke:#c67a80;stroke-width:2.6;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:10 8;animation:wdflow .9s linear infinite;filter:drop-shadow(0 0 2.5px rgba(198,112,118,.4))}
+  #flowlay path.fsobs.pri{stroke:#d6bd73;stroke-width:3.4}
+  #flowlay path.fspred.pri{stroke:#cf6068;stroke-width:3.6}
+  .fnode{position:relative;width:100%;height:100%;pointer-events:auto;cursor:pointer}
+  .fnode .cring{width:100%;height:100%;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#e6b34a;border:2px solid currentColor;background:rgba(12,12,14,.96);box-shadow:0 0 8px rgba(0,0,0,.55);transition:transform .12s}
+  .fnode:hover .cring{transform:scale(1.15);box-shadow:0 0 16px currentColor}
+  .fnode.v .cring,.fnode.atm .cring{color:#f25555}
+  .fnode .cring svg{width:52%;height:52%;display:block}
+  .fnode.leaf .cring,.fnode.focus .cring{animation:codedpulse 1.6s ease-in-out infinite}
+  .fnode.focus .cring{border-width:2.5px;box-shadow:0 0 18px currentColor}
+  .fnode .rank{position:absolute;top:-5px;right:-5px;min-width:15px;height:15px;border-radius:50%;background:#ff3b3b;color:#0a0405;
+    font:800 9px/15px var(--mono);text-align:center;border:1.5px solid #0a0405;box-shadow:0 0 6px rgba(207,80,86,.7)}
+  .fnode .clab{position:absolute;left:50%;top:calc(100% + 5px);transform:translateX(-50%);white-space:nowrap;text-align:center;background:rgba(10,11,13,.96);border:1px solid rgba(255,255,255,.14);border-radius:6px;padding:3px 8px;line-height:1.2;box-shadow:0 2px 8px rgba(0,0,0,.6);z-index:2}
+  .fnode .clab b{display:block;font:700 11px var(--mono);color:#f3f5f7;letter-spacing:.4px}
+  .fnode .clab i{display:block;font-style:normal;font:600 8px var(--mono);letter-spacing:1.1px;margin-top:1px}
+  .fnode.v .clab i,.fnode.atm .clab i{color:#f27a7a}
+  .fnode.m .clab i,.fnode.leaf .clab i{color:#e6b34a}
+  .leaflet-tooltip.ftip{background:rgba(8,10,14,.97);border:1px solid var(--line2);color:var(--ink);font-family:var(--mono);font-size:10.5px;line-height:1.45;padding:6px 10px;border-radius:8px;box-shadow:0 0 16px rgba(0,0,0,.75)}
+  .leaflet-tooltip.ftip b{color:#fff}
+  .leaflet-tooltip.ftip:before{display:none}
+  .offind{transform:translate(-50%,-50%);white-space:nowrap;background:rgba(18,10,12,.95);border:1px solid rgba(224,94,114,.55);
+    color:#ffb3bb;font:800 9.5px var(--mono);letter-spacing:.6px;padding:4px 10px;border-radius:999px;box-shadow:0 0 12px rgba(0,0,0,.6)}
+  .offind.v{border-color:rgba(120,180,255,.6);color:#bcdcff}
+  /* ranked TARGET-ATM side menu (click a row -> fly to that ATM in close-up) */
+  .maphold.coded .tgtpanel{position:absolute;top:52px;left:14px;z-index:7;width:192px;background:rgba(8,10,14,.92);
+    border:1px solid var(--line2);border-radius:11px;padding:9px 9px 7px;backdrop-filter:blur(5px);box-shadow:0 0 20px rgba(0,0,0,.55)}
+  .tgtpanel .th{display:flex;align-items:center;gap:6px;font:800 9px var(--mono);letter-spacing:1.4px;color:#9aa2ac;text-transform:uppercase;margin:0 2px 7px}
+  .tgtpanel .th .zn{margin-left:auto;color:#7f8791;cursor:pointer;font-size:11px}
+  .tgtpanel .th .zn:hover{color:var(--cyan)}
+  .tgtrow{display:flex;align-items:center;gap:8px;padding:6px 6px;border-radius:8px;cursor:pointer;transition:background .12s}
+  .tgtrow:hover{background:rgba(224,94,114,.14)}
+  .tgtrow .rk{width:17px;height:17px;border-radius:50%;background:#c94b52;color:#0a0405;font:800 9px/17px var(--mono);text-align:center;flex:0 0 auto}
+  .tgtrow.p1 .rk{background:#ff3b3b;box-shadow:0 0 8px rgba(207,80,86,.7)}
+  .tgtrow .id{flex:1;min-width:0;font:700 10.5px var(--mono);color:#eef2f6;line-height:1.2;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .tgtrow .id .sub{display:block;font:600 8px var(--mono);color:#8b929c;letter-spacing:.3px}
+  .tgtrow .pc{font:800 11px var(--mono);color:#ff9aa6;flex:0 0 auto}
+  path.atmfocus,.atmfocus{animation:codedpulse 1.1s ease-in-out infinite}
+  .famt{position:absolute;transform:translate(-50%,-50%);background:rgba(6,6,8,.92);border:1px solid rgba(255,255,255,.1);border-radius:5px;padding:2px 8px;font:700 10px var(--mono);color:#efdcae;z-index:6;white-space:nowrap}
   .destpin{transform:translate(13px,-10px);white-space:nowrap;color:#04121a;background:var(--amber);
     font:900 10.5px var(--mono);letter-spacing:.5px;padding:3px 10px;border-radius:999px;
     box-shadow:0 0 16px rgba(255,190,77,.9),0 0 0 2px rgba(4,10,16,.6);border:1px solid #04121a;animation:blink 2.2s ease-in-out infinite}
@@ -328,9 +430,69 @@
   .navbtn{cursor:pointer;user-select:none;display:inline-flex;align-items:center;gap:6px;color:var(--dim);
     font-family:var(--mono);font-size:12px;padding:5px 12px;border:1px solid var(--line);border-radius:8px}
   .navbtn:hover{border-color:var(--cyan);color:var(--ink)}
-  .navbtn.on{color:#04181a;background:var(--cyan);border-color:var(--cyan);box-shadow:0 0 16px rgba(53,224,230,.4)}
+  .navbtn.on{color:#04181a;background:var(--cyan);border-color:var(--cyan);box-shadow:0 0 16px rgba(79,173,186,.4)}
+  /* ===== CASE STUDIO (cinematic synthetic-case generator) ===== */
+  .studio{padding:2px 2px 20px}
+  .sthead{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;margin:2px 0 14px;flex-wrap:wrap}
+  .sttitle{margin:0;font:400 24px/1 var(--sans);letter-spacing:2px;color:#eaf2f6;text-shadow:0 0 14px rgba(79,173,186,.25)}
+  .stsub{display:block;color:var(--dim);font-size:12px;margin-top:5px}
+  .stsafe{font-family:var(--mono);font-size:10px;letter-spacing:1.5px;color:var(--amber);border:1px solid rgba(214,169,92,.4);border-radius:20px;padding:4px 12px;white-space:nowrap}
+  .stbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:11px 13px;margin-bottom:14px}
+  .stbar label{font-family:var(--mono);font-size:10px;letter-spacing:1.4px;text-transform:uppercase;color:var(--dim)}
+  .stbar select,.stbar input{background:var(--solid);color:var(--ink);border:1px solid var(--line);border-radius:7px;padding:7px 9px;font-family:var(--mono);font-size:12px}
+  .stbar input{width:74px}
+  .stgen{margin-left:auto;background:linear-gradient(180deg,var(--cyan),#2f8a95);color:#04181a;border:0;border-radius:8px;padding:9px 18px;font-family:var(--mono);font-weight:700;letter-spacing:1px;font-size:12px;cursor:pointer;box-shadow:0 0 16px rgba(79,173,186,.35)}
+  .stgen:hover{filter:brightness(1.08)} .stgen:disabled{opacity:.5;cursor:default;box-shadow:none}
+  .ststage{position:relative;height:58vh;min-height:430px;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:radial-gradient(120% 120% at 50% 30%,#0c141d,#070b12 70%,#05070d);box-shadow:inset 0 0 120px rgba(0,0,0,.6)}
+  .stletter{position:absolute;left:0;right:0;height:0;background:#05070d;z-index:6;transition:height .5s ease}
+  .stletter.t{top:0} .stletter.b{bottom:0}
+  .ststage.rolling .stletter{height:26px}
+  .sthud{position:absolute;top:34px;left:20px;z-index:7;display:flex;align-items:center;gap:14px;opacity:0;transition:opacity .4s}
+  .ststage.rolling .sthud{opacity:1}
+  .sthud .rec{display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:10px;letter-spacing:2px;color:var(--red)}
+  .sthud .rec .d{width:8px;height:8px;border-radius:50%;background:var(--red);box-shadow:0 0 8px var(--red);animation:blink 1s infinite}
+  .sthud .tc{font-family:var(--mono);font-size:15px;color:#eaf2f6;letter-spacing:1px}
+  .sthud .act{font-family:var(--mono);font-size:11px;letter-spacing:3px;color:var(--cyan)}
+  .ststage.climax .sthud .act{color:#ff8a97;text-shadow:0 0 12px rgba(224,94,114,.6)}
+  .stcanvas{position:absolute;inset:26px 0;display:flex;align-items:center;justify-content:center}
+  .stidle{color:var(--dim);text-align:center;font-size:14px;line-height:1.8} .stidle span{font-size:11.5px;color:var(--faint)}
+  #stsvg{width:100%;height:100%}
+  .stedge{fill:none;stroke-linecap:round;opacity:0;transition:opacity .5s;stroke-dasharray:6 8}
+  .stedge.show{opacity:1;animation:wdflow .8s linear infinite}
+  .stedge.obs{stroke:#c6a659;stroke-width:2.4;filter:drop-shadow(0 0 3px rgba(198,166,89,.4))}
+  .stedge.pred{stroke:#cf6068;stroke-width:2.4;filter:drop-shadow(0 0 4px rgba(207,96,104,.5))}
+  .stnode{opacity:0} .stnode.show{opacity:1;animation:stpop .5s ease both}
+  @keyframes stpop{from{opacity:0;transform:scale(.6)}to{opacity:1}}
+  .stnode .core{fill:#0c141d;stroke:#2f8a95;stroke-width:2}
+  .stnode .ring{fill:none;stroke:rgba(79,173,186,.22);stroke-width:1}
+  .stnode .lbl{fill:#e6eef4;font:600 12px var(--mono);text-anchor:middle}
+  .stnode .rol{fill:var(--faint);font:400 8px var(--mono);text-anchor:middle;letter-spacing:1px}
+  .stnode.v .core{stroke:var(--cyan)} .stnode.v .lbl{fill:#bfe8ee}
+  .stnode.hold .core{stroke:var(--amber)} .stnode.hold .rol{fill:var(--amber)}
+  .stnode.co .core{fill:#1a0e12;stroke:var(--red);stroke-dasharray:4 3} .stnode.co .lbl{fill:#ff9aa6;font-size:16px}
+  .stnode.co.show .core{animation:codedpulse 1.4s ease-in-out infinite}
+  .streveal{position:absolute;inset:0;z-index:8;display:flex;align-items:center;justify-content:center;pointer-events:none;background:radial-gradient(60% 60% at 50% 50%,rgba(207,96,104,.14),transparent 70%);opacity:0;transition:opacity .5s}
+  .streveal.show{opacity:1;animation:stflash .6s ease}
+  @keyframes stflash{0%{background-color:rgba(224,94,114,.25)}100%{background-color:transparent}}
+  .stcard{background:rgba(9,12,17,.94);border:1px solid rgba(224,94,114,.5);border-radius:14px;padding:20px 26px;min-width:300px;box-shadow:0 0 50px rgba(224,94,114,.25),inset 0 0 40px rgba(224,94,114,.06);text-align:center}
+  .sthidden{font-family:var(--mono);font-size:10px;letter-spacing:2px;color:var(--red);margin-bottom:10px}
+  .stbig{font:400 40px/1 var(--sans);letter-spacing:2px;color:#eaf2f6;text-shadow:0 0 18px rgba(79,173,186,.3);margin-bottom:12px}
+  .strow{display:flex;justify-content:space-between;gap:24px;font-size:12px;padding:4px 0;border-top:1px solid rgba(255,255,255,.06)}
+  .strow span{color:var(--dim);font-family:var(--mono)} .strow b{font-family:var(--mono);color:#dbe6ef} .strow b.lead{color:var(--green)}
+  .stfoot{margin-top:12px;font-size:10.5px;color:var(--faint);max-width:320px;line-height:1.5;margin-left:auto;margin-right:auto}
+  .stcols{display:grid;grid-template-columns:1.4fr 1fr;gap:14px;margin-top:14px}
+  .stlog{background:#070b11;border:1px solid var(--line);border-radius:11px;padding:12px 14px;height:190px;overflow:auto;font-family:var(--mono);font-size:11.5px;line-height:1.7}
+  .stln{color:#8ea6b4;white-space:pre-wrap} .stln.cmd{color:#bfe8ee} .stln.dim{color:var(--faint)} .stln.ok{color:var(--green)} .stln.err{color:var(--red)}
+  .stmeta{background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:12px 14px;height:190px;overflow:auto}
+  .stmh{font-family:var(--mono);font-size:10px;letter-spacing:1.4px;text-transform:uppercase;color:var(--cyan);margin:2px 0 6px}
+  .stmh span{color:var(--faint);letter-spacing:.5px;text-transform:none}
+  .stcell{font-family:var(--mono);font-size:12px;color:var(--dim);padding:3px 8px;border:1px solid var(--line);border-radius:6px;margin-bottom:5px;display:inline-block;margin-right:6px}
+  .stcell.true{color:var(--green);border-color:rgba(70,196,149,.5);background:rgba(70,196,149,.08)} .stcell.true i{color:var(--green);font-style:normal}
+  .stpath{font-family:var(--mono);font-size:11px;color:#c6d6e4;line-height:1.7;margin-bottom:8px} .stpath b{color:var(--red)}
+  .stfile{font-family:var(--mono);font-size:10.5px;color:#9fb3c2;line-height:1.7} .stfile.dim{color:var(--faint)} .stfile em{color:var(--amber);font-style:normal}
+  @media(max-width:820px){.stcols{grid-template-columns:1fr}}
   .ovhead{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin:2px 0 16px}
-  .ovhead h1{margin:0;font:900 30px/1 var(--mono);letter-spacing:2px;text-shadow:0 0 24px rgba(53,224,230,.45)}
+  .ovhead h1{margin:0;font:400 16px/1.4 var(--sans);letter-spacing:1.5px;text-shadow:0 0 12px rgba(79,173,186,.22)}
   .ovhead .sub{color:var(--dim);font-size:13px}
   .ovhead .live{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--green);letter-spacing:1px;display:flex;align-items:center;gap:7px}
   .ovhead .live .d{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 10px var(--green);animation:blink 1.8s ease-in-out infinite}
@@ -342,7 +504,7 @@
   .ovtile.c1::before{background:var(--cyan)} .ovtile.c2::before{background:var(--red)}
   .ovtile.c3::before{background:var(--amber)} .ovtile.c4::before{background:var(--violet)} .ovtile.c5::before{background:var(--green)}
   .ovtile .k{font-family:var(--mono);font-size:10px;letter-spacing:1.6px;text-transform:uppercase;color:var(--faint)}
-  .ovtile .v{font-family:var(--mono);font-size:36px;font-weight:900;margin-top:8px;line-height:1;text-shadow:0 0 18px currentColor}
+  .ovtile .v{font-family:var(--mono);font-size:36px;font-weight:900;margin-top:8px;line-height:1;text-shadow:0 0 9px currentColor}
   .ovtile .s{color:var(--dim);font-size:11.5px;margin-top:7px}
   .ovmain{display:grid;grid-template-columns:1fr 340px;gap:14px}
   @media(max-width:1100px){.ovmain{grid-template-columns:1fr}.ovtiles{grid-template-columns:repeat(2,1fr)}}
@@ -366,7 +528,7 @@
   @media(max-width:1100px){.impact{grid-template-columns:repeat(2,1fr)}}
   .imp{position:relative;background:linear-gradient(180deg,rgba(16,26,34,.6),rgba(10,16,24,.5));border:1px solid var(--line2);border-radius:13px;padding:14px 15px;overflow:hidden}
   .imp .k{font-family:var(--mono);font-size:9.5px;letter-spacing:1.3px;text-transform:uppercase;color:var(--cyan)}
-  .imp .v{font-family:var(--mono);font-size:28px;font-weight:900;margin-top:6px;color:#fff;text-shadow:0 0 14px rgba(53,224,230,.3)}
+  .imp .v{font-family:var(--mono);font-size:28px;font-weight:900;margin-top:6px;color:#fff;text-shadow:0 0 14px rgba(79,173,186,.3)}
   .imp .s{color:var(--dim);font-size:11px;margin-top:5px;line-height:1.4}
   .trustbadge{display:inline-flex;align-items:center;gap:7px;font-family:var(--mono);font-size:11px;color:var(--green);
     background:rgba(55,230,166,.08);border:1px solid rgba(55,230,166,.3);border-radius:999px;padding:5px 12px;margin-left:6px}
@@ -385,17 +547,17 @@
   .tktable th{text-align:left;font-family:var(--mono);font-size:9.5px;letter-spacing:1.3px;text-transform:uppercase;
     color:var(--faint);padding:10px 12px;border-bottom:1px solid var(--line2);position:sticky;top:0;background:var(--solid);z-index:1}
   .tktable td{padding:11px 12px;border-bottom:1px solid rgba(84,150,180,.1);vertical-align:middle}
-  .tktable tr:hover td{background:rgba(53,224,230,.04)}
+  .tktable tr:hover td{background:rgba(79,173,186,.04)}
   .tkid{font-family:var(--mono);color:var(--cyan);font-weight:650;font-size:11.5px}
   .pri{font-family:var(--mono);font-weight:800;font-size:10px;padding:3px 8px;border-radius:5px;letter-spacing:.5px}
-  .pri.P1{background:rgba(255,90,110,.16);color:var(--red);box-shadow:0 0 0 1px rgba(255,90,110,.5) inset}
+  .pri.P1{background:rgba(224,94,114,.16);color:var(--red);box-shadow:0 0 0 1px rgba(224,94,114,.5) inset}
   .pri.P2{background:rgba(255,190,77,.14);color:var(--amber);box-shadow:0 0 0 1px rgba(255,190,77,.5) inset}
   .pri.P3{background:rgba(91,109,128,.18);color:#9fb0c2}
   .st{font-family:var(--mono);font-weight:800;font-size:9.5px;padding:4px 9px;border-radius:999px;letter-spacing:.8px;white-space:nowrap}
-  .st.NEW{background:rgba(53,224,230,.14);color:var(--cyan)}
+  .st.NEW{background:rgba(79,173,186,.14);color:var(--cyan)}
   .st.ASSIGNED{background:rgba(138,123,255,.16);color:var(--violet)}
   .st.INVESTIGATING{background:rgba(255,190,77,.14);color:var(--amber)}
-  .st.FREEZE_SENT{background:rgba(255,90,110,.16);color:var(--red)}
+  .st.FREEZE_SENT{background:rgba(224,94,114,.16);color:var(--red)}
   .st.RESOLVED{background:rgba(55,230,166,.14);color:var(--green)}
   .st.CLOSED{background:rgba(91,109,128,.2);color:#9fb0c2}
   .tkasg{color:var(--dim)} .tkasg.none{color:var(--red)}
@@ -426,8 +588,8 @@
   @keyframes modalin{from{opacity:0}to{opacity:1}}
   .urgent{position:relative;width:min(520px,92vw);border-radius:16px;padding:24px 26px 20px;
     background:linear-gradient(180deg,rgba(32,10,15,.97),rgba(13,8,12,.97));
-    border:1px solid rgba(255,90,110,.55);overflow:hidden;
-    box-shadow:0 0 0 1px rgba(255,90,110,.25),0 0 60px rgba(255,90,110,.4),inset 0 0 46px rgba(255,90,110,.09);
+    border:1px solid rgba(224,94,114,.55);overflow:hidden;
+    box-shadow:0 0 0 1px rgba(224,94,114,.25),0 0 60px rgba(224,94,114,.4),inset 0 0 46px rgba(224,94,114,.09);
     animation:urgpop .3s cubic-bezier(.2,1.35,.4,1) both}
   @keyframes urgpop{from{opacity:0;transform:scale(.9) translateY(12px)}to{opacity:1;transform:none}}
   .urgent::before{content:"";position:absolute;left:0;right:0;top:0;height:3px;background:var(--red);
@@ -437,31 +599,100 @@
   .urgent>*{position:relative;z-index:1}
   .urgent .utop{display:flex;align-items:center;gap:12px}
   .urgent .siren{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:20px;
-    background:rgba(255,90,110,.16);box-shadow:0 0 0 1px rgba(255,90,110,.5) inset,0 0 20px rgba(255,90,110,.45);animation:blink 1.1s ease-in-out infinite}
-  .urgent h2{margin:0;font-family:var(--mono);letter-spacing:3px;font-size:15px;color:var(--red);text-shadow:0 0 16px rgba(255,90,110,.6)}
+    background:rgba(224,94,114,.16);box-shadow:0 0 0 1px rgba(224,94,114,.5) inset,0 0 20px rgba(224,94,114,.45);animation:blink 1.1s ease-in-out infinite}
+  .urgent h2{margin:0;font-family:var(--mono);letter-spacing:3px;font-size:15px;color:var(--red);text-shadow:0 0 16px rgba(224,94,114,.6)}
   .urgent .usub{margin-left:auto;font-family:var(--mono);font-size:11px;color:var(--dim);letter-spacing:1px}
   .urgent .uline{color:var(--ink);font-size:14px;line-height:1.6;margin:15px 0 4px}
   .urgent .uline b{color:#ffd0d6}
   .urgent .uwhere{font-family:var(--mono);font-size:11.5px;color:var(--amber);margin:6px 0 2px;letter-spacing:.4px}
   .urgent .ustats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:15px 0 18px}
-  .urgent .ust{background:rgba(255,255,255,.03);border:1px solid rgba(255,90,110,.22);border-radius:10px;padding:9px 11px}
+  .urgent .ust{background:rgba(255,255,255,.03);border:1px solid rgba(224,94,114,.22);border-radius:10px;padding:9px 11px}
   .urgent .ust .k{font-family:var(--mono);font-size:9px;letter-spacing:1.3px;color:var(--faint);text-transform:uppercase}
   .urgent .ust .v{font-family:var(--mono);font-size:18px;font-weight:750;margin-top:3px;color:#fff}
   .urgent .uact{display:flex;gap:10px}
   .urgent .bigfreeze{flex:1;background:linear-gradient(180deg,#ff5a6e,#d83048);color:#fff;border:0;border-radius:10px;
     padding:13px;font-family:var(--mono);font-weight:800;letter-spacing:1.5px;font-size:13px;cursor:pointer;
-    box-shadow:0 0 22px rgba(255,90,110,.5);transition:.15s}
-  .urgent .bigfreeze:hover{filter:brightness(1.08);box-shadow:0 0 30px rgba(255,90,110,.8)}
+    box-shadow:0 0 22px rgba(224,94,114,.5);transition:.15s}
+  .urgent .bigfreeze:hover{filter:brightness(1.08);box-shadow:0 0 30px rgba(224,94,114,.8)}
   .urgent .ubtn{background:rgba(255,255,255,.06);color:var(--ink);border:1px solid var(--line2);border-radius:10px;
     padding:13px 15px;font-family:var(--mono);font-size:12px;cursor:pointer;letter-spacing:.5px}
   .urgent .ubtn:hover{border-color:var(--cyan);color:var(--cyan)}
   .urgent .uflash{font-family:var(--mono);font-size:11px;color:var(--green);margin-top:11px;min-height:14px;text-shadow:0 0 10px rgba(55,230,166,.4)}
   .urgent .ux{position:absolute;top:12px;right:15px;z-index:2;color:var(--faint);cursor:pointer;font-size:15px;font-family:var(--mono)}
   .urgent .ux:hover{color:var(--red)}
+  /* ===== MODE SWITCH — Base = the SAME advanced console with plain-English notes layered on ===== */
+  .modesw{display:inline-flex;background:var(--solid);border:1px solid var(--line);border-radius:9px;overflow:hidden;margin-left:10px;flex:0 0 auto}
+  .modesw .seg{padding:7px 13px;font-family:var(--mono);font-size:11px;letter-spacing:.5px;color:var(--dim);cursor:pointer;user-select:none;white-space:nowrap}
+  .modesw .seg.on{background:var(--cyan);color:#04181a;font-weight:700}
+  body.basemode #navStudio{display:none}            /* the synthetic-case builder isn't for field officers */
+  body.basemode .bhide{display:none}                 /* analyst-only panels: hidden in Base to keep it simple */
+  body.basemode #voiceSel,body.basemode #sndBtn{display:none}   /* trim the voice-picker clutter in Base */
+  .bx{display:none}                                  /* plain-English explainer — only shown in Base mode */
+  body.basemode .bx{display:block;font:400 12.5px/1.55 var(--body);color:#aecdd4;background:rgba(79,173,186,.09);
+    border-left:3px solid var(--cyan);border-radius:0 8px 8px 0;padding:9px 12px;margin:9px 0}
+  .bx b{color:#e2f0f3;font-weight:600}
+  .bhelp{display:none}
+  body.basemode .bhelp{display:block;background:linear-gradient(90deg,rgba(79,173,186,.16),rgba(79,173,186,.03));
+    border-bottom:1px solid var(--line2);padding:11px 22px}
+  .bhelp .t{font:400 14px var(--sans);letter-spacing:.6px;color:#eaf2f6;margin-bottom:7px}
+  .bhelp .g{display:flex;flex-wrap:wrap;gap:8px 16px;font-size:12.5px;color:var(--dim)}
+  .bhelp .g b{color:#e2f0f3}
+  .bhelp .k{display:inline-flex;align-items:center;gap:6px}
+  .bhelp .dot{width:10px;height:10px;border-radius:50%;flex:0 0 auto}
+  /* ===== MULE / ACCOUNT PROFILE — persistent entity view ===== */
+  .muleprof{width:min(880px,95vw);max-height:88vh;overflow:auto;background:var(--panel2);border:1px solid var(--line2);border-radius:14px;box-shadow:0 0 0 1px rgba(79,173,186,.12),0 20px 60px rgba(0,0,0,.6)}
+  .mp-hd{position:sticky;top:0;z-index:2;display:flex;align-items:flex-start;gap:14px;padding:18px 22px;border-bottom:1px solid var(--line);background:linear-gradient(180deg,rgba(14,22,30,.98),rgba(12,18,24,.96))}
+  .mp-id{font-family:var(--mono);font-size:20px;font-weight:700;color:#eaf2f6;letter-spacing:1px}
+  .mp-sub{font-size:12px;color:var(--dim);margin-top:4px}
+  .mp-x{margin-left:auto;cursor:pointer;color:var(--faint);font-family:var(--mono);font-size:12px;border:1px solid var(--line);border-radius:7px;padding:6px 11px;white-space:nowrap}
+  .mp-x:hover{color:var(--red);border-color:var(--red)}
+  .mp-body{padding:16px 22px 22px}
+  .mp-chips{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 6px}
+  .mp-chip{background:var(--solid);border:1px solid var(--line);border-radius:9px;padding:8px 12px;min-width:92px}
+  .mp-chip .k{font-size:9px;letter-spacing:1px;color:var(--faint);text-transform:uppercase;font-family:var(--mono)}
+  .mp-chip .v{font-family:var(--mono);font-size:16px;font-weight:700;color:#e6eef4;margin-top:3px}
+  .mp-chip.hot .v{color:var(--red)}
+  .mp-h{font-family:var(--mono);font-size:11px;letter-spacing:1.5px;text-transform:uppercase;color:var(--cyan);margin:18px 0 8px}
+  .mp-cases{width:100%;border-collapse:collapse;font-size:12.5px}
+  .mp-cases th{text-align:left;color:var(--faint);font-family:var(--mono);font-size:9.5px;letter-spacing:1px;text-transform:uppercase;padding:6px 8px;border-bottom:1px solid var(--line)}
+  .mp-cases td{padding:8px;border-bottom:1px solid var(--line);color:var(--ink)}
+  .mp-cases tr:hover td{background:rgba(79,173,186,.05)}
+  .mp-role{font-family:var(--mono);font-size:10px;font-weight:700;padding:2px 7px;border-radius:5px}
+  .mp-role.MULE{background:rgba(214,169,92,.14);color:var(--amber)} .mp-role.VICTIM{background:rgba(79,173,186,.14);color:var(--cyan)}
+  .mp-open{background:var(--solid);border:1px solid var(--line2);color:var(--cyan);border-radius:6px;padding:5px 11px;font-family:var(--mono);font-size:11px;cursor:pointer;white-space:nowrap}
+  .mp-open:hover{background:rgba(79,173,186,.12)}
+  .mp-link{display:inline-block;font-family:var(--mono);font-size:12px;color:#cdd9e2;background:var(--solid);border:1px solid var(--line);border-radius:7px;padding:5px 10px;margin:0 6px 6px 0;cursor:pointer}
+  .mp-link:hover{border-color:var(--cyan);color:var(--cyan)}
+  .mp-txwrap{max-height:240px;overflow:auto;border:1px solid var(--line);border-radius:9px}
+  .mp-tx{width:100%;border-collapse:collapse;font-size:11.5px;font-family:var(--mono)}
+  .mp-tx th{position:sticky;top:0;background:var(--panel2);text-align:left;color:var(--faint);font-size:9px;letter-spacing:1px;text-transform:uppercase;padding:6px 8px;border-bottom:1px solid var(--line)}
+  .mp-tx td{padding:6px 8px;border-bottom:1px solid rgba(120,150,165,.08);color:var(--dim)}
+  .mp-tx .in{color:var(--green)} .mp-tx .out{color:#e0b0b6} .mp-tx .taint{color:var(--red);font-size:9px}
+  .mp-load{padding:56px;text-align:center;color:var(--dim)}
+  /* ===== MULE NETWORK (force-directed entity graph) ===== */
+  .netview{padding:2px 2px 10px}
+  .nethead{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;margin:2px 0 12px;flex-wrap:wrap}
+  .nettitle{margin:0;font:400 24px/1 var(--sans);letter-spacing:2px;color:#eaf2f6;text-shadow:0 0 14px rgba(79,173,186,.22)}
+  .netsub{display:block;color:var(--dim);font-size:12.5px;margin-top:6px;max-width:680px;line-height:1.55}
+  .netsub b{color:#dbe6ef}
+  .netlegend{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center}
+  .netlg{display:inline-flex;align-items:center;gap:7px;font-size:11.5px;color:var(--dim);cursor:pointer;user-select:none}
+  .netlg .d{width:11px;height:11px;border-radius:50%;flex:0 0 auto}
+  .netlg.off{opacity:.35}
+  .netcanvas{position:relative;height:66vh;min-height:460px;border:1px solid var(--line);border-radius:14px;overflow:hidden;background:radial-gradient(120% 120% at 50% 40%,#0d151d,#080c11 72%,#05070d)}
+  .netload{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:var(--dim);font-size:14px}
+  #netSvg{width:100%;height:100%;display:block;cursor:grab}
+  .net-node{cursor:pointer}
+  .net-node text{font-family:var(--mono);font-size:9.5px;fill:#c6d6e2;pointer-events:none;paint-order:stroke;stroke:#05070d;stroke-width:2.6px;stroke-linejoin:round}
+  .net-tip{position:absolute;z-index:9;pointer-events:none;background:rgba(9,13,18,.96);border:1px solid var(--line2);border-radius:9px;padding:9px 12px;font-size:12px;color:#dce6ef;box-shadow:0 6px 20px rgba(0,0,0,.55);max-width:230px;display:none;line-height:1.5}
+  .net-tip b{font-family:var(--mono);color:#eaf2f6} .net-tip .g{font-family:var(--mono);font-size:10px;color:var(--cyan);letter-spacing:1px}
+  .net-tip .hint{color:var(--faint);font-size:10.5px;margin-top:5px}
+  .netfoot{font-size:11px;color:var(--faint);margin-top:9px;font-family:var(--mono);letter-spacing:.3px}
 </style>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.heat/0.2.0/leaflet-heat.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
 </head>
 <body>
 <div class="scanbar"></div>
@@ -474,10 +705,27 @@
     <span class="navbtn on" id="navOverview" onclick="showOverview()">&#9635;&nbsp; Command centre</span>
     <span class="navbtn" id="navTickets" onclick="showTickets()">&#9776;&nbsp; Case centre</span>
     <span class="navbtn" id="navCase" onclick="SEL&&selectCase(SEL)">&#9673;&nbsp; Case view</span>
+    <span class="navbtn" id="navNet" onclick="showNetwork()">&#9096;&nbsp; Mule Network</span>
+    <span class="navbtn adv" id="navStudio" onclick="showStudio()">&#9670;&nbsp; Case Studio</span>
   </div>
   <div class="chips" id="chips"><span class="chip">initialising&hellip;</span></div>
   <span class="atgl" id="alertToggle" onclick="toggleAlerts()" title="auto pop-up for new urgent cases">&#128276; alerts on</span>
+  <div class="modesw" id="modesw" title="Base = same console, explained in plain words · Advanced = expert view">
+    <span class="seg" onclick="setMode('base')">Base</span>
+    <span class="seg on" onclick="setMode('advanced')">Advanced</span>
+  </div>
 </header>
+
+<div class="bhelp">
+  <div class="t">&#9670; Base mode &mdash; the same screen, explained in plain words</div>
+  <div class="g">
+    <span class="k"><span class="dot" style="background:var(--red)"></span><b>RED</b> = act now, freeze the account</span>
+    <span class="k"><span class="dot" style="background:var(--amber)"></span><b>AMBER</b> = keep watching</span>
+    <span class="k"><span class="dot" style="background:var(--faint)"></span><b>GREY</b> = still tracing, no action yet</span>
+    <span class="k">The big % is the <b>chance the cash is pulled out within 10 minutes</b>.</span>
+    <span class="k">Every panel below has a blue note explaining what it means.</span>
+  </div>
+</div>
 
 <div class="app">
   <aside class="rail">
@@ -505,6 +753,10 @@
   <div class="urgent" id="urgentBox"></div>
 </div>
 
+<div class="modal" id="muleModal" onclick="if(event.target===this)closeMule()">
+  <div class="muleprof" id="muleProf"></div>
+</div>
+
 <div class="modal" id="resolveModal" onclick="if(event.target===this)closeResolve()">
   <div class="urgent" style="background:linear-gradient(180deg,rgba(10,26,20,.97),rgba(8,16,13,.97));border-color:rgba(55,230,166,.5);box-shadow:0 0 0 1px rgba(55,230,166,.25),0 0 60px rgba(55,230,166,.35)">
     <span class="ux" onclick="closeResolve()">CLOSE ✕</span>
@@ -530,12 +782,12 @@
 const API = location.protocol==='file:' ? 'http://127.0.0.1:8000' : '';
 let HOT=null, PROJ=null, SEL=null, PLAY=null, REPLAY_T=0, LASTHL=null, SELMETA=null;
 let CURDIST=null, FOCUSON=true, SOUND=true, TYPETOK=0, VOICES=[], JVOICE=null, CURAUDIO=null;
-let MAP=null, HEATL=null, ATML=null, MKL=null, RETL=null, FLOWL=null, MESHL=null, RSVG=null;
+let MAP=null, HEATL=null, ATML=null, MKL=null, RETL=null, FLOWL=null, MESHL=null, RSVG=null, RFLOW=null;
 let REPLAYING=false, FRAMED=false, ATMXY={}, ATMMETA={};
 let QUEUE=[], URGENT_SEEN=new Set(), SUPPRESS_URGENT=false, POLL=null;  // urgent-popup state
 let BASELINE_ACKS=null, ALERT_LAST=0;                                    // only alert on NEW reds, throttled
 let OMAP=null, OHEAT=null, VIEW='overview';                              // command-centre overview state
-let CINE_BEAT=-1, LAST_TRAIL_SIG=null;                                   // cinematic replay director state
+let CINE_BEAT=-1, LAST_TRAIL_SIG=null, PREDS_REVEALED=false;             // cinematic replay director state
 let ALERTS_ON=(()=>{try{return localStorage.getItem('alertsOn')!=='0';}catch(e){return true;}})();
 const $=id=>document.getElementById(id);
 const money=v=>'₹'+Math.round(v).toLocaleString('en-IN');
@@ -633,10 +885,292 @@ function toggleRail(){ const app=document.querySelector('.app');
 }
 
 // ================= COMMAND-CENTRE OVERVIEW (landing dashboard) =================
-function setNav(){ const o=$('navOverview'),t=$('navTickets'),c=$('navCase');
+function setNav(){ const o=$('navOverview'),t=$('navTickets'),c=$('navCase'),s=$('navStudio');
   if(o)o.className='navbtn'+(VIEW==='overview'?' on':'');
   if(t)t.className='navbtn'+(VIEW==='tickets'?' on':'');
-  if(c)c.className='navbtn'+(VIEW==='case'?' on':''); }
+  if(c)c.className='navbtn'+(VIEW==='case'?' on':'');
+  if(s)s.className='navbtn'+(VIEW==='studio'?' on':'');
+  const nw=$('navNet'); if(nw)nw.className='navbtn'+(VIEW==='network'?' on':''); }
+
+// ===================== BASE MODE — same console, fewer panels (hides .adv) =====================
+let UIMODE=(()=>{try{return localStorage.getItem('uimode')||'advanced';}catch(e){return 'advanced';}})();
+function setMode(m){
+  UIMODE=m; try{localStorage.setItem('uimode',m);}catch(e){}
+  document.body.classList.toggle('basemode', m==='base');
+  const sw=$('modesw'); if(sw){const s=sw.querySelectorAll('.seg'); if(s[0])s[0].classList.toggle('on',m==='base'); if(s[1])s[1].classList.toggle('on',m!=='base');}
+  if(m==='base' && VIEW==='studio') showOverview();   // Case Studio is an advanced-only tool
+}
+// ===================== MULE / ACCOUNT PROFILE — persistent entity view =====================
+async function openMule(id){
+  const m=$('muleModal'), box=$('muleProf'); if(!m||!box)return;
+  m.classList.add('on'); box.innerHTML='<div class="mp-load">Loading profile for '+id+'&hellip;</div>';
+  let d; try{ d=await (await fetch('/account/'+encodeURIComponent(id))).json(); }
+  catch(e){ box.innerHTML='<div class="mp-load">Could not load '+id+'.</div>'; return; }
+  if(d.detail){ box.innerHTML='<div class="mp-load">'+d.detail+'</div>'; return; }
+  box.innerHTML=renderMule(d);
+}
+function closeMule(){ const m=$('muleModal'); if(m)m.classList.remove('on'); }
+function renderMule(d){
+  const s=d.stats, k=d.kyc;
+  const chip=(lab,val,hot)=>`<div class="mp-chip${hot?' hot':''}"><div class="k">${lab}</div><div class="v">${val}</div></div>`;
+  const cases=d.linked_cases.map(c=>{
+    const tk=c.ticket?c.ticket.status:'&mdash;';
+    const amt=c.disputed_amount?money(c.disputed_amount):'&mdash;';
+    const open=c.ack_no?`<button class="mp-open" onclick="closeMule();selectCase('${c.ack_no}')">Open case &rsaquo;</button>`:'';
+    return `<tr><td><span class="mp-role ${c.role}">${c.role}</span></td>
+      <td>${c.victim_account||'&mdash;'}</td><td>${amt}</td><td>${c.fraud_category||'&mdash;'}</td>
+      <td>${(c.filed_ts||'').replace('T',' ').slice(0,16)}</td><td>${tk}</td><td>${open}</td></tr>`;}).join('');
+  const ring=d.ring_members.length?d.ring_members.map(a=>`<span class="mp-link" onclick="openMule('${a}')">${a}</span>`).join(''):'<span class="cap">none recorded</span>';
+  const links=d.top_counterparties.length?d.top_counterparties.map(c=>`<span class="mp-link" onclick="openMule('${c.account}')">${c.account} <b style="color:var(--faint)">&times;${c.n}</b></span>`).join(''):'<span class="cap">none</span>';
+  const tx=d.transactions.map(t=>{
+    const cp=t.counterparty||(t.atm_id?('ATM '+t.atm_id):'&mdash;');
+    const flag=(t.tainted?'<span class="taint">TAINTED</span>':'')+(t.cashout?' <span class="taint" style="color:var(--amber)">CASH-OUT</span>':'');
+    return `<tr><td>${(t.ts||'').replace('T',' ').slice(5,16)}</td>
+      <td class="${t.direction}">${t.direction==='in'?'&larr; in':'out &rarr;'}</td>
+      <td>${cp}</td><td>${money(t.amount)}</td><td>${t.channel}</td><td>${flag}</td></tr>`;}).join('');
+  return `
+   <div class="mp-hd">
+     <div><div class="mp-id">${d.codename||d.account_id} <span style="font-size:13px;color:var(--dim);font-weight:400">${d.account_id}</span></div>
+       <div class="mp-sub">${k.district||'&mdash;'}${k.pin?' &middot; PIN '+k.pin:''}${k.bank_code?' &middot; '+k.bank_code:''}${k.ring_id?' &middot; ring '+k.ring_id:''}${k.open_date?' &middot; opened '+k.open_date.slice(0,10):''}</div></div>
+     <span class="mp-x" onclick="closeMule()">CLOSE &#10005;</span>
+   </div>
+   <div class="mp-body">
+     <div class="bx">This is one account&rsquo;s full record. Every case listed below is the <b>same account</b> &mdash; this is how you see that a single mule is behind several victims.</div>
+     <div class="mp-chips">
+       ${chip('Transactions',s.n_transactions)}
+       ${chip('Linked cases',s.n_linked_cases,s.n_linked_cases>1)}
+       ${chip('Victims',d.victims.length,d.victims.length>0)}
+       ${chip('Tainted in',money(s.tainted_inflow),s.tainted_inflow>0)}
+       ${chip('Total in',money(s.total_inflow))}
+       ${chip('Total out',money(s.total_outflow))}
+       ${chip('Counterparties',s.unique_counterparties)}
+       ${chip('ATMs used',s.distinct_atms)}
+     </div>
+     <div class="mp-h">&#9670; Linked cases &mdash; the same mule across ${s.n_linked_cases} complaint(s)</div>
+     <table class="mp-cases"><thead><tr><th>Role</th><th>Victim</th><th>Amount</th><th>Type</th><th>Filed</th><th>Ticket</th><th></th></tr></thead>
+       <tbody>${cases||'<tr><td colspan="7" class="cap">no fraud cases linked</td></tr>'}</tbody></table>
+     <div class="mp-h">Ring members</div><div>${ring}</div>
+     <div class="mp-h">Top linked accounts (click to follow the chain)</div><div>${links}</div>
+     <div class="mp-h">Transaction history (${s.n_transactions})</div>
+     <div class="mp-txwrap"><table class="mp-tx"><thead><tr><th>When</th><th>Dir</th><th>Counterparty / ATM</th><th>Amount</th><th>Channel</th><th>Flag</th></tr></thead><tbody>${tx}</tbody></table></div>
+   </div>`;
+}
+// ===================== MULE NETWORK — force-directed codenamed entity graph =====================
+const NET_COL={CASHER:'#d6a95c',DISTRIBUTOR:'#4fadba',COLLECTOR:'#8579d6',RELAY:'#6f97a8'};
+let NET_SIM=null, NET_HIDDEN={};
+async function showNetwork(){
+  VIEW='network';
+  if(MAP){try{MAP.remove();}catch(e){}MAP=null;FLOWL=HEATL=MESHL=ATML=MKL=RETL=RSVG=null;}
+  if(NET_SIM){try{NET_SIM.stop();}catch(e){}NET_SIM=null;} NET_HIDDEN={};
+  $('stage').innerHTML=`
+   <div class="netview">
+     <div class="nethead">
+       <div><h1 class="nettitle">MULE NETWORK</h1>
+         <span class="netsub">Each node is a mule account under a codename, sized by how many frauds it touches and coloured by behaviour. Lines link mules that worked the same case, moved money to each other, or share a ring. <b>Click a node to open its case file.</b></span></div>
+       <div class="netlegend" id="netLegend"></div>
+     </div>
+     <div class="netcanvas" id="netCanvas"><div class="netload">Mapping the network&hellip;</div><div class="net-tip" id="netTip"></div></div>
+     <div class="netfoot" id="netFoot"></div>
+   </div>`;
+  setNav();
+  let data; try{ data=await (await fetch('/network?limit=54')).json(); }
+  catch(e){ const l=document.querySelector('#netCanvas .netload'); if(l)l.textContent='Could not load network.'; return; }
+  renderNetwork(data);
+}
+function renderNetwork(data){
+  const canvas=$('netCanvas'); if(!canvas)return;
+  const load=canvas.querySelector('.netload'); if(load)load.remove();
+  if(typeof d3==='undefined'){ canvas.insertAdjacentHTML('afterbegin','<div class="netload">Graph library still loading — reopen in a moment.</div>'); return; }
+  const W=canvas.clientWidth||900, H=canvas.clientHeight||480;
+  const nodes=data.nodes.map(n=>Object.assign({},n));
+  const links=data.edges.map(e=>Object.assign({},e));
+  const rOf=n=>6+Math.sqrt(n.n_cases||1)*3.2;
+  const groups=data.groups.map(g=>g.key);
+  const gx={}; groups.forEach((g,i)=>gx[g]=W*(0.26+0.48*(groups.length<=1?0.5:i/(groups.length-1))));
+  $('netLegend').innerHTML=data.groups.map(g=>`<span class="netlg" data-g="${g.key}" onclick="netToggle('${g.key}')"><span class="d" style="background:${NET_COL[g.key]||'#889'}"></span>${g.label}</span>`).join('')
+    +`<span class="netlg" style="cursor:default"><span class="d" style="background:transparent;border:1px solid var(--faint)"></span>bigger = more cases</span>`;
+  const svg=d3.select(canvas).append('svg').attr('id','netSvg').attr('viewBox',`0 0 ${W} ${H}`).attr('preserveAspectRatio','xMidYMid meet');
+  const root=svg.append('g');
+  svg.call(d3.zoom().scaleExtent([0.4,4]).on('zoom',ev=>root.attr('transform',ev.transform)));
+  const linkSel=root.append('g').attr('stroke','#3d5964').selectAll('line').data(links).join('line')
+    .attr('class','net-edge').attr('stroke-linecap','round')
+    .attr('stroke-opacity',d=>0.16+0.06*d.weight).attr('stroke-width',d=>0.6+d.weight*0.5)
+    .attr('stroke-dasharray',d=>d.kind==='ring'?'2 3':null);
+  const nodeSel=root.append('g').selectAll('g').data(nodes).join('g').attr('class','net-node')
+    .on('click',(ev,d)=>openMule(d.id))
+    .on('mouseenter',(ev,d)=>netHover(d,true,links,linkSel,nodeSel))
+    .on('mouseleave',(ev,d)=>netHover(d,false,links,linkSel,nodeSel))
+    .call(d3.drag()
+      .on('start',(ev,d)=>{if(!ev.active&&NET_SIM)NET_SIM.alphaTarget(0.2).restart();d.fx=d.x;d.fy=d.y;})
+      .on('drag',(ev,d)=>{d.fx=ev.x;d.fy=ev.y;})
+      .on('end',(ev,d)=>{if(!ev.active&&NET_SIM)NET_SIM.alphaTarget(0);d.fx=null;d.fy=null;}));
+  nodeSel.append('circle').attr('class','core').attr('r',rOf).attr('fill',d=>NET_COL[d.group]||'#7fb0c0')
+    .attr('fill-opacity',.92).attr('stroke','#0a0f14').attr('stroke-width',1.4)
+    .style('filter',d=>`drop-shadow(0 0 6px ${NET_COL[d.group]||'#7fb0c0'})`);
+  nodeSel.append('text').attr('text-anchor','middle').attr('dy',d=>-(rOf(d)+5))
+    .style('opacity',d=>d.n_cases>=6?1:0).text(d=>d.codename);
+  NET_SIM=d3.forceSimulation(nodes)
+    .force('link',d3.forceLink(links).id(d=>d.id).distance(d=>62-d.weight*3).strength(.14))
+    .force('charge',d3.forceManyBody().strength(-175))
+    .force('x',d3.forceX(d=>gx[d.group]||W/2).strength(.07))
+    .force('y',d3.forceY(H/2).strength(.06))
+    .force('collide',d3.forceCollide(d=>rOf(d)+5))
+    .on('tick',()=>{
+      linkSel.attr('x1',d=>d.source.x).attr('y1',d=>d.source.y).attr('x2',d=>d.target.x).attr('y2',d=>d.target.y);
+      nodeSel.attr('transform',d=>`translate(${d.x.toFixed(1)},${d.y.toFixed(1)})`);
+    });
+  $('netFoot').textContent=`${nodes.length} mule accounts · ${links.length} links (shared case · transfer · ring) · showing the busiest mules`;
+}
+function netHover(d,on,links,linkSel,nodeSel){
+  const tip=$('netTip');
+  if(on){
+    const nb=new Set([d.id]);
+    links.forEach(l=>{const s=l.source.id||l.source,t=l.target.id||l.target; if(s===d.id)nb.add(t); if(t===d.id)nb.add(s);});
+    nodeSel.style('opacity',n=>nb.has(n.id)?1:.14);
+    nodeSel.selectAll('text').style('opacity',n=>nb.has(n.id)?1:0);
+    linkSel.attr('stroke-opacity',l=>((l.source.id||l.source)===d.id||(l.target.id||l.target)===d.id)?.7:.04);
+    if(tip){ tip.style.display='block';
+      tip.innerHTML=`<b>${d.codename}</b> <span class="g">${d.group}</span><br>${d.id}${d.district?' · '+d.district:''}<br>${d.n_cases} linked case(s) · ₹${Number(d.tainted_in||0).toLocaleString('en-IN')} in<div class="hint">click to open its case file →</div>`;
+      const w=$('netCanvas').clientWidth;
+      tip.style.left=Math.min(w-236,Math.max(6,d.x+14))+'px'; tip.style.top=Math.max(6,d.y-8)+'px'; }
+  } else {
+    nodeSel.style('opacity',1); nodeSel.selectAll('text').style('opacity',n=>n.n_cases>=6?1:0);
+    linkSel.attr('stroke-opacity',l=>0.16+0.06*l.weight);
+    if(tip)tip.style.display='none';
+  }
+}
+function netToggle(g){
+  NET_HIDDEN[g]=!NET_HIDDEN[g];
+  if(typeof d3!=='undefined') d3.selectAll('.net-node').style('display',d=>NET_HIDDEN[d.group]?'none':null);
+  const lg=document.querySelector('.netlg[data-g="'+g+'"]'); if(lg)lg.classList.toggle('off',NET_HIDDEN[g]);
+}
+// ===================== CASE STUDIO — cinematic synthetic-case generator =====================
+let ST_BUSY=false;
+const ST_SCEN=[['cashout','Cash-out (default)'],['simple','Simple chain'],['branching','Branching'],['mule_chain','Mule chain'],['complex','Complex / converging']];
+const stSleep=ms=>new Promise(r=>setTimeout(r,ms));
+function stLog(t,cls){const el=$('stlog');if(!el)return;const d=document.createElement('div');d.className='stln'+(cls?' '+cls:'');d.textContent=t;el.appendChild(d);el.scrollTop=el.scrollHeight;}
+function showStudio(){
+  VIEW='studio';
+  if(MAP){try{MAP.remove();}catch(e){}MAP=null;FLOWL=HEATL=MESHL=ATML=MKL=RETL=RSVG=null;}
+  const seed=Math.floor(Math.random()*89)+10;
+  $('stage').innerHTML=`
+   <div class="studio">
+    <div class="sthead">
+      <div><h1 class="sttitle">CASE STUDIO</h1><span class="stsub">synthetic incident generator &middot; manufactures leakage-safe cases for the ML / graph / GNN&middot;TGN pipeline</span></div>
+      <span class="stsafe">&#9679; SYNTHETIC &middot; NO REAL DATA</span>
+    </div>
+    <div class="stbar">
+      <label>Scenario</label>
+      <select id="stScenario">${ST_SCEN.map(s=>`<option value="${s[0]}">${s[1]}</option>`).join('')}</select>
+      <label>Seed</label><input id="stSeed" type="number" value="${seed}">
+      <label>Accounts</label><input id="stAcc" type="number" value="60">
+      <button class="stgen" id="stGen" onclick="genStudioCase()">&#9654;&nbsp;GENERATE CASE</button>
+    </div>
+    <div class="ststage idle" id="ststage">
+      <div class="stletter t"></div><div class="stletter b"></div>
+      <div class="sthud"><span class="rec"><span class="d"></span>REC</span><span class="tc" id="sttc">T 00:00</span><span class="act" id="stact">STANDBY</span></div>
+      <div class="stcanvas" id="stcanvas"><div class="stidle">Configure a scenario and press <b>GENERATE</b>.<br><span>The generator manufactures the case &mdash; the models must predict the cash-out.</span></div></div>
+      <div class="streveal" id="streveal"></div>
+    </div>
+    <div class="stcols">
+      <div class="stlog" id="stlog"><div class="stln dim">// terminal ready &mdash; python -m generator.case</div></div>
+      <div class="stmeta" id="stmeta"><div class="stmh">READY</div><div class="stfile dim">no case generated yet</div></div>
+    </div>
+   </div>`;
+  setNav();
+}
+async function genStudioCase(){
+  if(ST_BUSY)return; ST_BUSY=true;
+  const scen=$('stScenario').value, seed=$('stSeed').value, acc=$('stAcc').value;
+  const stage=$('ststage'), btn=$('stGen'); btn.disabled=true;
+  stage.classList.remove('idle','climax'); stage.classList.add('rolling');
+  const rv=$('streveal'); rv.classList.remove('show'); rv.innerHTML='';
+  $('stcanvas').innerHTML=''; $('stmeta').innerHTML=''; $('stlog').innerHTML='';
+  $('stact').textContent='BOOT'; $('sttc').textContent='T 00:00';
+  stLog('$ python -m generator.case --scenario '+scen+' --seed '+seed+' --accounts '+acc,'cmd');
+  for(const l of ['initializing synthetic incident…','seeding deterministic RNG ('+seed+')','manufacturing victim + mule population','laying money-flow topology → '+scen,'reconstructing observed transfers (leakage-safe)…']){ await stSleep(220); stLog(l,'dim'); }
+  let data;
+  try{ const r=await fetch('/studio/generate?scenario='+scen+'&seed='+seed+'&accounts='+acc); data=await r.json(); }
+  catch(e){ stLog('! generation failed: '+e,'err'); ST_BUSY=false; btn.disabled=false; return; }
+  const inp=data.input, gt=data.ground_truth;
+  await stSleep(280);
+  stLog('case '+inp.case_id+' ready · '+inp.stats.n_transactions+' txns · '+inp.graph.nodes.length+' nodes · '+inp.graph.edges.length+' edges','ok');
+  const fg=stFlowSubgraph(inp);
+  stRenderGraph(fg);
+  await stPlay(fg, inp, gt);
+  ST_BUSY=false; btn.disabled=false;
+}
+function stFlowSubgraph(inp){
+  const V=inp.victim_account, adj={};
+  inp.graph.edges.forEach(e=>{(adj[e.source_node]=adj[e.source_node]||[]).push(e);});
+  const hop={}; hop[V]=0; const q=[V], nodes=new Set([V]), edges=[];
+  while(q.length){ const u=q.shift(); (adj[u]||[]).forEach(e=>{ edges.push(e); if(!(e.destination_node in hop)){ hop[e.destination_node]=hop[u]+1; nodes.add(e.destination_node); q.push(e.destination_node);} }); }
+  const outc={}; edges.forEach(e=>outc[e.source_node]=(outc[e.source_node]||0)+1);
+  const leaves=[...nodes].filter(n=>n!==V && !outc[n]);
+  return {V,nodes:[...nodes],edges,hop,leaves};
+}
+function stRenderGraph(fg){
+  const maxhop=Math.max(0,...Object.values(fg.hop)), W=1000,H=460,padX=90,padY=54;
+  const colW=(W-2*padX)/Math.max(1,maxhop+1);
+  const byhop={}; fg.nodes.forEach(n=>{(byhop[fg.hop[n]]=byhop[fg.hop[n]]||[]).push(n);});
+  const pos={};
+  Object.keys(byhop).forEach(h=>{const a=byhop[h];a.forEach((n,i)=>{const y=a.length===1?H/2:padY+(H-2*padY)*i/(a.length-1);pos[n]={x:padX+h*colW,y};});});
+  const coY=fg.leaves.length?fg.leaves.reduce((s,n)=>s+pos[n].y,0)/fg.leaves.length:H/2;
+  pos['__CO__']={x:padX+(maxhop+1)*colW,y:coY};
+  const edge=(a,b,cls,dh)=>{const mx=(a.x+b.x)/2;return `<path class="stedge ${cls}" data-hop="${dh}" d="M${a.x} ${a.y} C ${mx} ${a.y}, ${mx} ${b.y}, ${b.x} ${b.y}"/>`;};
+  const node=(p,id,kind,h)=>{const lbl=id==='__CO__'?'?':id.replace('ACC_SYN_','');const rol=kind==='v'?'VICTIM':kind==='hold'?'HOLDING':kind==='co'?'CASH-OUT':'MULE';return `<g class="stnode ${kind}" data-hop="${h}" transform="translate(${p.x.toFixed(1)},${p.y.toFixed(1)})"><circle class="ring" r="18"/><circle class="core" r="18"/><text class="lbl" y="4">${lbl}</text><text class="rol" y="33">${rol}</text></g>`;};
+  let e='',n='';
+  fg.edges.forEach(ed=>{e+=edge(pos[ed.source_node],pos[ed.destination_node],'obs',fg.hop[ed.destination_node]);});
+  fg.leaves.forEach(l=>{e+=edge(pos[l],pos['__CO__'],'pred',maxhop+1);});
+  fg.nodes.forEach(nd=>{const kind=nd===fg.V?'v':(fg.leaves.includes(nd)?'hold':'mu');n+=node(pos[nd],nd,kind,fg.hop[nd]);});
+  n+=node(pos['__CO__'],'__CO__','co',maxhop+1);
+  $('stcanvas').innerHTML=`<svg id="stsvg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet"><g class="edges">${e}</g><g class="nodes">${n}</g></svg>`;
+}
+async function stPlay(fg,inp,gt){
+  const svg=$('stsvg'); if(!svg)return;
+  const maxhop=Math.max(0,...Object.values(fg.hop));
+  const acts=['MONEY ENTERS','TRACING THE FLOW','LAYERING','CONVERGING ON CASH-OUT'];
+  let clock=0;
+  for(let h=0;h<=maxhop;h++){
+    $('stact').textContent=acts[Math.min(h,acts.length-1)];
+    svg.querySelectorAll('.stnode[data-hop="'+h+'"]').forEach(x=>x.classList.add('show'));
+    svg.querySelectorAll('.stedge[data-hop="'+h+'"]').forEach(x=>x.classList.add('show'));
+    if(h>0){clock+=2+Math.floor(Math.random()*3);$('sttc').textContent='T +'+String(clock).padStart(2,'0')+' min';}
+    stLog(h===0?'hop 0 · money enters at VICTIM':'hop '+h+' · funds forwarded, taint attributed','dim');
+    await stSleep(720);
+  }
+  $('stact').textContent='FORECASTING CASH-OUT'; $('ststage').classList.add('climax');
+  svg.querySelectorAll('.stedge.pred').forEach(x=>x.classList.add('show'));
+  stLog('models scoring candidate cells → '+inp.stats.candidate_cells.join(', '),'dim');
+  await stSleep(520);
+  const co=svg.querySelector('.stnode.co'); if(co)co.classList.add('show');
+  await stSleep(1100);
+  stReveal(gt,inp);
+}
+function stReveal(gt,inp){
+  $('sttc').textContent='T +'+gt.lead_time_min+' min'; $('stact').textContent='⚠ CASH-OUT WINDOW';
+  const inr=Number(gt.cashout_amount).toLocaleString('en-IN');
+  const rv=$('streveal');
+  rv.innerHTML=`<div class="stcard">
+    <div class="sthidden">◆ GROUND TRUTH · was hidden from the model</div>
+    <div class="stbig">${gt.true_cashout_cell}</div>
+    <div class="strow"><span>cash-out account</span><b>${gt.true_cashout_account}</b></div>
+    <div class="strow"><span>cash-out time</span><b>${gt.true_cashout_time.replace('T',' ')}</b></div>
+    <div class="strow"><span>amount</span><b>₹${inr}</b></div>
+    <div class="strow"><span>lead time</span><b class="lead">${gt.lead_time_min} min</b></div>
+    <div class="stfoot">the models predict this from the observed flow — the answer is never fed in</div>
+  </div>`;
+  rv.classList.add('show');
+  stLog('★ ground truth revealed · '+gt.true_cashout_cell+' @ '+gt.true_cashout_time.slice(11,16)+' · lead '+gt.lead_time_min+'min','ok');
+  $('stmeta').innerHTML=`
+    <div class="stmh">CANDIDATE CASH-OUT CELLS <span>WHERE search space</span></div>
+    ${inp.stats.candidate_cells.map(c=>`<div class="stcell${c===gt.true_cashout_cell?' true':''}">${c}${c===gt.true_cashout_cell?' <i>← actual</i>':''}</div>`).join('')}
+    <div class="stmh">FLOW PATH <span>reconstructed</span></div>
+    <div class="stpath">${gt.flow_path.map(a=>a.replace('ACC_SYN_','…')).join(' → ')} → <b>CASH-OUT</b></div>
+    <div class="stmh">WRITE THE BUNDLE</div>
+    <div class="stfile">python -m generator.case --scenario ${inp.scenario} --seed ${inp.seed}</div>
+    <div class="stfile dim">→ cases/${inp.case_id}/ · case.json · transactions/nodes/edges.csv · ground_truth.json</div>`;
+}
 function showOverview(){
   VIEW='overview';
   if(MAP){try{MAP.remove();}catch(e){}MAP=null;FLOWL=HEATL=MESHL=ATML=MKL=RETL=RSVG=null;}  // drop the case map
@@ -660,6 +1194,7 @@ function renderOverview(){
       <span class="trustbadge">&#10003; leakage-safe as-of engine</span>
       <span class="live"><span class="d"></span>LIVE &middot; ${zones} zones</span>
     </div>
+    <div class="bx">This is your home screen. The boxes below are today&rsquo;s totals; the map shows where cash-outs are likely across the city. <b>Open a case from the list on the left</b> (most urgent at the top) to see what to do.</div>
     <div class="ovtiles">
       <div class="ovtile c1"><div class="k">Cases tracked</div><div class="v">${items.length}</div><div class="s">across Pune metro</div></div>
       <div class="ovtile c2"><div class="k">Freeze now</div><div class="v" style="color:var(--red)">${red.length}</div><div class="s">imminent cash-out</div></div>
@@ -850,7 +1385,11 @@ function buildProj(m){const la=m.map(x=>x.lat),lo=m.map(x=>x.lon);
     mlo,Mlo,mla,Mla,W,H,p};}
 async function loadHotspots(){HOT=await jget('/hotspots?min_amt=0');PROJ=buildProj(HOT.atm_markers);
   ATMXY={}; ATMMETA={}; HOT.atm_markers.forEach(m=>{ATMXY[m.atm_id]=[m.lat,m.lon];
-    ATMMETA[m.atm_id]={district:m.district,pin:m.pin,operator:m.operator};});}
+    ATMMETA[m.atm_id]={district:m.district,pin:m.pin,operator:m.operator,fraud_rate:m.fraud_rate};});}
+// CODED node icons (inline SVG, inherit the ring colour)
+const _SVG_PERSON='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="12" cy="8" r="3.4"/><path d="M5 20c0-3.9 3.1-6.3 7-6.3s7 2.4 7 6.3"/></svg>';
+const _SVG_BANK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 9l9-5 9 5"/><path d="M5 9v9M9 9v9M15 9v9M19 9v9"/><path d="M3 19h18"/></svg>';
+function _shortCode(id,pfx){const d=(String(id).match(/\d+/g)||[]).join('').slice(-4)||String(id).slice(-4);return pfx+'-'+d;}
 // human-readable coordinate string, e.g. "18.463°N, 73.875°E"
 function coordStr(ll){ if(!ll||ll[0]==null)return ''; return ll[0].toFixed(3)+'°N, '+ll[1].toFixed(3)+'°E'; }
 // nearest district name for a raw point (fallback when a node carries no district)
@@ -900,53 +1439,168 @@ function caseGeo(trail, loc){
 }
 
 // ---- money-flow drawn ON the real map (victim -> mules -> cash-out ATMs) ----
+// arrowhead marker pointing along a->b (screen bearing), coloured by kind
+function _arrow(a,b,pred){
+  try{ const pa=MAP.latLngToContainerPoint(a), pb=MAP.latLngToContainerPoint(b);
+    const ang=Math.atan2(pb.y-pa.y, pb.x-pa.x)*180/Math.PI + 90;   // triangle points "up" by default
+    const mid=[a[0]*0.42+b[0]*0.58, a[1]*0.42+b[1]*0.58];
+    return L.marker(mid,{interactive:false,zIndexOffset:600,
+      icon:L.divIcon({className:'',iconSize:[0,0],html:`<div class="carrow${pred?' pred':''}" style="transform:rotate(${ang}deg)"></div>`})});
+  }catch(e){return null;}
+}
+function _amountChip(a,b,e){
+  const mid=[(a[0]+b[0])/2,(a[1]+b[1])/2];
+  let t=''; try{ t=String(e.ts).slice(11,16); }catch(_){}
+  return L.marker(mid,{interactive:false,zIndexOffset:500,
+    icon:L.divIcon({className:'',iconSize:[0,0],html:`<div class="camt">${money(e.tainted_amount||e.amount)}${t?('<small>'+t+' IST</small>'):''}</div>`})});
+}
+// quadratic-bezier arc between two latlngs (sampled) -- curved routes never cross
+function arcLatLngs(a,b,bend){
+  const dx=b[0]-a[0], dy=b[1]-a[1];
+  const cx=(a[0]+b[0])/2 - dy*bend, cy=(a[1]+b[1])/2 + dx*bend;
+  const pts=[]; for(let i=0;i<=18;i++){const t=i/18, u=1-t;
+    pts.push([u*u*a[0]+2*u*t*cx+t*t*b[0], u*u*a[1]+2*u*t*cy+t*t*b[1]]);} return pts;
+}
+let LASTFLOW=null, CASEFULL=null, ROUTES=[];
+// Draw the mule->ATM (and victim->mule) connecting WAYPOINT routes in a screen-space SVG
+// overlay (#flowlay) that sits ABOVE the whole Leaflet map. Points come straight from
+// latLngToContainerPoint, so the lines are always glued to the node icons -- immune to the
+// pixel-origin desync that mis-positions Leaflet's own SVG paths under a large render padding.
+function renderRoutes(){
+  const lay=$('flowlay'); if(!lay||!MAP)return;
+  if(!ROUTES||!ROUTES.length||VIEW!=='case'){ lay.style.display='none'; lay.innerHTML=''; return; }
+  let sz; try{ sz=MAP.getSize(); }catch(e){ return; }
+  const cp=ll=>{ try{ const p=MAP.latLngToContainerPoint(ll); return [p.x,p.y]; }catch(e){ return null; } };
+  // pull the polyline back by `r` px from its FIRST point, landing exactly on the circle's edge
+  const trimStart=(arr,r)=>{ let acc=0;
+    for(let i=1;i<arr.length;i++){ const dx=arr[i][0]-arr[i-1][0], dy=arr[i][1]-arr[i-1][1], seg=Math.hypot(dx,dy);
+      if(acc+seg>=r){ const t=(r-acc)/seg; return [[arr[i-1][0]+dx*t, arr[i-1][1]+dy*t], ...arr.slice(i)]; }
+      acc+=seg; }
+    return arr.slice(-1); };
+  const dOf=r=>{ let pts=arcLatLngs(r.a,r.b,r.bend).map(cp).filter(Boolean);
+    if(pts.length<2)return '';
+    pts=trimStart(pts,(r.ra||0)+1);                       // stop at the source circle's edge
+    pts=trimStart(pts.reverse(),(r.rb||0)+1).reverse();   // and at the target circle's edge
+    if(pts.length<2)return '';
+    return 'M'+pts.map(p=>p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' L'); };
+  let rails='', streams='';
+  ROUTES.forEach(r=>{ const d=dOf(r); if(!d)return; const pri=r.primary?' pri':'';
+    rails   += `<path class="${r.kind==='pred'?'rspred':'rsobs'}${pri}" d="${d}"/>`;
+    streams += `<path class="${r.kind==='pred'?'fspred':'fsobs'}${pri}" d="${d}"/>`; });
+  lay.style.display='block';
+  lay.innerHTML=`<svg class="flowsvg" width="${sz.x}" height="${sz.y}" viewBox="0 0 ${sz.x} ${sz.y}">${rails}${streams}</svg>`;
+}
+let FLOWMODE=(()=>{try{return localStorage.getItem('flowMode')||'icons';}catch(e){return 'icons';}})();
+function toggleFlowMode(){ FLOWMODE=FLOWMODE==='icons'?'labels':'icons';   // icons (hover for info) <-> permanent labels
+  try{localStorage.setItem('flowMode',FLOWMODE);}catch(e){}
+  if(LASTFLOW)drawFlow(LASTFLOW.trail,LASTFLOW.loc); }
+let FOCUSATM=null;
+function focusAtm(lat,lon,id){ if(!MAP)return;
+  try{ if(FOCUSATM){MAP.removeLayer(FOCUSATM);} FOCUSATM=L.circleMarker([lat,lon],{radius:24,color:'#ff3b3b',weight:2.5,fill:false,opacity:.95,className:'atmfocus',interactive:false}).addTo(MAP);
+    MAP.flyTo([lat,lon],16,{duration:1.1});
+    setTimeout(()=>{try{if(Math.abs(MAP.getZoom()-16)>0.5)MAP.setView([lat,lon],16,{animate:false});}catch(e){}},1200);
+    // highlight the chosen row
+    document.querySelectorAll('.tgtrow').forEach(r=>r.classList.toggle('on', r.dataset.id===id));
+  }catch(e){} }
+function zoomZone(){ if(LASTFLOW){ if(FOCUSATM){try{MAP.removeLayer(FOCUSATM);}catch(e){}FOCUSATM=null;} frameCase(LASTFLOW.trail,LASTFLOW.loc); } }
+// DYNAMIC geographic money-flow map: victim -> mules (solid gold), holding mule ->
+// ALL top-5 candidate cash-out ATMs (red dashed), each connected. Labels de-collided.
 function drawFlow(trail, loc){
   if(!MAP||!trail)return;
+  LASTFLOW={trail, loc};
+  if(!REPLAYING) CASEFULL={trail, loc};                 // remember the full case layout for the replay frame
+  const revealPreds = !REPLAYING || REPLAY_T>=88;       // during replay the targets appear near the climax, not early
   if(!FLOWL)FLOWL=L.layerGroup().addTo(MAP); else FLOWL.clearLayers();
+  const showLabels=FLOWMODE==='labels';
+  const btn=$('mapToggle'); if(btn)btn.innerHTML=showLabels?'&#9635; LABELS':'&#9673; ICONS';
   const pos={}; (trail.nodes||[]).forEach(n=>{ if(n.lat&&n.lon)pos[n.account_id]=[n.lat,n.lon]; });
-  // edges first (so nodes sit on top). Distances live on hover (sticky) -- clean map.
-  (trail.edges||[]).forEach(e=>{
-    const a=pos[e.src_account];
-    if(e.atm_id){ const atm=ATMXY[e.atm_id];              // cash-out: line to the ATM + a burst
-      if(a&&atm){ const m=ATMMETA[e.atm_id]||{}, km=kmText(haversine(a,atm));
-        const atmLbl='CASH-OUT · '+e.atm_id+(m.district?'<br>'+m.district+(m.pin?' · PIN '+m.pin:''):'')+'<br>'+coordStr(atm)+' · ~'+km+' hop'+(m.operator?'<br>'+m.operator:'');
-        L.polyline([a,atm],{renderer:RSVG,className:'flowline',color:'#ff5a6e',weight:2.4,opacity:.95,dashArray:'6 5'})
-          .bindTooltip('cash-out · ~'+km,{sticky:true,className:'distlbl out'}).addTo(FLOWL);
-        L.circleMarker(atm,{renderer:RSVG,radius:10,color:'#fff',weight:2,fillColor:'#ff2d45',fillOpacity:.85})
-          .bindTooltip('CASH-OUT',{permanent:true,direction:'top',className:'namelbl c',offset:[0,-5]})
-          .bindPopup(atmLbl).addTo(FLOWL); } }
-    else { const b=pos[e.dst_account];                    // transfer between accounts
-      if(a&&b)L.polyline([a,b],{renderer:RSVG,className:'flowline',color:'#4fe3e8',weight:2.2,opacity:.9,dashArray:'6 5'})
-          .bindTooltip('~'+kmText(haversine(a,b))+' hop',{sticky:true,className:'distlbl hop'}).addTo(FLOWL); }
-  });
-  // SOURCE -> DESTINATION guide + a single minimal TARGET tag (full detail on hover)
-  const g=caseGeo(trail, loc);
-  if(g.victim&&g.dest){ const tot=kmText(haversine(g.victim,g.dest));
-    L.polyline([g.victim,g.dest],{renderer:RSVG,className:'guideline',color:'#ffbe4d',weight:1.4,opacity:.45,dashArray:'2 8',interactive:false}).addTo(FLOWL);
-    const dfull=(g.approx?'PREDICTED TARGET (approx)':'TARGET')+' · '+(g.destPlace||g.destLabel||'')+'<br>~'+tot+' straight-line from source';
-    L.marker(g.dest,{zIndexOffset:900,
-      icon:L.divIcon({className:'',html:'<div class="destpin">◈ TARGET · ~'+tot+'</div>',iconSize:[0,0]})})
-      .bindTooltip(dfull,{direction:'top'}).addTo(FLOWL); }
-  // nodes -- each keeps a visible NAME tag; click a node for its full KYC location
-  (trail.nodes||[]).forEach(n=>{ const p=pos[n.account_id]; if(!p)return;
-    const col=n.is_victim?'#4aa3ff':n.is_leaf?'#ff5a6e':'#ffbe4d';
-    const nm=n.is_victim?'VICTIM':n.is_leaf?'AGENT':'MULE';
-    const cls=n.is_victim?'v':n.is_leaf?'a':'m';
-    const role=n.is_victim?'SOURCE · VICTIM':n.is_leaf?'CASH-OUT AGENT · holds funds':'MULE';
-    const place=nodePlace(n);
-    L.circleMarker(p,{renderer:RSVG,radius:n.is_victim?10:n.is_leaf?9:8,color:'#fff',weight:2,fillColor:col,fillOpacity:.98,
-      className:n.is_leaf?'flowpulse':''})
-      .bindTooltip(nm,{permanent:true,direction:'top',className:'namelbl '+cls,offset:[0,-7]})
-      .bindPopup(role+' · '+n.account_id+(place?'<br>'+place:'')).addTo(FLOWL); });
+  const px=ll=>{try{return MAP.latLngToContainerPoint(ll);}catch(e){return {x:0,y:0};}};
+  const victim=(trail.nodes||[]).find(n=>n.is_victim);
+  const holders=(trail.nodes||[]).filter(n=>!n.is_victim&&pos[n.account_id]);
+  const topMule=holders.filter(n=>n.is_leaf).sort((a,b)=>(b.tainted_amount||0)-(a.tainted_amount||0))[0]
+             || holders.slice().sort((a,b)=>(b.tainted_amount||0)-(a.tainted_amount||0))[0];
+  const from=topMule?pos[topMule.account_id]:null;
+  // ---- top-5 candidate cash-out ATMs (ranked). During replay use the case's stable
+  // prediction (not the replay-time one, which empties out past the golden hour). ----
+  const predLoc = (REPLAYING && CASEFULL && CASEFULL.loc) ? CASEFULL.loc : loc;
+  const preds=[];
+  if(predLoc&&predLoc.terminals&&predLoc.terminals.length) predLoc.terminals.slice(0,5).forEach((t,i)=>{ if(ATMXY[t.atm_id]) preds.push({id:t.atm_id,p:t.p,ll:ATMXY[t.atm_id],rank:i+1,meta:ATMMETA[t.atm_id]||{}}); });
+  else if(predLoc&&predLoc.cells&&predLoc.cells.length) predLoc.cells.slice(0,3).forEach((c,i)=>preds.push({id:(c.district||'')+' area',p:c.p,ll:[c.lat,c.lon],cell:true,rank:i+1}));
+  // ---- build the connecting WAYPOINT routes (drawn in the #flowlay screen-space overlay, above the dots) ----
+  // OBSERVED = solid gold rail+stream (victim->mules->holding mule); PREDICTED = red animated
+  // waypoint stream from the holding mule to each candidate cash-out ATM (#1 = primary route).
+  // node icon RADII (px) so routes can stop at the circle edge, not the icon centre:
+  // victim & holding-mule icons are 30px (r15), other mules 22px (r11), ATM rank r = max(20,36-(r-1)*3).
+  const rAcc=id=>((victim&&id===victim.account_id)||(topMule&&id===topMule.account_id))?15:11;
+  const rAtm=id=>{ const pr=preds.find(p=>p.id===id); return Math.max(20,36-((pr?pr.rank:5)-1)*3)/2; };
+  ROUTES=[];
+  (trail.edges||[]).forEach(e=>{ const a=pos[e.src_account]; const b=e.atm_id?ATMXY[e.atm_id]:pos[e.dst_account];
+    if(!a||!b)return;
+    const primary=(topMule&&e.dst_account===topMule.account_id)||(victim&&e.src_account===victim.account_id);
+    ROUTES.push({a,b,bend:0.08,kind:'obs',primary,ra:rAcc(e.src_account),rb:e.atm_id?rAtm(e.atm_id):rAcc(e.dst_account)}); });
+  if(from && revealPreds) preds.forEach(pr=>{ if(pr.ll) ROUTES.push({a:from,b:pr.ll,bend:0.06,kind:'pred',primary:pr.rank===1,ra:15,rb:Math.max(20,36-(pr.rank-1)*3)/2}); });
+  renderRoutes();
+  // ---- ranked TARGET-ATM side menu (click a row -> fly to that ATM) ----
+  const tl=$('targetList');
+  if(tl){ const real=(!REPLAYING && revealPreds)?preds.filter(pr=>!pr.cell):[];   // hide the menu during replay so it doesn't cover the flow lines
+    if(real.length){ tl.style.display='block';
+      tl.innerHTML='<div class="th">&#9016; Target ATMs <span class="zn" onclick="zoomZone()" title="back to zone">&#9635;</span></div>'+
+        real.map(pr=>{ const risk=Math.round((pr.p!=null?pr.p:((pr.meta&&pr.meta.fraud_rate)||0))*100);
+          return `<div class="tgtrow p${pr.rank}" data-id="${pr.id}" onclick="focusAtm(${pr.ll[0]},${pr.ll[1]},'${pr.id}')">
+            <span class="rk">${pr.rank}</span><span class="id">${pr.id}<span class="sub">${(pr.meta&&pr.meta.district)||''}</span></span>
+            <span class="pc">${risk}%</span></div>`; }).join('');
+    } else { tl.style.display='none'; } }
+  // ---- nodes: clean ICONS by default (hover for info); ATMs priority-sized (#1 biggest & pulsing) ----
+  const items=[];
+  (trail.nodes||[]).forEach(n=>{ const p=pos[n.account_id]; if(!p)return; const isV=n.is_victim;
+    const isHold = topMule && n.account_id===topMule.account_id;
+    items.push({ll:p, kind:isV?'v':(n.is_leaf?'m leaf':'m'), icon:_SVG_PERSON,
+      size:isV?30:(isHold?30:22), z:isV?920:(isHold?910:880), labelIt: isV||isHold||showLabels,
+      code:_shortCode(n.account_id,isV?'AC':'MU'), role:isV?'VICTIM':(n.is_leaf?'MULE · HOLDING':'MULE'),
+      tip:`<b>${_shortCode(n.account_id,isV?'AC':'MU')}</b> &middot; ${isV?'VICTIM':(n.is_leaf?'MULE (holding cash)':'MULE')}<br>${money(n.tainted_amount)} held${nodePlace(n)?'<br>'+nodePlace(n):''}`}); });
+  if(revealPreds) preds.forEach(pr=>{ const risk=Math.round((pr.p!=null?pr.p:((pr.meta&&pr.meta.fraud_rate)||0))*100);
+    items.push({ll:pr.ll, kind:'atm', icon:_SVG_BANK, size:Math.max(20,36-(pr.rank-1)*3),
+      rank:pr.cell?null:pr.rank, focus:pr.rank===1, z:905-pr.rank, labelIt:showLabels,
+      code:pr.id, role:pr.cell?`AREA · ${risk}%`:`TARGET #${pr.rank} · ${risk}%`,
+      tip:`<b>${pr.id}</b> &middot; &#9016; TARGET${pr.rank?' #'+pr.rank:''}<br>cash-out likelihood <b>${risk}%</b>${pr.meta&&pr.meta.district?'<br>'+pr.meta.district+(pr.meta.pin?' · PIN '+pr.meta.pin:''):''}`}); });
+  items.forEach(it=>{it.pt=px(it.ll); it.dy=0;});
+  if(showLabels){ const lab=items.filter(it=>it.labelIt).sort((a,b)=>a.pt.y-b.pt.y);
+    for(let i=0;i<lab.length;i++){ let dy=0;
+      for(let j=0;j<i;j++){ if(Math.abs(lab[i].pt.x-lab[j].pt.x)<150 && Math.abs((lab[i].pt.y+dy)-(lab[j].pt.y+lab[j].dy))<30) dy=lab[j].dy-32; }
+      lab[i].dy=dy; } }
+  items.forEach(it=>{
+    const rankBadge = it.rank? `<span class="rank">${it.rank}</span>`:'';
+    const label = (showLabels&&it.labelIt)? `<span class="clab" style="transform:translate(-50%,${it.dy}px)"><b>${it.code}</b><i>${it.role}</i></span>`:'';
+    const html=`<div class="fnode ${it.kind}${it.focus?' focus':''}"><span class="cring">${it.icon}</span>${rankBadge}${label}</div>`;
+    L.marker(it.ll,{zIndexOffset:it.z,icon:L.divIcon({className:'',iconSize:[it.size,it.size],iconAnchor:[it.size/2,it.size/2],html})})
+      .bindTooltip(it.tip,{direction:'top',className:'ftip',offset:[0,-it.size/2-2]})
+      .bindPopup(it.tip).addTo(FLOWL); });
+  // ---- off-map indicators: anything outside the framed zone (e.g. the far victim / upstream mules) becomes an edge arrow ----
+  try{ const sz=MAP.getSize();
+    const offFor=(ll,label,cls)=>{ const q=px(ll); if(q.x>=0&&q.y>=0&&q.x<=sz.x&&q.y<=sz.y)return;
+      const cx=Math.max(30,Math.min(sz.x-30,q.x)), cy=Math.max(30,Math.min(sz.y-30,q.y));
+      const g=Math.abs(q.x-sz.x/2)>Math.abs(q.y-sz.y/2)?(q.x<sz.x/2?'◀':'▶'):(q.y<sz.y/2?'▲':'▼');
+      L.marker(MAP.containerPointToLatLng([cx,cy]),{zIndexOffset:960,icon:L.divIcon({className:'',iconSize:[0,0],
+        html:`<div class="offind ${cls}">${g} ${label}</div>`})}).addTo(FLOWL); };
+    if(victim&&pos[victim.account_id]) offFor(pos[victim.account_id], `VICTIM &middot; ${(victim.district||'').toUpperCase()}`, 'v');
+  }catch(e){}
 }
-// frame the whole case (victim + mules + predicted cell + cash-out ATMs) once, at replay start
+// AUTO-ZOOM to the cash-out ZONE: frame tight on the holding mule + candidate ATMs
+// (where the money surfaces) so the targets fan apart; the far victim shows as an edge arrow.
 function frameCase(trail, loc){
   if(!MAP||!trail)return;
-  const pts=[]; (trail.nodes||[]).forEach(n=>{if(n.lat&&n.lon)pts.push([n.lat,n.lon]);});
-  (trail.edges||[]).forEach(e=>{if(e.atm_id&&ATMXY[e.atm_id])pts.push(ATMXY[e.atm_id]);});
-  if(loc&&loc.cells)loc.cells.slice(0,3).forEach(c=>pts.push([c.lat,c.lon]));
-  if(pts.length){try{MAP.flyToBounds(L.latLngBounds(pts).pad(0.25),{duration:1.0});
-    setTimeout(()=>{try{MAP.fitBounds(L.latLngBounds(pts).pad(0.25))}catch(e){}},1200);}catch(e){}}
+  const pts=[];
+  const mules=(trail.nodes||[]).filter(n=>!n.is_victim&&n.lat!=null);
+  const top=mules.filter(n=>n.is_leaf).sort((a,b)=>(b.tainted_amount||0)-(a.tainted_amount||0))[0]
+          || mules.slice().sort((a,b)=>(b.tainted_amount||0)-(a.tainted_amount||0))[0];
+  if(top)pts.push([top.lat,top.lon]);
+  if(loc&&loc.terminals)loc.terminals.slice(0,5).forEach(t=>{if(ATMXY[t.atm_id])pts.push(ATMXY[t.atm_id]);});
+  if(!pts.length&&loc&&loc.cells)loc.cells.slice(0,3).forEach(c=>pts.push([c.lat,c.lon]));
+  if(!pts.length)(trail.nodes||[]).forEach(n=>{if(n.lat!=null)pts.push([n.lat,n.lon]);});
+  if(pts.length){try{const bnds=L.latLngBounds(pts).pad(0.18);
+    MAP.once('moveend',()=>{ try{drawFlow(trail,loc);}catch(e){} });   // redraw routes at the zoomed-in projection
+    MAP.flyToBounds(bnds,{duration:1.0,maxZoom:16});
+    setTimeout(()=>{try{MAP.fitBounds(bnds,{maxZoom:16,animate:false});}catch(e){}},1150);}catch(e){}}
 }
 // ---- CINEMATIC replay director (Nolan mode) ----
 function cinemaOn(){const m=$('maphold');return m&&m.classList.contains('cinema');}
@@ -963,28 +1617,30 @@ function leadNode(p){const tr=p._trail;if(!tr||!tr.nodes)return null;
   if(!pool.length)return null;
   const n=pool.reduce((a,b)=>((b.tainted_amount||0)>(a.tainted_amount||0)?b:a));
   return [n.lat,n.lon];}
-// choreograph the camera by replay progress -- fires a slow eased move only on beat change
+// Replay narration ONLY -- the camera stays fixed on the whole case (framed once at
+// the start) so the money reveals systematically on a stable view. No camera flying.
 function cineDirect(t,p){
-  if(!MAP)return; const m=$('maphold');
-  const beat = t<24?0 : t<72?1 : t<102?2 : 3;
-  const acts=['ESTABLISHING SCENE','TRACING THE MONEY','LOCKING ON TARGET','⚠ CASH-OUT WINDOW — FREEZE'];
+  const m=$('maphold');
+  const beat = t<24?0 : t<64?1 : t<100?2 : 3;
+  const acts=['MONEY ENTERS','TRACING THE FLOW','CONVERGING ON CASH-OUT','⚠ CASH-OUT WINDOW — FREEZE'];
   const al=$('cineAct'); if(al)al.textContent=acts[beat];
   if(m){ if(beat===3)m.classList.add('climax'); else m.classList.remove('climax'); }
-  if(beat===CINE_BEAT)return; CINE_BEAT=beat;                 // hold the shot until the next beat
-  const land=(tgt,z,dur)=>{ // guaranteed landing if the eased fly gets interrupted (safe for the live pitch)
-    setTimeout(()=>{try{if(CINE_BEAT===beat && Math.abs(MAP.getZoom()-z)>0.5) MAP.setView(tgt,z,{animate:false});}catch(e){}}, dur*1000+350); };
-  try{
-    if(beat===0){ const pts=casePts(p); if(pts.length){const bnds=L.latLngBounds(pts).pad(0.38);
-      MAP.flyToBounds(bnds,{duration:2.4,easeLinearity:.1});
-      setTimeout(()=>{try{if(CINE_BEAT===0 && !MAP.getBounds().intersects(bnds))MAP.fitBounds(bnds,{animate:false});}catch(e){}},2750); } }
-    else if(beat===1){ const ld=leadNode(p)||casePts(p)[0]; if(ld){MAP.flyTo(ld,12,{duration:2.3,easeLinearity:.12}); land(ld,12,2.3);} }
-    else if(beat===2){ const g=caseGeo(p._trail,p.location); const tgt=(g&&g.dest)||leadNode(p); if(tgt){MAP.flyTo(tgt,LOCK_ZOOM+1,{duration:2.0,easeLinearity:.14}); land(tgt,LOCK_ZOOM+1,2.0);} }
-    else { const g=caseGeo(p._trail,p.location); const tgt=(g&&g.dest)||leadNode(p); if(tgt){MAP.flyTo(tgt,LOCK_ZOOM+2,{duration:1.7,easeLinearity:.2}); land(tgt,LOCK_ZOOM+2,1.7);} }
-  }catch(e){}
+}
+// frame the WHOLE case (victim + mules + all ATMs) so every node & connecting line
+// is on-screen, then REDRAW the flow once the camera has settled (correct projection).
+function frameWhole(trail, loc){
+  if(!MAP||!trail)return;
+  const pts=[]; (trail.nodes||[]).forEach(n=>{if(n.lat!=null)pts.push([n.lat,n.lon]);});
+  (loc&&loc.terminals||[]).slice(0,5).forEach(t=>{if(ATMXY[t.atm_id])pts.push(ATMXY[t.atm_id]);});
+  if(!pts.length)return;
+  try{const bnds=L.latLngBounds(pts).pad(0.28);
+    MAP.once('moveend',()=>{ try{drawFlow(trail,loc);}catch(e){} });   // redraw lines at the final projection
+    MAP.flyToBounds(bnds,{duration:1.1,maxZoom:14});
+    setTimeout(()=>{try{MAP.fitBounds(bnds,{maxZoom:14,animate:false});}catch(e){}},1250);}catch(e){}
 }
 function endReplay(){ if(PLAY){clearInterval(PLAY);PLAY=null;} const b=$('playbtn');
   if(b)b.innerHTML='&#9654; Replay simulation'; REPLAYING=false;
-  setTimeout(()=>{ if(!REPLAYING) exitCinema(); }, 2800);   // hold on the climax, then lift the letterbox
+  setTimeout(()=>{ if(!REPLAYING){ exitCinema(); if(CASEFULL){drawFlow(CASEFULL.trail,CASEFULL.loc); frameCase(CASEFULL.trail,CASEFULL.loc);} } }, 2800);  // hold the climax, then restore the interactive zone view (menu + routes)
 }
 // move just the reticle (used during replay -- the frame stays fixed so you watch the whole flow)
 function lockReticleOnly(highlight){
@@ -1110,21 +1766,29 @@ function toggleMapFocus(){FOCUSON=!FOCUSON;const b=$('mapToggle');if(b)b.textCon
 
 // choose the real (Leaflet) map when online, else the offline SVG map
 function setupMap(){const svg=$('map'),lm=$('lmap');
+  if(FOCUSATM){try{MAP&&MAP.removeLayer(FOCUSATM);}catch(e){}FOCUSATM=null;}   // drop any leftover focus ring
   if(MAP){try{MAP.remove();}catch(e){}}                    // tear down the previous case's map safely
-  MAP=null; FLOWL=null; HEATL=null; MESHL=null; ATML=null; MKL=null; RETL=null; RSVG=null;  // reset layers so they rebind to the new map
+  MAP=null; FLOWL=null; HEATL=null; MESHL=null; ATML=null; MKL=null; RETL=null; RSVG=null; RFLOW=null;  // reset layers so they rebind to the new map
   if(typeof L!=='undefined' && lm){
     try{
       if(svg)svg.style.display='none'; lm.style.display='block';
-      MAP=L.map('lmap',{zoomControl:false,attributionControl:false,preferCanvas:true});
+      MAP=L.map('lmap',{zoomControl:false,attributionControl:false,renderer:L.svg({padding:0.6})});  // SVG renderer = animatable + auto-sized flow lines (no clipping)
       // Esri Dark Gray Canvas -- a real dark street map, KEYLESS (no API key).
       const base=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}',
         {maxZoom:16, attribution:'Esri'}).addTo(MAP);
-      let terr=0; base.on('tileerror',()=>{ if(++terr===4){ try{MAP.removeLayer(base);}catch(e){}
+      // labels/roads reference on top so the officer can READ the area (Hinjawadi, Kharadi, ...)
+      const labels=L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}',
+        {maxZoom:16});
+      try{labels.addTo(MAP);}catch(e){}
+      let terr=0; base.on('tileerror',()=>{ if(++terr===4){ try{MAP.removeLayer(base);MAP.removeLayer(labels);}catch(e){}
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,subdomains:'abc'}).addTo(MAP); } });
       L.control.zoom({position:'bottomleft'}).addTo(MAP);
       MAP.createPane('fx'); MAP.getPane('fx').style.zIndex=450; // above heat; interactive markers here stay clickable
-      RSVG=L.svg({pane:'fx'}); RSVG.addTo(MAP);
       ATML=L.layerGroup().addTo(MAP);MKL=L.layerGroup().addTo(MAP);RETL=L.layerGroup().addTo(MAP);
+      try{ L.control.scale({position:'bottomright',imperial:false,maxWidth:130}).addTo(MAP); }catch(e){}
+      MAP.on('move zoom',updateCoordHUD);  // keep the coordinate readout live
+      MAP.on('move zoom zoomanim viewreset',renderRoutes);  // glue the screen-space waypoint lines to the map every frame
+      MAP.on('moveend zoomend resize',()=>{ if(LASTFLOW&&VIEW==='case')drawFlow(LASTFLOW.trail,LASTFLOW.loc); });  // dynamic: re-draw & re-declutter after pan/zoom
       MAP.setView([23.9,86.2],8); return;
     }catch(e){MAP=null;}
   }
@@ -1133,30 +1797,23 @@ function setupMap(){const svg=$('map'),lm=$('lmap');
 function renderMap(hl,focus){ if(MAP) updateLeaflet(hl,focus); else renderMapSVG(hl,focus); }
 const LOCK_ZOOM=12;                 // how close we zoom when locking onto a cell
 // full rebuild of the static layers (ATMs, heat, hotspots) -- on case select
+function codedLegend(){ return `<div class="clg">
+  <div class="clgr"><span class="d v"></span>Victim account</div>
+  <div class="clgr"><span class="d m"></span>Mule account</div>
+  <div class="clgr"><span class="d atm"></span>ATM / cash-out</div>
+  <div class="clgr"><span class="ln obs"></span>Observed flow</div>
+  <div class="clgr"><span class="ln pred"></span>Predicted flow</div></div>`; }
+function updateCoordHUD(){ const el=$('cdCoord'); if(!el||!MAP)return;
+  try{const c=MAP.getCenter(); el.innerHTML=Math.abs(c.lat).toFixed(4)+'° N&nbsp; '+Math.abs(c.lng).toFixed(4)+'° E';}catch(e){} }
+// CODED case map: clean noir cartography -- only the money trail sits on it.
 function updateLeaflet(highlight, focusDistrict){
   if(!MAP||!HOT)return;
   ATML.clearLayers();MKL.clearLayers();
   if(HEATL){MAP.removeLayer(HEATL);HEATL=null;}
-  HOT.atm_markers.forEach(m=>L.circleMarker([m.lat,m.lon],{radius:2.4,weight:0,
-    fillColor:'#4a7a9a',fillOpacity:.38})   // context only -- the flow pointers are the stars
-    .bindTooltip(`ATM ${m.atm_id} · ${m.operator} · ${m.district} · fraud rate ${m.fraud_rate}`,{direction:'top'}).addTo(ATML));
-  const cells=HOT.cells;
-  try{
-    if(typeof L.heatLayer==='function' && MAP.getSize && MAP.getSize().x>10){
-      HEATL=L.heatLayer(cells.map(c=>[c.lat,c.lon,Math.max(.08,c.risk_norm||0)]),
-        {radius:26,blur:20,minOpacity:.28,max:1,gradient:{0.0:'#37e6a6',0.5:'#ffbe4d',1.0:'#ff5a6e'}}).addTo(MAP);
-    } else {
-      cells.forEach(c=>{const t=c.risk_norm||0;L.circleMarker([c.lat,c.lon],
-        {radius:6+18*t,weight:0,fillColor:riskColor(t),fillOpacity:.35}).addTo(MKL);});
-    }
-  }catch(e){ /* heat unavailable (e.g. 0-width canvas) -- markers/flow still show */ }
-  cells.slice(0,6).forEach((c,i)=>L.marker([c.lat,c.lon],
-    {icon:L.divIcon({className:'',html:`<div class="numpin">${i+1}</div>`,iconSize:[20,20],iconAnchor:[10,10]})}).addTo(MKL));
-  $('legend').innerHTML=`<div style="color:#cdd6e2;font-family:var(--mono);font-size:10px;letter-spacing:1.4px">RISK FIELD</div><div class="ramp"></div><div class="ramp-l"><span>low</span><span>high</span></div>`;
-  $('maplist').innerHTML=`<div class="mlh">&#9673; TOP AREAS</div>`+cells.slice(0,6).map((c,i)=>
-    `<div class="mlrow"><b>${i+1}</b><span>${c.district}</span><i style="background:${riskColor(c.risk_norm||0)};color:${riskColor(c.risk_norm||0)}"></i></div>`).join('');
-  // defer the lock-on so the just-shown map container has a real size to fly within
-  setTimeout(()=>lockOn(highlight, focusDistrict), 120);
+  const lg=$('legend'); if(lg) lg.innerHTML=codedLegend();
+  const ml=$('maplist'); if(ml) ml.style.display='none';
+  updateCoordHUD();
+  // CODED: framing of the whole flow is done by frameCase() after drawFlow (see renderBriefing)
 }
 // move the reticle + smoothly fly to the currently locked cell (cheap; used on lock changes)
 function lockOn(highlight, focusDistrict){
@@ -1191,8 +1848,8 @@ function hazardSVG(c){const hs=c.hazard,W=330,H=120,pad=26;
     <text x="${x.toFixed(1)}" y="${H-9}" font-size="9" fill="#5b6d80" text-anchor="middle">${hs[i].horizon_min}m</text>
     <text x="${x.toFixed(1)}" y="${(ys[i]-8).toFixed(1)}" font-size="9" fill="#cdd6e2" text-anchor="middle">${pct(hs[i].p_cumulative)}</text>`).join('');
   return `<svg viewBox="0 0 ${W} ${H}" style="height:126px">
-    <defs><linearGradient id="hz" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="rgba(53,224,230,.35)"/><stop offset="1" stop-color="rgba(53,224,230,0)"/></linearGradient></defs>
-    <path d="${area}" fill="url(#hz)"/><path d="${line}" fill="none" stroke="#35e0e6" stroke-width="2" style="filter:drop-shadow(0 0 4px rgba(53,224,230,.7))"/>${dots}</svg>`;}
+    <defs><linearGradient id="hz" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="rgba(79,173,186,.35)"/><stop offset="1" stop-color="rgba(79,173,186,0)"/></linearGradient></defs>
+    <path d="${area}" fill="url(#hz)"/><path d="${line}" fill="none" stroke="#35e0e6" stroke-width="2" style="filter:drop-shadow(0 0 4px rgba(79,173,186,.7))"/>${dots}</svg>`;}
 function trailSVG(tr){if(!tr||!tr.nodes.length)return '<div class="cap">no trail</div>';
   const byh={};tr.nodes.forEach(n=>(byh[n.hop_from_victim]=byh[n.hop_from_victim]||[]).push(n));
   const hops=Object.keys(byh).map(Number).sort((a,b)=>a-b),W=330,colW=W/(hops.length+.5),pos={};let s='';
@@ -1239,7 +1896,7 @@ function muleGraphSVG(tr){
     const col=n.is_victim?'#4aa3ff':n.is_leaf?'#ff5a6e':'#ffbe4d';
     const nm=n.is_victim?'VICTIM':n.is_leaf?'MULE ✦':'MULE';
     const role=n.is_victim?'VICTIM (source)':n.is_leaf?'MULE · holding cash NOW':'MULE (pass-through)';
-    nodes+=`<g class="mgnode ${n.is_leaf?'leaf':''}" style="color:${col}">
+    nodes+=`<g class="mgnode ${n.is_leaf?'leaf':''}" style="color:${col};cursor:pointer" onclick="openMule('${n.account_id}')">
       <circle cx="${p.x}" cy="${p.y}" r="${p.r.toFixed(1)}" fill="${col}" fill-opacity=".92" stroke="#fff" stroke-width="1.4" style="filter:drop-shadow(0 0 6px ${col})">
         <title>${role} · ${n.account_id} · ${money(n.tainted_amount)} held · hop ${n.hop_from_victim}${n.district?' · '+n.district:''}${n.pin?' · PIN '+n.pin:''}</title></circle>
       <text x="${p.x}" y="${(p.y+p.r+13).toFixed(1)}" text-anchor="middle" font-size="9.5" font-weight="700" fill="#dfeaf3" font-family="ui-monospace,monospace">${nm}</text>
@@ -1395,7 +2052,7 @@ function renderBriefing(p, clockHTML, speakNow){
       <span class="cid">#${p.ack_no.slice(0,8)}</span>
       <span class="ftype">${(SELMETA&&SELMETA.fraud_category)||''}</span>
       <span class="tier ${r.tier}" id="tierBadge">${r.tier}</span>
-      <div class="replay">
+      <div class="replay adv">
         <button class="btn" id="playbtn" onclick="togglePlay()">&#9654; Replay simulation</button>
         <input type="range" id="scrub" min="0" max="120" step="1" value="${REPLAY_T}" oninput="scrubTo(this.value)">
         <span class="clock" id="clock">${clockHTML||'● LIVE'}</span>
@@ -1404,11 +2061,17 @@ function renderBriefing(p, clockHTML, speakNow){
 
     <div class="card" style="padding:12px">
       <h3>&#9678; Live map &middot; ${CURDIST} &mdash; watch the money move, then act</h3>
-      <div class="maphold hero" id="maphold">
-        <button class="mapbtn" id="mapToggle" onclick="toggleMapFocus()">${FOCUSON?'◎ LOCKED':'⊕ WIDE VIEW'}</button>
+      <div class="bx">This map shows where the stolen money travelled and where we think it will be pulled out as cash. <b>Follow the thick red line</b> to the most likely cash-out point; the red dots are the ATMs to watch.</div>
+      <div class="maphold hero coded" id="maphold">
+        <button class="mapbtn" id="mapToggle" onclick="toggleFlowMode()">&#9673; FOCUSED</button>
         <div id="lmap" style="display:none"></div>
         <svg id="map" viewBox="0 0 800 560" preserveAspectRatio="xMidYMid meet"></svg>
         <div class="mapfx"></div>
+        <div id="flowlay"></div>
+        <div class="cd-coord" id="cdCoord">18.5204° N&nbsp; 73.8567° E</div>
+        <div class="cd-place">PUNE · MAHARASHTRA</div>
+        <span class="cd-br tl"></span><span class="cd-br tr"></span><span class="cd-br bl"></span><span class="cd-br br"></span>
+        <div class="tgtpanel" id="targetList" style="display:none"></div>
         <div class="cineflash"></div>
         <div class="cinebar top"></div><div class="cinebar bot"></div>
         <div class="cinehud"><div class="rec"><span class="dot"></span> REC</div>
@@ -1419,13 +2082,14 @@ function renderBriefing(p, clockHTML, speakNow){
       </div>
     </div>
 
-    <div class="card" style="padding:14px;margin-top:14px">
+    <div class="card adv" style="padding:14px;margin-top:14px">
       <h3>&#9635; Money-mule network &mdash; who is holding the stolen money</h3>
       <div class="cap">victim &rarr; layered through mule accounts &rarr; cash-out. Red = holding cash now (your freeze targets). Hover any node for account, area &amp; PIN.</div>
+      <div class="bx">Each circle is a bank account the money passed through. The scammer moves it account-to-account to hide the trail. The <b>red circle is the account holding the cash right now &mdash; that is the one to freeze.</b></div>
       <div id="muleBox">${muleGraphSVG(p._trail)}</div>
     </div>
 
-    <div class="card" style="padding:14px;margin-top:14px">
+    <div class="card adv bhide" style="padding:14px;margin-top:14px">
       <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;flex-wrap:wrap">
         <h3 style="margin:0">&#9776; Case management</h3>
         <span id="tkPriBadge"></span><span id="tkStatusBadge"></span>
@@ -1455,6 +2119,7 @@ function renderBriefing(p, clockHTML, speakNow){
 
     <div class="cols2">
       <div>
+        <div class="bx"><b>This is what to do.</b> If it says FREEZE, freeze the account first &mdash; it stops the money leaving and can be undone if it was a mistake. The small text says why.</div>
         <div class="action ${r.tier}" id="actionBox">
           <div><div class="big" id="actBig" style="color:${tierColor(r.tier)}">${r.action}</div>
             <div class="why" id="actWhy">${r.reason}</div></div>
@@ -1464,12 +2129,14 @@ function renderBriefing(p, clockHTML, speakNow){
             <select class="sp" id="voiceSel" onchange="setVoice(this.value)" title="pick voice"
               style="margin-left:auto;font-size:11px;font-family:var(--mono);max-width:140px">${voiceOpts()}</select>
             <span class="sp" id="sndBtn" onclick="toggleSound()" title="voice on/off" style="margin-left:8px">${SOUND?'🔊':'🔇'}</span></div>
+          <div class="bx">A short plain-language read-out of the situation, like a briefing. The <b>recommended actions</b> under it are the steps to take, in order.</div>
           <div class="jtext" id="jtext"></div>
           <div class="lbl" style="margin:11px 0 4px;color:var(--cyan)">&#9656; Recommended actions</div>
           <div class="jsteps" id="jsteps">${stepsHTML(b)}</div>
         </div>
       </div>
       <div>
+        <div class="bx">These four boxes are the forecast in short: <b>Will</b> the cash be taken out, <b>When</b>, <b>How</b> (ATM or card machine), and <b>Where</b> (the area to send police).</div>
         <div class="kpis compact">
           <div class="kpi"><span class="lbl">Will it cash out?</span>
             <div class="v" id="kWill" style="color:${tierColor(r.tier)}">${pct(c.p_10m)}</div>
@@ -1483,16 +2150,17 @@ function renderBriefing(p, clockHTML, speakNow){
             <div class="v" id="kWhere" style="font-size:18px;color:var(--cyan)">${where.v}</div>
             <div class="s" id="kWhereSub">${where.s}</div></div>
         </div>
-        <div class="card" style="margin-top:14px">
+        <div class="card adv bhide" style="margin-top:14px">
           <div class="lbl" style="color:var(--violet);margin-bottom:6px">&#9671; Why</div>
           <div class="jsteps" id="jwhy">${evidenceHTML(p, p._trail)}</div>
         </div>
       </div>
     </div>
 
-    <details>
+    <details class="bhide">
       <summary>&#9881; Technical details (hazard curve, locations, money trail, channel, account)</summary>
       <div class="inner">
+        <div class="bx">Extra detail for analysts &mdash; you do not need this to act. The <b>rising line</b> below is how the chance of cash-out grows over the next hour: the <b>steeper it climbs, the sooner</b> the money is likely to be taken out.</div>
         <div class="cols">
           <div>
             <h3 style="margin-top:6px">&#9651; Cash-out hazard (next hour)</h3><div id="hazBox">${hazardSVG(c)}</div>
@@ -1520,12 +2188,12 @@ function renderBriefing(p, clockHTML, speakNow){
   REPLAYING=false; FRAMED=false; CINE_BEAT=-1; LAST_TRAIL_SIG=(p._trail?(p._trail.nodes.length+'/'+p._trail.edges.length):null); exitCinema();
   try{ setupMap(); }catch(e){}
   try{ renderMap(hl, FOCUSON?CURDIST:null); }catch(e){}
-  try{ if(MAP){ drawMesh(loc); if(p._trail) drawFlow(p._trail, loc); } }catch(e){}   // mesh + flow always drawn (isolated)
+  try{ if(MAP&&p._trail){ drawFlow(p._trail, loc); setTimeout(()=>frameCase(p._trail, loc), 260); } }catch(e){}   // zoom into the cash-out zone so the mule->ATM waypoint routes are visible
   LASTHL=hl;
   updateNarr(p);
   typeInto($('jtext'), b.narr);
   if(speakNow) playBrief(p.ack_no, b.narr+' Priority action: '+b.steps[0]);
-  if(!p._trail) jget(`/trail/${p.ack_no}`).then(tr=>{p._trail=tr; drawFlow(tr, loc);
+  if(!p._trail) jget(`/trail/${p.ack_no}`).then(tr=>{p._trail=tr; drawFlow(tr, loc); setTimeout(()=>frameCase(tr, loc), 260);
     const el=$('trailBox');if(el)el.innerHTML=trailSVG(tr);
     const mb=$('muleBox');if(mb)mb.innerHTML=muleGraphSVG(tr);
     const w=$('jwhy');if(w)w.innerHTML=evidenceHTML(p, tr);});
@@ -1561,11 +2229,12 @@ function updateBriefing(p, clk){
   const hl=(loc.cells&&loc.cells[0]?loc.cells[0].cell:null);
   try{
     if(MAP){
-      if(!FRAMED){ drawMesh(loc); FRAMED=true; if(!cinemaOn()) frameCase(p._trail, loc); }
+      if(!FRAMED){ FRAMED=true; frameWhole(p._trail, loc); }         // fix camera on the whole case, once
       const sig=p._trail?(p._trail.nodes.length+'/'+p._trail.edges.length):'';
-      if(sig!==LAST_TRAIL_SIG){ drawFlow(p._trail, loc); LAST_TRAIL_SIG=sig; }  // only redraw when the trail grows (keeps the comet animation smooth)
-      if(cinemaOn()) cineDirect(REPLAY_T, p);                        // Nolan camera
-      if(hl!==LASTHL){ lockReticleOnly(hl); LASTHL=hl; } }
+      const revealNow = REPLAYING && REPLAY_T>=88 && !PREDS_REVEALED;
+      if(sig!==LAST_TRAIL_SIG || revealNow){ drawFlow(p._trail, loc); LAST_TRAIL_SIG=sig; if(revealNow)PREDS_REVEALED=true; }  // redraw on growth or the one-time target reveal -> keeps the data-stream animation smooth
+      if(cinemaOn()) cineDirect(REPLAY_T, p);                        // act labels + climax only (no camera fly)
+      LASTHL=hl; }
     else { if(hl!==LASTHL){ renderMapSVG(hl, FOCUSON?CURDIST:null); LASTHL=hl; } }
   }catch(e){}
 }
@@ -1594,10 +2263,13 @@ async function loadAlerts(){const a=await jget('/alerts');
 
 // ---------- replay ----------
 function togglePlay(){const b=$('playbtn');
-  if(PLAY){clearInterval(PLAY);PLAY=null;if(b)b.innerHTML='&#9654; Replay simulation';REPLAYING=false;exitCinema();return;}  // pause -> lift cinema
+  if(PLAY){clearInterval(PLAY);PLAY=null;if(b)b.innerHTML='&#9654; Replay simulation';REPLAYING=false;exitCinema();
+    if(CASEFULL){drawFlow(CASEFULL.trail,CASEFULL.loc);frameCase(CASEFULL.trail,CASEFULL.loc);} return;}  // pause -> restore interactive zone view
   if(!SEL)return;if(b)b.innerHTML='&#10073;&#10073; Pause';
-  REPLAYING=true; FRAMED=false; REPLAY_T=0; CINE_BEAT=-1; LAST_TRAIL_SIG=null;
-  enterCinema(); scrubTo(0);                    // roll film + show the establishing frame at once
+  REPLAYING=true; FRAMED=true; REPLAY_T=0; CINE_BEAT=-1; LAST_TRAIL_SIG=null; PREDS_REVEALED=false;
+  if(FOCUSATM){try{MAP.removeLayer(FOCUSATM);}catch(e){}FOCUSATM=null;}
+  enterCinema(); if(CASEFULL)frameWhole(CASEFULL.trail,CASEFULL.loc);   // fix the camera on the whole case, hold it
+  scrubTo(0);
   PLAY=setInterval(()=>{REPLAY_T+=3; if(REPLAY_T>120){ endReplay(); return; }
     const sc=$('scrub');if(sc)sc.value=REPLAY_T; scrubTo(REPLAY_T);},480);}
 async function scrubTo(t){REPLAY_T=+t;if(!SEL)return;
@@ -1615,9 +2287,11 @@ async function scrubTo(t){REPLAY_T=+t;if(!SEL)return;
     b.innerHTML=(ALERTS_ON?'&#128276; alerts on':'&#128277; alerts off');}
   populateVoices();await loadQueue();await loadHotspots();
   showOverview();                        // land on the command centre, not a single case
+  if(UIMODE==='base') setMode('base');   // restore the simple operator view if it was chosen
   // no pop-up on load. Only genuinely NEW red cases (via the poll) alert, throttled.
-  POLL=setInterval(async()=>{await loadQueue();if(VIEW==='overview')renderOverview();checkNewUrgent();}, 30000);
-  document.addEventListener('keydown',e=>{if(e.key==='Escape')dismissUrgent();});})();
+  POLL=setInterval(async()=>{await loadQueue();if(VIEW==='overview')renderOverview();
+    if(UIMODE==='base'&&BM_VIEW==='home')baseHome();checkNewUrgent();}, 30000);
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'){dismissUrgent();closeMule();}});})();
 </script>
 </body>
 </html>
