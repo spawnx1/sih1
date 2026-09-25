@@ -445,12 +445,13 @@ def explain_case(ack_no: str, as_of: str | None = None):
         "prediction": pred.model_dump(mode="json"),
         "recommendation": rec.model_dump(mode="json"),
         "narrative": (
-            f"Case {pred.ack_no}: account {pred.account_id} has "
-            f"P(cash-out<=10m)={pred.cashout.p_10m:.2f} with "
+            f"Case {pred.ack_no}: suspected mule account {pred.account_id} has an "
+            f"estimated P(cash-out<=10m)={pred.cashout.p_10m:.2f} with "
             f"Rs{rec.tainted_amount:,.0f} tainted funds. "
-            f"Dominant channel is {dominant_channel}, and the predicted "
-            f"location is {location_district}. "
-            f"Decision: {rec.tier} / {rec.action}."
+            f"Most likely channel is {dominant_channel}, and the most likely "
+            f"cash-out area is {location_district}. "
+            f"Recommended action: {rec.tier} / {rec.action}. "
+            f"This is decision support for investigator review, not evidence."
         ),
     }
 
@@ -899,7 +900,10 @@ def mule_network(limit: int = 48):
             "groups": [{"key": "CASHER", "label": "Cash-out specialist"},
                        {"key": "DISTRIBUTOR", "label": "Fan-out distributor"},
                        {"key": "COLLECTOR", "label": "Collector / aggregator"},
-                       {"key": "RELAY", "label": "Pass-through relay"}]}
+                       {"key": "RELAY", "label": "Pass-through relay"}],
+            "note": ("Accounts are picked from the synthetic corpus's ground-truth labels "
+                     "and grouped by fixed flow rules (not a clustering model). "
+                     "A role is a lead for review, not proof of criminal intent.")}
     STATE["network_cache"] = {"limit": limit, "data": data}
     return data
 

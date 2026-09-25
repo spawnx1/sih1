@@ -723,6 +723,8 @@
     <span class="k"><span class="dot" style="background:var(--amber)"></span><b>AMBER</b> = keep watching</span>
     <span class="k"><span class="dot" style="background:var(--faint)"></span><b>GREY</b> = still tracing, no action yet</span>
     <span class="k">The big % is the <b>chance the cash is pulled out within 10 minutes</b>.</span>
+    <span class="k">It is an <b>estimated chance</b>, not a certainty; a flagged account is a lead to review, not proof of crime.</span>
+    <span class="k"><b>What happened</b> = money trail &middot; <b>What may happen next</b> = cash-out forecast &middot; <b>Where</b> = map &middot; <b>Why</b> = evidence list</span>
     <span class="k">Every panel below has a blue note explaining what it means.</span>
   </div>
 </div>
@@ -966,7 +968,7 @@ async function showNetwork(){
    <div class="netview">
      <div class="nethead">
        <div><h1 class="nettitle">MULE NETWORK</h1>
-         <span class="netsub">Each node is a mule account under a codename, sized by how many frauds it touches and coloured by behaviour. Lines link mules that worked the same case, moved money to each other, or share a ring. <b>Click a node to open its case file.</b></span></div>
+         <span class="netsub">Each node is a suspected mule account (labelled in the synthetic data) under a codename, sized by how many frauds it touches and coloured by a rule-based behaviour role (not a clustering model; a role is a lead to review, not proof). Lines link mules that worked the same case, moved money to each other, or share a ring. <b>Click a node to open its case file.</b></span></div>
        <div class="netlegend" id="netLegend"></div>
      </div>
      <div class="netcanvas" id="netCanvas"><div class="netload">Mapping the network&hellip;</div><div class="net-tip" id="netTip"></div></div>
@@ -1019,7 +1021,7 @@ function renderNetwork(data){
       linkSel.attr('x1',d=>d.source.x).attr('y1',d=>d.source.y).attr('x2',d=>d.target.x).attr('y2',d=>d.target.y);
       nodeSel.attr('transform',d=>`translate(${d.x.toFixed(1)},${d.y.toFixed(1)})`);
     });
-  $('netFoot').textContent=`${nodes.length} mule accounts · ${links.length} links (shared case · transfer · ring) · showing the busiest mules`;
+  $('netFoot').textContent=`${nodes.length} suspected mule accounts · ${links.length} links (shared case · transfer · ring) · showing the busiest mules`;
 }
 function netHover(d,on,links,linkSel,nodeSel){
   const tip=$('netTip');
@@ -1056,7 +1058,7 @@ function showStudio(){
   $('stage').innerHTML=`
    <div class="studio">
     <div class="sthead">
-      <div><h1 class="sttitle">CASE STUDIO</h1><span class="stsub">synthetic incident generator &middot; manufactures leakage-safe cases for the ML / graph / GNN&middot;TGN pipeline</span></div>
+      <div><h1 class="sttitle">CASE STUDIO</h1><span class="stsub">synthetic incident generator &middot; manufactures leakage-safe demo cases (input kept separate from the hidden answer)</span></div>
       <span class="stsafe">&#9679; SYNTHETIC &middot; NO REAL DATA</span>
     </div>
     <div class="stbar">
@@ -1069,7 +1071,7 @@ function showStudio(){
     <div class="ststage idle" id="ststage">
       <div class="stletter t"></div><div class="stletter b"></div>
       <div class="sthud"><span class="rec"><span class="d"></span>REC</span><span class="tc" id="sttc">T 00:00</span><span class="act" id="stact">STANDBY</span></div>
-      <div class="stcanvas" id="stcanvas"><div class="stidle">Configure a scenario and press <b>GENERATE</b>.<br><span>The generator manufactures the case &mdash; the models must predict the cash-out.</span></div></div>
+      <div class="stcanvas" id="stcanvas"><div class="stidle">Configure a scenario and press <b>GENERATE</b>.<br><span>The generator manufactures the case &mdash; a model would have to predict the cash-out from the observed flow only.</span></div></div>
       <div class="streveal" id="streveal"></div>
     </div>
     <div class="stcols">
@@ -1135,13 +1137,14 @@ async function stPlay(fg,inp,gt){
     $('stact').textContent=acts[Math.min(h,acts.length-1)];
     svg.querySelectorAll('.stnode[data-hop="'+h+'"]').forEach(x=>x.classList.add('show'));
     svg.querySelectorAll('.stedge[data-hop="'+h+'"]').forEach(x=>x.classList.add('show'));
-    if(h>0){clock+=2+Math.floor(Math.random()*3);$('sttc').textContent='T +'+String(clock).padStart(2,'0')+' min';}
+    if(h>0){const t0=Math.min(...fg.edges.map(e=>Date.parse(e.timestamp))), th=fg.edges.filter(e=>fg.hop[e.destination_node]===h).map(e=>Date.parse(e.timestamp));
+      clock=th.length?Math.round((Math.max(...th)-t0)/60000):clock;$('sttc').textContent='T +'+String(clock).padStart(2,'0')+' min';}
     stLog(h===0?'hop 0 · money enters at VICTIM':'hop '+h+' · funds forwarded, taint attributed','dim');
     await stSleep(720);
   }
   $('stact').textContent='FORECASTING CASH-OUT'; $('ststage').classList.add('climax');
   svg.querySelectorAll('.stedge.pred').forEach(x=>x.classList.add('show'));
-  stLog('models scoring candidate cells → '+inp.stats.candidate_cells.join(', '),'dim');
+  stLog('candidate cash-out cells for the forecast → '+inp.stats.candidate_cells.join(', '),'dim');
   await stSleep(520);
   const co=svg.querySelector('.stnode.co'); if(co)co.classList.add('show');
   await stSleep(1100);
@@ -1158,7 +1161,7 @@ function stReveal(gt,inp){
     <div class="strow"><span>cash-out time</span><b>${gt.true_cashout_time.replace('T',' ')}</b></div>
     <div class="strow"><span>amount</span><b>₹${inr}</b></div>
     <div class="strow"><span>lead time</span><b class="lead">${gt.lead_time_min} min</b></div>
-    <div class="stfoot">the models predict this from the observed flow — the answer is never fed in</div>
+    <div class="stfoot">the hidden answer a forecast is scored against — it is never fed into the model input</div>
   </div>`;
   rv.classList.add('show');
   stLog('★ ground truth revealed · '+gt.true_cashout_cell+' @ '+gt.true_cashout_time.slice(11,16)+' · lead '+gt.lead_time_min+'min','ok');
@@ -1231,9 +1234,9 @@ function renderOverview(){
       <span class="sub">the honest version &mdash; every number below is measured on data the model never trained on</span>
     </div>
     <div class="impact">
-      <div class="imp"><div class="k">Cash-out model</div><div class="v">0.913 <small style="font-size:12px">ROC-AUC</small></div><div class="s">tested on a sealed set with fraud patterns the model never trained on (0.98 would mean a data leak)</div></div>
-      <div class="imp"><div class="k">Channel model</div><div class="v">92% <small style="font-size:12px">acc.</small></div><div class="s">predicts how the cash leaves &mdash; ATM vs POS vs onward transfer</div></div>
-      <div class="imp"><div class="k">Lead time</div><div class="v">up to 60 <small style="font-size:12px">min</small></div><div class="s">warning before the money is withdrawn &mdash; time to freeze</div></div>
+      <div class="imp"><div class="k">Cash-out model</div><div class="v">0.913 <small style="font-size:12px">ROC-AUC</small></div><div class="s">on later cases the model never trained on; 0.879 on a sealed set with fraud patterns it never saw (0.98 would mean a data leak)</div></div>
+      <div class="imp"><div class="k">Channel model</div><div class="v">92% <small style="font-size:12px">acc.</small></div><div class="s">predicts how the money leaves &mdash; ATM vs POS vs onward transfer vs dormant (always guessing &ldquo;dormant&rdquo; would score 77%)</div></div>
+      <div class="imp"><div class="k">Lead time</div><div class="v">~12 <small style="font-size:12px">min median</small></div><div class="s">warning before the cash withdrawal, when we can act; in ~66% of cases the cash was already out before the complaint was filed</div></div>
       <div class="imp"><div class="k">Discipline</div><div class="v" style="color:var(--green)">Honest</div><div class="s">as-of features (no future leakage) &middot; abstains from naming an ATM when it isn't sure</div></div>
     </div>`;
   buildOverviewMap();
