@@ -128,7 +128,7 @@ These are research experiments. Their best recorded score (0.79) is below M1
 (0.913), so the console does not use them. Do not present them as live.
 
 **Clustering.** The project does not run a clustering algorithm. The "roles" on
-the Link Analysis screen (cash-out specialist, distributor, collector, relay) come
+the Mule Network screen (cash-out specialist, distributor, collector, relay) come
 from simple fixed rules about how money flows in and out of each account.
 
 ---

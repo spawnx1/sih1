@@ -136,7 +136,7 @@
   .btn:disabled{opacity:.45;cursor:default;box-shadow:none}
   .btn.ghost{background:rgba(16,26,36,.8);color:var(--ink);border:1px solid var(--line2);box-shadow:none}
 
-  /* JARVIS briefing */
+  /* BRUCE briefing (spoken case summary) */
   .jarvis{position:relative;border:1px solid var(--line2);border-radius:14px;padding:14px 16px 15px 18px;margin-bottom:16px;
     background:linear-gradient(180deg,rgba(14,26,34,.7),rgba(10,16,24,.55));backdrop-filter:blur(6px);
     box-shadow:var(--glow);animation:fadeUp .3s ease both;overflow:hidden}
@@ -1469,7 +1469,7 @@
     <span class="navbtn on" id="navOverview" onclick="showOverview()">&#9635;&nbsp; Situation Room</span>
     <span class="navbtn" id="navTickets" onclick="showTickets()">&#9776;&nbsp; Incident Desk</span>
     <span class="navbtn" id="navCase" onclick="SEL&&selectCase(SEL)">&#9673;&nbsp; Investigation</span>
-    <span class="navbtn" id="navNet" onclick="showNetwork()">&#9096;&nbsp; Link Analysis</span>
+    <span class="navbtn" id="navNet" onclick="showNetwork()">&#9096;&nbsp; Mule Network</span>
     <span class="navbtn" id="navSim" onclick="showSim()" title="Play one complaint through the whole pipeline">&#9654;&nbsp; Simulation</span>
   </div>
   <div class="chips" id="chips"><span class="chip">initialising&hellip;</span></div>
@@ -1555,7 +1555,8 @@
 <script>
 const API = location.protocol==='file:' ? 'http://127.0.0.1:8000' : '';
 let HOT=null, PROJ=null, SEL=null, PLAY=null, REPLAY_T=0, LASTHL=null, SELMETA=null;
-let CURDIST=null, FOCUSON=true, SOUND=true, TYPETOK=0, VOICES=[], JVOICE=null, CURAUDIO=null;
+let CURDIST=null, FOCUSON=true, TYPETOK=0, VOICES=[], JVOICE=null, CURAUDIO=null;
+let SOUND=(()=>{try{return localStorage.getItem('voiceOn')==='1';}catch(e){return false;}})();   // BRUCE's voice: off unless the officer turns it on
 let MAP=null, HEATL=null, ATML=null, MKL=null, RETL=null, FLOWL=null, MESHL=null, RSVG=null, RFLOW=null;
 let REPLAYING=false, FRAMED=false, ATMXY={}, ATMMETA={};
 let QUEUE=[], URGENT_SEEN=new Set(), SUPPRESS_URGENT=false, POLL=null;  // urgent-popup state
@@ -2423,7 +2424,8 @@ function renderMule(d){
    </div>`;
 }
 // ===================== MULE NETWORK — force-directed codenamed entity graph =====================
-const NET_COL={CASHER:'#d6a95c',DISTRIBUTOR:'#4fadba',COLLECTOR:'#8579d6',RELAY:'#6f97a8'};
+// role colours: cash-out specialists coral-red (they pull the cash), fan-out distributors orange-amber, collectors purple
+const NET_COL={CASHER:'#EF4444',DISTRIBUTOR:'#F59E0B',COLLECTOR:'#8B5CF6',RELAY:'#94A3B8'};
 let NET_SIM=null, NET_HIDDEN={}, NET_Q='';
 const NET_GL={CASHER:'Cash-out specialist',DISTRIBUTOR:'Fan-out distributor',COLLECTOR:'Collector / aggregator',RELAY:'Pass-through relay'};
 // search: mule name, account, registered area or role (same matching in the graph and the register)
@@ -2438,7 +2440,7 @@ async function showNetwork(){
   $('stage').innerHTML=`
    <div class="netview">
      <div class="nethead">
-       <div><h1 class="nettitle">LINK ANALYSIS</h1>
+       <div><h1 class="nettitle">MULE NETWORK</h1>
          <span class="netsub">Each node is a suspected mule account (labelled in the synthetic data) under a codename, sized by how many frauds it touches and coloured by a rule-based behaviour role (not a clustering model; a role is a lead to review, not proof). Lines link mules that worked the same case, moved money to each other, or share a ring. <b>Click a node to see it on the map; double-click to open its file.</b></span></div>
        <div class="netlegend" id="netLegend"></div>
      </div>
@@ -2497,7 +2499,7 @@ function renderNetwork(data){
   const rOf=n=>6+Math.sqrt(n.n_cases||1)*3.2;
   const groups=data.groups.map(g=>g.key).filter(k=>nodes.some(n=>n.group===k));   // only roles present, so the graph centres
   const gx={}; groups.forEach((g,i)=>gx[g]=W*(0.26+0.48*(groups.length<=1?0.5:i/(groups.length-1))));
-  $('netLegend').innerHTML=data.groups.map(g=>`<span class="netlg" data-g="${g.key}" onclick="netToggle('${g.key}')"><span class="d" style="background:${NET_COL[g.key]||'#889'}"></span>${g.label}</span>`).join('')
+  $('netLegend').innerHTML=data.groups.filter(g=>groups.includes(g.key)).map(g=>`<span class="netlg" data-g="${g.key}" onclick="netToggle('${g.key}')"><span class="d" style="background:${NET_COL[g.key]||'#889'}"></span>${g.label}</span>`).join('')
     +`<span class="netlg" style="cursor:default"><span class="d" style="background:transparent;border:1px solid var(--faint)"></span>bigger = more cases</span>`;
   const svg=d3.select(canvas).append('svg').attr('id','netSvg').attr('viewBox',`0 0 ${W} ${H}`).attr('preserveAspectRatio','xMidYMid meet');
   const root=svg.append('g');
@@ -3257,7 +3259,9 @@ function leadNode(p){const tr=p._trail;if(!tr||!tr.nodes)return null;
 function cineDirect(t,p){
   const m=$('maphold');
   const beat = t<24?0 : t<64?1 : t<100?2 : 3;
-  const acts=['MONEY ENTERS','TRACING THE FLOW','CONVERGING ON CASH-OUT','⚠ CASH-OUT WINDOW — FREEZE'];
+  const tier=(p&&p.recommendation||{}).tier;   // the last act says what the rules say at that minute
+  const acts=['MONEY ENTERS','TRACING THE FLOW','CONVERGING ON CASH-OUT',
+    tier==='RED'?'⚠ CASH-OUT WINDOW — FREEZE':tier==='AMBER'?'CASH-OUT WINDOW — WATCH':'AFTER THE WINDOW — KEEP TRACING'];
   const al=$('cineAct'); if(al)al.textContent=acts[beat];
   if(m){ if(beat===3)m.classList.add('climax'); else m.classList.remove('climax'); }
 }
@@ -3275,8 +3279,15 @@ function frameWhole(trail, loc){
 }
 function endReplay(){ PLAY=null; const b=$('playbtn');
   if(b)b.innerHTML='&#9654; Replay simulation'; REPLAYING=false;
-  setTimeout(()=>{ if(!REPLAYING){ exitCinema(); if(CASEFULL){drawFlow(CASEFULL.trail,CASEFULL.loc); frameCase(CASEFULL.trail,CASEFULL.loc);} } }, 1800);  // hold the climax briefly, then restore the interactive zone view (menu + routes)
+  setTimeout(()=>{ if(!REPLAYING){ exitCinema(); if(CASEFULL){drawFlow(CASEFULL.trail,CASEFULL.loc); frameCase(CASEFULL.trail,CASEFULL.loc);} restoreLive(); } }, 1800);  // hold the climax briefly, then back to the live case
 }
+// The replay's last minute is history (often after the cash-out, so the rules say MONITOR then).
+// When it ends or pauses, show the complaint as it stands now again: the live action (e.g. FREEZE).
+async function restoreLive(){ const ack=SEL; if(!ack||VIEW!=='case')return;
+  try{ const [p,tr]=await Promise.all([jget(`/predict/${ack}`),jget(`/trail/${ack}`)]);
+    if(SEL!==ack||REPLAYING||VIEW!=='case')return;
+    p._trail=tr; REPLAY_T=0; const sc=$('scrub'); if(sc)sc.value=0; LAST_TRAIL_SIG=null;
+    updateBriefing(p, null); }catch(e){} }
 // move just the reticle (used during replay -- the frame stays fixed so you watch the whole flow)
 function lockReticleOnly(highlight){
   if(!MAP)return; RETL.clearLayers();
@@ -3562,7 +3573,7 @@ function abstainHTML(loc){return loc.abstained_at
   : `<div class="ok">&#10003; Confident enough to name a specific ATM.</div>`;}
 function chanRowsHTML(chans){return chans.map(x=>`<div class="chan"><span class="nm">${x[0]}</span><span class="track"><i style="width:${x[1]*100}%"></i></span><span class="pc">${pct(x[1])}</span></div>`).join('');}
 
-// ---------- JARVIS briefing ----------
+// ---------- BRUCE briefing (spoken case summary) ----------
 function districtOf(loc){return (loc.cells&&loc.cells[0]&&loc.cells[0].district)||(loc.districts&&loc.districts[0]&&loc.districts[0].district)||'the area';}
 function buildBrief(p){
   const c=p.cashout,loc=p.location,r=p.recommendation,ch=p.channel;
@@ -3673,6 +3684,7 @@ function playBrief(ack,text){if(!SOUND)return;
 function stopVoice(){try{if(window.speechSynthesis){speechSynthesis.cancel();speechSynthesis.cancel();}}catch(e){}
   if(CURAUDIO){try{CURAUDIO.pause();CURAUDIO.currentTime=0;}catch(e){}CURAUDIO=null;}}
 function toggleSound(){SOUND=!SOUND;const b=$('sndBtn');if(b)b.textContent=SOUND?'🔊':'🔇';
+  try{localStorage.setItem('voiceOn',SOUND?'1':'0');}catch(e){}
   if(!SOUND)stopVoice();}
 
 // ---------- briefing: build shell ONCE ----------
@@ -3760,7 +3772,7 @@ function renderBriefing(p, clockHTML, speakNow){
         </div>
         <div class="card gd-case" id="caseGuard"><div class="cap">checking guardrails&hellip;</div></div>
         <div class="card">
-          <div class="jhead" style="margin-bottom:8px"><span class="rc"></span> JARVIS &mdash; situation
+          <div class="jhead" style="margin-bottom:8px"><span class="rc"></span> BRUCE &mdash; situation
             <select class="sp" id="voiceSel" onchange="setVoice(this.value)" title="pick voice"
               style="margin-left:auto;font-size:11px;font-family:var(--mono);max-width:140px">${voiceOpts()}</select>
             <span class="sp" id="sndBtn" onclick="toggleSound()" title="voice on/off" style="margin-left:8px">${SOUND?'🔊':'🔇'}</span></div>
@@ -3845,7 +3857,7 @@ function updateBriefing(p, clk){
   const tb=$('tierBadge'); if(tb){tb.className='tier '+r.tier; tb.textContent=r.tier;}
   const ab=$('actionBox'); if(ab) ab.className='action '+r.tier;
   const big=$('actBig'); if(big){big.textContent=r.action; big.style.color=tc;}
-  set('actWhy', r.reason);
+  set('actWhy', REPLAYING?`Replay, ${REPLAY_T} min after the payment (a past moment, not the live action) · ${r.reason}`:r.reason);
   const kw=$('kWill'); if(kw){kw.textContent=pct(c.p_10m); kw.style.color=tc;}
   set('kWillSub', `chance in the next 10 min · ${c.severity}`);
   set('kWhen', whenText(c)); set('kHow', chans[0][0]);
@@ -3901,7 +3913,7 @@ async function loadAlerts(){const a=await jget('/alerts');
 // ---------- replay ----------
 function togglePlay(){const b=$('playbtn');
   if(PLAY){PLAY=null;if(b)b.innerHTML='&#9654; Replay simulation';REPLAYING=false;exitCinema();
-    if(CASEFULL){drawFlow(CASEFULL.trail,CASEFULL.loc);frameCase(CASEFULL.trail,CASEFULL.loc);} return;}  // pause -> restore interactive zone view
+    if(CASEFULL){drawFlow(CASEFULL.trail,CASEFULL.loc);frameCase(CASEFULL.trail,CASEFULL.loc);} restoreLive(); return;}  // pause -> back to the live case
   if(!SEL)return;if(b)b.innerHTML='&#10073;&#10073; Pause';
   REPLAYING=true; FRAMED=true; REPLAY_T=0; CINE_BEAT=-1; LAST_TRAIL_SIG=null; PREDS_REVEALED=false;
   if(FOCUSATM){try{MAP.removeLayer(FOCUSATM);}catch(e){}FOCUSATM=null;}

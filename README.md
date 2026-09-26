@@ -80,7 +80,7 @@ judges, and a 3-minute demo script. Start there.
 | **Graph-based analysis** | money-trail tracing (`graphx/trail.py`), nine graph features + a logistic-regression mule score (`graphx/features.py`), candidate ATM generation C1-C5 (`graphx/candidates.py`) | **Yes**, feeds M1/M2/M3 |
 | **GNN** | GraphSAGE and heterogeneous (account + ATM) GraphSAGE baselines (`graphx/gnn_baseline.py`, `graphx/hetero_gnn_baseline.py`) | **No**, offline experiments; need PyTorch + PyG. Also offline: a graph ATM ranker (`graphx/sprint9b_atm_ranker.py`, did not beat the candidate baseline) and a fusion prototype (`graphx/sprint10_fusion.py`) |
 | **Temporal graph model** | snapshot-based temporal GraphSAGE with transaction-age edge features (`graphx/tgnn_baseline.py`, `graphx/tgnn_activity_train.py`, `graphx/temporal_hetero_gnn.py`, `graphx/next_movement_gnn.py`). This is a *temporal GNN*, not a TGN (there is no per-node memory module) | **No**, offline experiments; recorded ROC-AUC 0.51-0.79 (best: temporal heterogeneous GNN, 0.79, measured on an earlier version of the data), below M1's 0.913 |
-| **Clustering** | **Not implemented.** The Link Analysis (mule network) roles (casher, distributor, collector, relay) come from fixed if/else thresholds in `api/main.py:_archetype`, a rule-based grouping, not a clustering algorithm | n/a |
+| **Clustering** | **Not implemented.** The Mule Network roles (casher, distributor, collector, relay) come from fixed if/else thresholds in `api/main.py:_archetype`, a rule-based grouping, not a clustering algorithm | n/a |
 | **Risk / decision layer** | plain rules: RED / AMBER / GREY tier + FREEZE / MONITOR (`api/main.py:make_recommendation`), location abstention (`ml/predict.py`) | **Yes** |
 
 The benchmark numbers in `graphx/sprint12_final_validation.py` are typed into
@@ -103,7 +103,7 @@ EXPLANATION          GET /explain, the "Why" panel and the evidence list in web/
   ↓
 ALERT                api/main.py make_recommendation (RED/AMBER/GREY) + POST /alerts/dispatch
   ↓
-INVESTIGATOR         web/index.html console, Incident Desk (tickets + Suspect Registry), Link Analysis
+INVESTIGATOR         web/index.html console, Incident Desk (tickets + Suspect Registry), Mule Network
 ```
 
 The GNN / temporal GNN experiments sit outside this pipeline today.
@@ -208,7 +208,7 @@ simulated alert, all on synthetic Pune data.
 - Synthetic corpus + sealed shifted test corpus; a command-line synthetic case generator (`python -m generator.case`)
 - Money-trail tracing, graph features, candidate ATM generation
 - M1 / M2 / M3 XGBoost models with abstention; leakage test suite
-- Decision rules, simulated SMS / email / API alerts, Incident Desk tickets, Suspect Registry, mule profile, Link Analysis view
+- Decision rules, simulated SMS / email / API alerts, Incident Desk tickets, Suspect Registry, mule profile, Mule Network view
 
 **What we are improving (exists in the repo, being tested offline, not in the console)**
 - GNN and temporal GNN experiments in `graphx/` (so far they do not beat M1)
