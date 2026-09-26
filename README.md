@@ -79,7 +79,7 @@ judges, and a 3-minute demo script. Start there.
 | **Traditional ML** | M1 cash-out timing, M2 channel, M3 ATM/cell ranker, all XGBoost (`ml/train.py`) | **Yes**, every prediction |
 | **Graph-based analysis** | money-trail tracing (`graphx/trail.py`), nine graph features + a logistic-regression mule score (`graphx/features.py`), candidate ATM generation C1-C5 (`graphx/candidates.py`) | **Yes**, feeds M1/M2/M3 |
 | **GNN** | GraphSAGE and heterogeneous (account + ATM) GraphSAGE baselines (`graphx/gnn_baseline.py`, `graphx/hetero_gnn_baseline.py`) | **No**, offline experiments; need PyTorch + PyG. Also offline: a graph ATM ranker (`graphx/sprint9b_atm_ranker.py`, did not beat the candidate baseline) and a fusion prototype (`graphx/sprint10_fusion.py`) |
-| **Temporal graph model** | snapshot-based temporal GraphSAGE with transaction-age edge features (`graphx/tgnn_baseline.py`, `graphx/tgnn_activity_train.py`, `graphx/temporal_hetero_gnn.py`, `graphx/next_movement_gnn.py`). This is a *temporal GNN*, not a TGN (there is no per-node memory module) | **No**, offline experiments; recorded ROC-AUC 0.51-0.79 (best: temporal heterogeneous GNN, 0.79), below M1's 0.913 |
+| **Temporal graph model** | snapshot-based temporal GraphSAGE with transaction-age edge features (`graphx/tgnn_baseline.py`, `graphx/tgnn_activity_train.py`, `graphx/temporal_hetero_gnn.py`, `graphx/next_movement_gnn.py`). This is a *temporal GNN*, not a TGN (there is no per-node memory module) | **No**, offline experiments; recorded ROC-AUC 0.51-0.79 (best: temporal heterogeneous GNN, 0.79, measured on an earlier version of the data), below M1's 0.913 |
 | **Clustering** | **Not implemented.** The Mule Network roles (casher, distributor, collector, relay) come from fixed if/else thresholds in `api/main.py:_archetype`, a rule-based grouping, not a clustering algorithm | n/a |
 | **Risk / decision layer** | plain rules: RED / AMBER / GREY tier + FREEZE / MONITOR (`api/main.py:make_recommendation`), location abstention (`ml/predict.py`) | **Yes** |
 
@@ -153,8 +153,9 @@ The GNN / temporal GNN experiments sit outside this pipeline today.
   account's *historical* withdrawal footprint. `home_lat/lon` are generator-only
   and never shipped (`_accounts_internal.parquet`).
 - **R4 honest metrics** — target ROC-AUC 0.86–0.92; a single-feature audit flags
-  anything > 0.85 alone. We hit **0.913** (chronological); the generator was
-  widened until this was true, not tuned upward.
+  anything > 0.85 alone (the strongest single feature scores 0.69). We hit
+  **0.913** (chronological); the generator was widened until this was true, not
+  tuned upward.
 - **R5 hierarchical abstention** — district → ~5 km² cell → terminal; the system
   refuses to name a terminal on a flat distribution (`abstained_at`,
   `abstain_reason`).
@@ -165,20 +166,22 @@ The GNN / temporal GNN experiments sit outside this pipeline today.
 
 | split | M1 ROC-AUC | location terminal Top-1 | cell Top-1 |
 |---|---|---|---|
-| A chronological | 0.913 | 0.207 | 0.69 |
-| B unseen account | 0.916 | 0.267 | 0.73 |
-| C unseen terminal | — | 0.146 | 0.68 |
-| D sealed (shifted) | **0.879** | 0.210 | 0.67 |
+| A chronological | 0.913 | 0.210 | 0.65 |
+| B unseen account | 0.902 | 0.180 | 0.64 |
+| C unseen terminal | — | 0.168 | 0.65 |
+| D sealed (shifted) | **0.885** | 0.207 | 0.62 |
 
-- **Candidate recall@50 = 0.82** (the hard ceiling on Top-K).
-- **M2 channel accuracy = 0.921** (chronological). Note ~77% of rows are "dormant", so always guessing "dormant" would already score ~0.77.
-- **Baselines**: rule engine ROC-AUC **0.500** (useless — the answer to "why not
-  rules?"), logistic regression 0.840, vs M1 0.913. Location: nearest-KYC Top-1
-  0.057, most-frequent-ATM 0.198, vs M3 0.207.
-- **North Star — lead time**: ~12 min median *when the system can act*, but in
-  **~66% of cases the money was already cashed out before the complaint was even
-  filed** (reporting delay ≫ forwarding delay). That honest number is the case
-  for proactive freezing and faster reporting.
+- **Candidate recall@50 = 0.79** (the hard ceiling on Top-K; just under the 0.80 we aim for).
+- **M2 channel accuracy = 0.922** (chronological). Note ~77% of rows are "dormant", so always guessing "dormant" would already score ~0.77.
+- **Baselines**: a hand-written rule (inflow ≥ ₹25k AND >70% forwarded in 10 min
+  AND account < 90 days old) never fires on the test cases, so it scores ROC-AUC
+  **0.500** (no better than chance); logistic regression 0.834; M1 0.913.
+  Location: nearest-KYC Top-1 0.057, most-frequent-ATM 0.203, vs M3 0.210.
+- **North Star — lead time**: ~8 min median (8.3) *when the system can act*, but in
+  **~70% of cases (420 of 600) the money was already cashed out before the
+  complaint was even filed** (reporting delay ≫ forwarding delay). That honest
+  number is the case for proactive freezing and faster reporting.
+- **Data**: 8,000 accounts, ~248k transactions, 600 complaints.
 
 ## Known limitations
 
@@ -202,14 +205,14 @@ money trail, M1/M2/M3 forecasts, a RED/AMBER/GREY tier, the reasons and a
 simulated alert, all on synthetic Pune data.
 
 **What we have built (implemented and used by the console)**
-- Synthetic corpus + sealed shifted test corpus; Case Studio synthetic case generator
+- Synthetic corpus + sealed shifted test corpus; a command-line synthetic case generator (`python -m generator.case`)
 - Money-trail tracing, graph features, candidate ATM generation
 - M1 / M2 / M3 XGBoost models with abstention; leakage test suite
 - Decision rules, simulated SMS / email / API alerts, Case centre tickets, mule profile, Mule Network view
 
 **What we are improving (exists in the repo, being tested offline, not in the console)**
 - GNN and temporal GNN experiments in `graphx/` (so far they do not beat M1)
-- More realistic Case Studio scenarios (amounts, timing, legitimate look-alikes)
+- More realistic generated cases (amounts, timing, legitimate look-alikes)
 
 **Future (not built yet)**
 - Real ATM locations from OpenStreetMap (`gen/atms.py` has the query)

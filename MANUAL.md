@@ -203,24 +203,26 @@ scores a fake 99% accuracy. We deliberately avoided that:
 - **No live GPS / phone location.** Police can't get a suspect's live location in
   10 minutes, so we don't use it — only the account's *past* ATM habits and its
   registered (KYC) area.
-- **Honest accuracy.** We *targeted* 86–92% (not higher) and got **91.3%**. If a
-  model scores >95% we treat it as a bug and hunt the leak.
-- **We beat the dumb baseline.** A simple hand-written rule scores **50%
-  (useless)**; our model scores **91%**. That is the answer to "why not just use
-  rules?"
+- **Honest scores.** We *targeted* a ROC-AUC of 0.86–0.92 (not higher) and got
+  **0.91**. If a model scores above 0.95 we treat it as a bug and hunt the leak.
+- **We beat the simple alternatives.** A hand-written rule never flags a single
+  test case (so it is no better than chance, 0.50); a basic statistical model
+  (logistic regression) scores 0.83; ours scores **0.91**. That is the answer to
+  "why not just use rules?"
 
 ---
 
 ## 10. The numbers that matter (memorise these)
 
-- **91.3%** accuracy (ROC-AUC) forecasting *whether* an account cashes out.
-- Drops to **87.9%** on a *totally different* ("sealed") dataset the model never
+- **ROC-AUC 0.91** forecasting *whether* an account cashes out (1.0 = perfect
+  ranking of risky over safe accounts, 0.5 = guessing).
+- Holds at **0.885** on a *totally different* ("sealed") dataset the model never
   saw — proof it generalises, not memorises.
-- **82%** of the time the real ATM is inside our shortlist of candidate ATMs.
+- **79%** of the time the real ATM is inside our shortlist of candidate ATMs.
 - **~0.7 km** median error when we do name a location.
-- **Rules baseline = 50%. Our model = 91%.**
-- **Reality check:** in ~66% of complaints the money was *already cashed out
-  before the complaint was even filed.* When we *can* act, we get **~12 minutes**
+- **A simple rule never fires (0.50); basic statistics 0.83; our model 0.91.**
+- **Reality check:** in ~70% of complaints the money was *already cashed out
+  before the complaint was even filed.* When we *can* act, we get **~8 minutes**
   of lead time. This is the honest case for faster reporting + auto-freeze.
 
 ---
@@ -269,10 +271,10 @@ python -m uvicorn api.main:app --port 8000    # then open http://localhost:8000
    AI."
 5. **Point at the recommendation.** "So the action is **FREEZE**, and an alert
    goes to *this* police station."
-6. **Hit Play ×20.** "Here's the same case replayed in fast motion — watch the
+6. **Hit "Replay simulation".** "Here's the same case replayed in fast motion — watch the
    money move and the risk rise in real time."
-7. **Close with the number:** "91% accuracy, versus 50% for a rules engine, and
-   it tells us when it doesn't know."
+7. **Close with the number:** "0.91 ROC-AUC, where a simple rule catches nothing,
+   and it tells us when it doesn't know."
 
 If the browser dies on stage, run `python demo.py` — it prints the whole story
 to the terminal.

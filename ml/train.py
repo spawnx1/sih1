@@ -173,6 +173,8 @@ def main():
     # ==================== M1 ====================
     print("=== M1: discrete-time cash-out hazard ===")
     df = build_panel(ctx, n_legit_base=1800)
+    os.makedirs(config.MODEL_DIR, exist_ok=True)
+    df.to_parquet(f"{config.MODEL_DIR}/panel_train.parquet", index=False)   # read by tests/test_leakage.py
     tr, te, cut = chronological_split(df)
     print(f"[split] cut={pd.Timestamp(cut)}  train={len(tr)} test={len(te)} "
           f"(test positives={te['y'].mean():.3f})")

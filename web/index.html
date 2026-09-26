@@ -442,66 +442,6 @@
     font-family:var(--mono);font-size:12px;padding:5px 12px;border:1px solid var(--line);border-radius:8px}
   .navbtn:hover{border-color:var(--cyan);color:var(--ink)}
   .navbtn.on{color:#04181a;background:var(--cyan);border-color:var(--cyan);box-shadow:0 0 16px rgba(79,173,186,.4)}
-  /* ===== CASE STUDIO (cinematic synthetic-case generator) ===== */
-  .studio{padding:2px 2px 20px}
-  .sthead{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;margin:2px 0 14px;flex-wrap:wrap}
-  .sttitle{margin:0;font:400 24px/1 var(--sans);letter-spacing:2px;color:#eaf2f6;text-shadow:0 0 14px rgba(79,173,186,.25)}
-  .stsub{display:block;color:var(--dim);font-size:12px;margin-top:5px}
-  .stsafe{font-family:var(--mono);font-size:10px;letter-spacing:1.5px;color:var(--amber);border:1px solid rgba(214,169,92,.4);border-radius:20px;padding:4px 12px;white-space:nowrap}
-  .stbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:11px 13px;margin-bottom:14px}
-  .stbar label{font-family:var(--mono);font-size:10px;letter-spacing:1.4px;text-transform:uppercase;color:var(--dim)}
-  .stbar select,.stbar input{background:var(--solid);color:var(--ink);border:1px solid var(--line);border-radius:7px;padding:7px 9px;font-family:var(--mono);font-size:12px}
-  .stbar input{width:74px}
-  .stgen{margin-left:auto;background:linear-gradient(180deg,var(--cyan),#2f8a95);color:#04181a;border:0;border-radius:8px;padding:9px 18px;font-family:var(--mono);font-weight:700;letter-spacing:1px;font-size:12px;cursor:pointer;box-shadow:0 0 16px rgba(79,173,186,.35)}
-  .stgen:hover{filter:brightness(1.08)} .stgen:disabled{opacity:.5;cursor:default;box-shadow:none}
-  .ststage{position:relative;height:58vh;min-height:430px;border:1px solid var(--line);border-radius:12px;overflow:hidden;background:radial-gradient(120% 120% at 50% 30%,#0c141d,#070b12 70%,#05070d);box-shadow:inset 0 0 120px rgba(0,0,0,.6)}
-  .stletter{position:absolute;left:0;right:0;height:0;background:#05070d;z-index:6;transition:height .5s ease}
-  .stletter.t{top:0} .stletter.b{bottom:0}
-  .ststage.rolling .stletter{height:26px}
-  .sthud{position:absolute;top:34px;left:20px;z-index:7;display:flex;align-items:center;gap:14px;opacity:0;transition:opacity .4s}
-  .ststage.rolling .sthud{opacity:1}
-  .sthud .rec{display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:10px;letter-spacing:2px;color:var(--red)}
-  .sthud .rec .d{width:8px;height:8px;border-radius:50%;background:var(--red);box-shadow:0 0 8px var(--red);animation:blink 1s infinite}
-  .sthud .tc{font-family:var(--mono);font-size:15px;color:#eaf2f6;letter-spacing:1px}
-  .sthud .act{font-family:var(--mono);font-size:11px;letter-spacing:3px;color:var(--cyan)}
-  .ststage.climax .sthud .act{color:#ff8a97;text-shadow:0 0 12px rgba(224,94,114,.6)}
-  .stcanvas{position:absolute;inset:26px 0;display:flex;align-items:center;justify-content:center}
-  .stidle{color:var(--dim);text-align:center;font-size:14px;line-height:1.8} .stidle span{font-size:11.5px;color:var(--faint)}
-  #stsvg{width:100%;height:100%}
-  .stedge{fill:none;stroke-linecap:round;opacity:0;transition:opacity .5s;stroke-dasharray:6 8}
-  .stedge.show{opacity:1;animation:wdflow .8s linear infinite}
-  .stedge.obs{stroke:#c6a659;stroke-width:2.4;filter:drop-shadow(0 0 3px rgba(198,166,89,.4))}
-  .stedge.pred{stroke:#cf6068;stroke-width:2.4;filter:drop-shadow(0 0 4px rgba(207,96,104,.5))}
-  .stnode{opacity:0} .stnode.show{opacity:1;animation:stpop .5s ease both}
-  @keyframes stpop{from{opacity:0;transform:scale(.6)}to{opacity:1}}
-  .stnode .core{fill:#0c141d;stroke:#2f8a95;stroke-width:2}
-  .stnode .ring{fill:none;stroke:rgba(79,173,186,.22);stroke-width:1}
-  .stnode .lbl{fill:#e6eef4;font:600 12px var(--mono);text-anchor:middle}
-  .stnode .rol{fill:var(--faint);font:400 8px var(--mono);text-anchor:middle;letter-spacing:1px}
-  .stnode.v .core{stroke:var(--cyan)} .stnode.v .lbl{fill:#bfe8ee}
-  .stnode.hold .core{stroke:var(--amber)} .stnode.hold .rol{fill:var(--amber)}
-  .stnode.co .core{fill:#1a0e12;stroke:var(--red);stroke-dasharray:4 3} .stnode.co .lbl{fill:#ff9aa6;font-size:16px}
-  .stnode.co.show .core{animation:codedpulse 1.4s ease-in-out infinite}
-  .streveal{position:absolute;inset:0;z-index:8;display:flex;align-items:center;justify-content:center;pointer-events:none;background:radial-gradient(60% 60% at 50% 50%,rgba(207,96,104,.14),transparent 70%);opacity:0;transition:opacity .5s}
-  .streveal.show{opacity:1;animation:stflash .6s ease}
-  @keyframes stflash{0%{background-color:rgba(224,94,114,.25)}100%{background-color:transparent}}
-  .stcard{background:rgba(9,12,17,.94);border:1px solid rgba(224,94,114,.5);border-radius:14px;padding:20px 26px;min-width:300px;box-shadow:0 0 50px rgba(224,94,114,.25),inset 0 0 40px rgba(224,94,114,.06);text-align:center}
-  .sthidden{font-family:var(--mono);font-size:10px;letter-spacing:2px;color:var(--red);margin-bottom:10px}
-  .stbig{font:400 40px/1 var(--sans);letter-spacing:2px;color:#eaf2f6;text-shadow:0 0 18px rgba(79,173,186,.3);margin-bottom:12px}
-  .strow{display:flex;justify-content:space-between;gap:24px;font-size:12px;padding:4px 0;border-top:1px solid rgba(255,255,255,.06)}
-  .strow span{color:var(--dim);font-family:var(--mono)} .strow b{font-family:var(--mono);color:#dbe6ef} .strow b.lead{color:var(--green)}
-  .stfoot{margin-top:12px;font-size:10.5px;color:var(--faint);max-width:320px;line-height:1.5;margin-left:auto;margin-right:auto}
-  .stcols{display:grid;grid-template-columns:1.4fr 1fr;gap:14px;margin-top:14px}
-  .stlog{background:#070b11;border:1px solid var(--line);border-radius:11px;padding:12px 14px;height:190px;overflow:auto;font-family:var(--mono);font-size:11.5px;line-height:1.7}
-  .stln{color:#8ea6b4;white-space:pre-wrap} .stln.cmd{color:#bfe8ee} .stln.dim{color:var(--faint)} .stln.ok{color:var(--green)} .stln.err{color:var(--red)}
-  .stmeta{background:var(--panel);border:1px solid var(--line);border-radius:11px;padding:12px 14px;height:190px;overflow:auto}
-  .stmh{font-family:var(--mono);font-size:10px;letter-spacing:1.4px;text-transform:uppercase;color:var(--cyan);margin:2px 0 6px}
-  .stmh span{color:var(--faint);letter-spacing:.5px;text-transform:none}
-  .stcell{font-family:var(--mono);font-size:12px;color:var(--dim);padding:3px 8px;border:1px solid var(--line);border-radius:6px;margin-bottom:5px;display:inline-block;margin-right:6px}
-  .stcell.true{color:var(--green);border-color:rgba(70,196,149,.5);background:rgba(70,196,149,.08)} .stcell.true i{color:var(--green);font-style:normal}
-  .stpath{font-family:var(--mono);font-size:11px;color:#c6d6e4;line-height:1.7;margin-bottom:8px} .stpath b{color:var(--red)}
-  .stfile{font-family:var(--mono);font-size:10.5px;color:#9fb3c2;line-height:1.7} .stfile.dim{color:var(--faint)} .stfile em{color:var(--amber);font-style:normal}
-  @media(max-width:820px){.stcols{grid-template-columns:1fr}}
   .ovhead{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin:2px 0 16px}
   .ovhead h1{margin:0;font:400 16px/1.4 var(--sans);letter-spacing:1.5px;text-shadow:0 0 12px rgba(79,173,186,.22)}
   .ovhead .sub{color:var(--dim);font-size:13px}
@@ -552,6 +492,7 @@
   .tktile .k{font-family:var(--mono);font-size:9px;letter-spacing:1.3px;text-transform:uppercase;color:var(--faint)}
   .tktile .v{font-family:var(--mono);font-size:24px;font-weight:900;margin-top:6px;line-height:1}
   .tktoolbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  .tktabs{display:flex;gap:8px}
   .tksearch{flex:1;min-width:220px;background:var(--solid);border:1px solid var(--line2);border-radius:9px;
     padding:10px 13px;color:var(--ink);font-family:var(--mono);font-size:12px}
   .tktable{width:100%;border-collapse:collapse;font-size:12.5px}
@@ -635,7 +576,6 @@
   .modesw{display:inline-flex;background:var(--solid);border:1px solid var(--line);border-radius:9px;overflow:hidden;margin-left:10px;flex:0 0 auto}
   .modesw .seg{padding:7px 13px;font-family:var(--mono);font-size:11px;letter-spacing:.5px;color:var(--dim);cursor:pointer;user-select:none;white-space:nowrap}
   .modesw .seg.on{background:var(--cyan);color:#04181a;font-weight:700}
-  body.basemode #navStudio{display:none}            /* the synthetic-case builder isn't for field officers */
   body.basemode .bhide{display:none}                 /* analyst-only panels: hidden in Base to keep it simple */
   body.basemode #voiceSel,body.basemode #sndBtn{display:none}   /* trim the voice-picker clutter in Base */
   .bx{display:none}                                  /* plain-English explainer — only shown in Base mode */
@@ -740,13 +680,43 @@
   body.basemode.bmdark{background:#0f141b}
   body.basemode::before,body.basemode::after{display:none}
   body.basemode>header,body.basemode .bhelp,body.basemode .app,body.basemode .railopen,
-  body.basemode .scanbar,body.basemode .hud{display:none!important}
+  body.basemode .scanbar,body.basemode .hud,body.basemode .modal{display:none!important}
   body.basemode #baseApp{display:block;min-height:100vh;background:var(--b-bg);color:var(--b-ink);font:15px/1.55 var(--body);-webkit-font-smoothing:antialiased}
   #baseApp .bm-top{position:sticky;top:0;z-index:1000;display:flex;align-items:center;gap:12px;padding:12px 28px;background:var(--b-card);border-bottom:1px solid var(--b-line)}
   #baseApp .bm-brand{font-weight:600;font-size:17px;color:var(--b-head);line-height:1.3}
   #baseApp .bm-brand small{display:block;font-weight:400;font-size:12.5px;color:var(--b-dim)}
   #baseApp .bm-demo{margin-left:auto;font-size:12px;color:var(--b-dim);border:1px solid var(--b-line);border-radius:999px;padding:3px 10px;white-space:nowrap}
   #baseApp .bm-themebtn{background:var(--b-seg);border:1px solid var(--b-line);color:var(--b-ink);border-radius:8px;padding:7px 12px;font:500 13px var(--body);cursor:pointer;white-space:nowrap}
+  #baseApp .bm-themebtn:hover{border-color:var(--b-input)}
+  #baseApp .bm-themebtn.on{background:var(--b-pri);border-color:var(--b-pri);color:#fff}
+  #baseApp .bm-tools{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+  #baseApp .bm-tools .bm-search{margin-bottom:0}
+  #baseApp .bm-seg{display:inline-flex;border:1px solid var(--b-input);border-radius:9px;overflow:hidden;background:var(--b-card)}
+  #baseApp .bm-seg span{padding:9px 14px;cursor:pointer;font-weight:600;font-size:14px;color:var(--b-dim);border-right:1px solid var(--b-line);user-select:none;white-space:nowrap}
+  #baseApp .bm-seg span:last-child{border-right:0}
+  #baseApp .bm-seg span:hover{color:var(--b-ink)}
+  #baseApp .bm-seg span.on{background:var(--b-pri);color:#fff}
+  #baseApp .bm-seg span b{font-weight:500;opacity:.85;margin-left:6px}
+  #baseApp .bm-mini{background:var(--b-card);border:1px solid var(--b-input);border-radius:7px;padding:6px 8px;font:13px var(--body);color:var(--b-ink);cursor:pointer}
+  #baseApp .bm-form{max-width:780px}
+  #baseApp .bm-form .row{display:grid;grid-template-columns:1fr 1fr;gap:0 16px}
+  #baseApp .bm-form label{display:block;font-size:13px;font-weight:600;color:var(--b-dim);margin:14px 0 6px}
+  #baseApp .bm-form input,#baseApp .bm-form select,#baseApp .bm-form textarea{width:100%;background:var(--b-card);border:1px solid var(--b-input);border-radius:8px;padding:10px 12px;font:14px var(--body);color:var(--b-ink)}
+  #baseApp .bm-form input:focus,#baseApp .bm-form select:focus,#baseApp .bm-form textarea:focus{outline:2px solid var(--b-link);outline-offset:1px}
+  #baseApp .bm-form textarea{min-height:96px;resize:vertical}
+  #baseApp .bm-form .req{color:var(--b-red)}
+  #baseApp .bm-prio{display:flex;gap:8px;flex-wrap:wrap}
+  #baseApp .bm-prio label{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--b-input);border-radius:8px;padding:8px 12px;margin:0;cursor:pointer;color:var(--b-ink);font-weight:500}
+  #baseApp .bm-prio input{width:auto;margin:0}
+  #baseApp .bm-inline{display:flex;gap:8px}
+  #baseApp .bm-inline select,#baseApp .bm-inline input{flex:1}
+  #baseApp .bm-kv{display:grid;grid-template-columns:170px 1fr;gap:9px 14px;font-size:14px;margin:0}
+  #baseApp .bm-kv dt{color:var(--b-dim)} #baseApp .bm-kv dd{margin:0;word-break:break-word}
+  #baseApp .bm-tl{list-style:none;margin:0;padding:0}
+  #baseApp .bm-tl li{padding:10px 0;border-bottom:1px solid var(--b-line2)} #baseApp .bm-tl li:last-child{border-bottom:0}
+  #baseApp .bm-tl .k{font-size:12px;font-weight:600;color:var(--b-dim);text-transform:uppercase;letter-spacing:.5px}
+  #baseApp .bm-tl .m{font-size:12.5px;color:var(--b-dim)}
+  #baseApp .bm-select{width:auto;max-width:none;cursor:pointer}
   #baseApp .modesw{background:var(--b-seg);border:1px solid var(--b-line);margin-left:0}
   #baseApp .modesw .seg{color:var(--b-dim);font:500 13px var(--body);letter-spacing:0;padding:7px 14px}
   #baseApp .modesw .seg.on{background:var(--b-pri);color:#fff}
@@ -758,6 +728,14 @@
   #baseApp .bm-pill.RED{background:var(--b-red-bg);color:var(--b-red)}
   #baseApp .bm-pill.AMBER{background:var(--b-amber-bg);color:var(--b-amber)}
   #baseApp .bm-pill.GREY{background:var(--b-grey-bg);color:var(--b-grey)}
+  #baseApp .bm-pill.SENT{background:var(--b-grey-bg);color:var(--b-link)}
+  #baseApp .bm-pill.CLOSED{background:var(--b-grey-bg);color:var(--b-dim)}
+  #baseApp .bm-table tr.bm-grp td{background:var(--b-th);color:var(--b-dim);font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.6px;padding:10px 14px;cursor:default}
+  #baseApp .bm-table tbody tr.bm-grp:hover td{background:var(--b-th)}
+  #baseApp .bm-table tr.bm-grp.g0 td{color:var(--b-red);border-top:2px solid var(--b-red)}
+  #baseApp .bm-table tr.bm-grp.g1 td{color:var(--b-amber)}
+  #baseApp .bm-table tr.bm-grp td span{font-weight:500;margin-left:6px;color:var(--b-dim)}
+  #baseApp .bm-table tr.bm-done td{opacity:.6}
   #baseApp .bm-role{display:inline-block;font-size:12px;padding:2px 9px;border-radius:6px;background:var(--b-grey-bg);color:var(--b-grey);white-space:nowrap}
   #baseApp .bm-search{width:100%;max-width:460px;background:var(--b-card);border:1px solid var(--b-input);border-radius:8px;padding:10px 12px;font:14px var(--body);color:var(--b-ink);margin-bottom:14px}
   #baseApp .bm-search:focus{outline:2px solid var(--b-link);outline-offset:1px}
@@ -920,7 +898,7 @@
   body.advlight .net-node text{fill:#1c2431;stroke:#f4f6f9}
   body.advlight .net-tip{background:#fff;color:var(--ink)}
   body.advlight .net-tip b{color:var(--ink)}
-  body.advlight .ovhead h1,body.advlight .sttitle{color:var(--ink)}
+  body.advlight .ovhead h1{color:var(--ink)}
   body.advlight .netmapbox{background:#e9edf1}
   body.advlight #nmap:after{display:none}
   body.advlight .netmaptitle,body.advlight .netmapmeta,body.advlight .netmapempty,body.advlight .netmaplegend,
@@ -935,6 +913,8 @@
     #baseApp .bm-top{padding:10px 16px;flex-wrap:wrap} #baseApp .bm-demo{display:none}
     #baseApp .bm-themebtn{margin-left:auto}
     #baseApp .bm-wrap{padding:18px 16px 40px} #baseApp .bm-grid{grid-template-columns:1fr}
+    #baseApp .bm-form .row{grid-template-columns:1fr} #baseApp .bm-kv{grid-template-columns:1fr;gap:2px}
+    #baseApp .bm-kv dd{margin-bottom:8px}
     #baseApp .bm-map{height:320px}
     #baseApp .bm-chips{grid-template-columns:repeat(2,1fr)}
     #baseApp .bm-table .hm{display:none}
@@ -959,7 +939,6 @@
     <span class="navbtn" id="navTickets" onclick="showTickets()">&#9776;&nbsp; Case centre</span>
     <span class="navbtn" id="navCase" onclick="SEL&&selectCase(SEL)">&#9673;&nbsp; Case view</span>
     <span class="navbtn" id="navNet" onclick="showNetwork()">&#9096;&nbsp; Mule Network</span>
-    <span class="navbtn adv" id="navStudio" onclick="showStudio()">&#9670;&nbsp; Case Studio</span>
   </div>
   <div class="chips" id="chips"><span class="chip">initialising&hellip;</span></div>
   <span class="atgl" id="alertToggle" onclick="toggleAlerts()" title="auto pop-up for new urgent cases">&#128276; alerts on</span>
@@ -1012,6 +991,10 @@
 
 <div class="modal" id="muleModal" onclick="if(event.target===this)closeMule()">
   <div class="muleprof" id="muleProf"></div>
+</div>
+
+<div class="modal" id="ticketModal" onclick="if(event.target===this)closeTicketModal()">
+  <div class="muleprof" id="ticketBox" style="width:min(820px,95vw)"></div>
 </div>
 
 <div class="modal" id="resolveModal" onclick="if(event.target===this)closeResolve()">
@@ -1151,11 +1134,10 @@ function toggleRail(){ const app=document.querySelector('.app');
 }
 
 // ================= COMMAND-CENTRE OVERVIEW (landing dashboard) =================
-function setNav(){ const o=$('navOverview'),t=$('navTickets'),c=$('navCase'),s=$('navStudio');
+function setNav(){ const o=$('navOverview'),t=$('navTickets'),c=$('navCase');
   if(o)o.className='navbtn'+(VIEW==='overview'?' on':'');
   if(t)t.className='navbtn'+(VIEW==='tickets'?' on':'');
   if(c)c.className='navbtn'+(VIEW==='case'?' on':'');
-  if(s)s.className='navbtn'+(VIEW==='studio'?' on':'');
   const nw=$('navNet'); if(nw)nw.className='navbtn'+(VIEW==='network'?' on':''); }
 
 // ===================== BASE MODE — same console, fewer panels (hides .adv) =====================
@@ -1169,16 +1151,25 @@ function setMode(m){
   if(m==='base'){
     if(PLAY){clearInterval(PLAY);PLAY=null;REPLAYING=false;}   // the console is hidden: stop replay + voice
     try{stopVoice();}catch(e){}
+    try{closeMule();dismissUrgent();closeResolve();closeTicketModal();}catch(e){}   // no Advanced pop-up left floating over Base
+    clearTimeout(BM_OPENMULE_T);
     if(prev!=='base'){ BM_HIST=[];   // mirror the console: same case open, else the overview
-      if(VIEW==='case'&&SEL){BM_VIEW='case';BM_ACK=SEL;} else {BM_VIEW='home';BM_ACK=null;BM_MULE=null;} }
-    if(BM_VIEW==='case'&&BM_ACK) baseCase(BM_ACK,true); else if(BM_VIEW==='mule'&&BM_MULE) baseMule(BM_MULE,true); else baseHome(true);
+      if(VIEW==='case'&&SEL){BM_VIEW='case';BM_ACK=SEL;}
+      else if(VIEW==='tickets'&&TK_TAB==='mules'){BM_VIEW='db';}      // Case Centre mule database -> Base mule database
+      else if(VIEW==='tickets'){BM_VIEW='tickets';}                    // Case Centre incidents -> Base tickets
+      else {BM_VIEW='home';BM_ACK=null;BM_MULE=null;} }
+    if(BM_VIEW==='case'&&BM_ACK) baseCase(BM_ACK,true); else if(BM_VIEW==='mule'&&BM_MULE) baseMule(BM_MULE,true);
+    else if(BM_VIEW==='db') baseDb(true); else if(BM_VIEW==='tickets') baseTickets(true);
+    else if(BM_VIEW==='ticket'&&BM_TKACK) baseTicket(BM_TKACK,true); else if(BM_VIEW==='newticket') baseNewTicket(true); else baseHome(true);
   } else {
     bmDropMap();
     if(prev==='base'){   // the console was hidden, so redraw its current view (maps need a real size)
       if(BM_VIEW==='case'&&BM_ACK){SEL=BM_ACK;VIEW='case';}   // keep the same case open across the switch
+      if(BM_VIEW==='db'){VIEW='tickets';TK_TAB='mules';}          // Base mule database -> Case Centre mule database
+      if(['tickets','ticket','newticket'].includes(BM_VIEW)){VIEW='tickets';TK_TAB='inc';}   // Base tickets -> Case Centre incidents
       if(VIEW==='case'&&SEL) selectCase(SEL); else if(VIEW==='tickets') showTickets();
-      else if(VIEW==='network') showNetwork(); else if(VIEW==='studio') showStudio(); else showOverview();
-      if(BM_VIEW==='mule'&&BM_MULE) setTimeout(()=>openMule(BM_MULE),300);   // same mule, as the console's profile
+      else if(VIEW==='network') showNetwork(); else showOverview();
+      if(BM_VIEW==='mule'&&BM_MULE) BM_OPENMULE_T=setTimeout(()=>{ if(UIMODE!=='base')openMule(BM_MULE); },300);   // same mule, as the console's profile
     }
   }
 }
@@ -1201,7 +1192,17 @@ function advToggleTheme(){ ADV_THEME=ADV_THEME==='light'?'dark':'light'; try{loc
 //   Overview  = risk map + "Cases needing action" + "Mule register" (cases grouped under each suspected mule)
 //   Complaint = map of the money path (numbered, in order) + one action + four plain answers
 //   Mule file = one suspected mule: identity, ATMs it used, every case it is linked to, linked accounts, activity
-let BM_VIEW='home', BM_ACK=null, BM_MULE=null, BM_MAP=null, BM_Q='', BM_TAB='cases', BM_NET=null, BM_NAMES={}, BM_HIST=[], BM_TXALL=null;
+let BM_VIEW='home', BM_ACK=null, BM_MULE=null, BM_MAP=null, BM_Q='', BM_NET=null, BM_NAMES={}, BM_HIST=[], BM_TXALL=null;
+let BM_DBQ='', BM_DBSORT='cases', MULE_DB=null;   // mule database (all suspected mules, /mules)
+let BM_OPENMULE_T=null;   // pending "open this mule in Advanced" after a mode switch
+let BM_TK={};   // complaint -> Case Centre status, so handled cases stop saying "Freeze now"
+async function bmLoadTickets(){ try{ const l=await jget('/tickets'); const m={}; l.forEach(t=>m[t.ack_no]=t.status); BM_TK=m; }catch(e){} }
+// ONE ordering everywhere: freeze now -> watch -> no action yet -> freeze sent -> closed
+function bmState(ack, tier){ const st=BM_TK[ack];
+  if(st==='RESOLVED'||st==='CLOSED') return {key:'CLOSED',label:'Closed',rank:4};
+  if(st==='FREEZE_SENT') return {key:'SENT',label:'Freeze sent',rank:3};
+  return tier==='RED'?{key:'RED',label:'Freeze now',rank:0}:tier==='AMBER'?{key:'AMBER',label:'Watch',rank:1}:{key:'GREY',label:'No action yet',rank:2}; }
+const BM_GROUP=['Freeze now &mdash; act on these first','Watch','No action yet','Already handled (freeze sent or closed)'];
 let BM_THEME=(()=>{try{return localStorage.getItem('themeBase')||'light';}catch(e){return 'light';}})();
 const BM_TIER={RED:'Freeze now',AMBER:'Watch',GREY:'No action yet'};
 const BM_TYPE={fast_fanout:'Split across many accounts',layered:'Passed along a chain of accounts',
@@ -1235,11 +1236,14 @@ function bmShell(){ const a=$('baseApp'); if(!a)return null;
   if(!$('bmMain')) a.innerHTML=`<div class="bm-top">
       <div class="bm-brand">Mule Connection<small>Cyber-fraud cash-out alerts &middot; Pune</small></div>
       <span class="bm-demo">Synthetic demo data</span>
+      <button class="bm-themebtn" id="bmTkBtn" onclick="baseTickets()" title="Assigned and unassigned tickets; open a new one">&#9636; Tickets</button>
+      <button class="bm-themebtn" id="bmDbBtn" onclick="baseDb()" title="Every suspected mule account and its recent cases">&#9776; Mule database</button>
       <button class="bm-themebtn" id="bmThemeBtn" onclick="bmToggleTheme()" title="Light or dark screen"></button>
       <div class="modesw" title="Base = simple view &middot; Advanced = full analyst console">
         <span class="seg on" onclick="setMode('base')">Base</span><span class="seg" onclick="setMode('advanced')">Advanced</span></div>
     </div><main class="bm-wrap" id="bmMain"></main>`;
-  bmApplyTheme(); return $('bmMain'); }
+  bmApplyTheme(); const db=$('bmDbBtn'); if(db)db.classList.toggle('on',BM_VIEW==='db');
+  const tb=$('bmTkBtn'); if(tb)tb.classList.toggle('on',['tickets','ticket','newticket'].includes(BM_VIEW)); return $('bmMain'); }
 function bmDropMap(){ if(BM_MAP){try{BM_MAP.remove();}catch(e){}BM_MAP=null;} }
 function bmTiles(map){   // keyless Esri street map in the current theme; OpenStreetMap if Esri is unreachable
   const t=BM_THEME==='dark'?'Dark':'Light';
@@ -1252,11 +1256,13 @@ const bmIcon=(html,z)=>({icon:L.divIcon({className:'',iconSize:[0,0],html}),zInd
 function bmFocus(el){ const ll=String(el.dataset.ll||'').split(',').map(Number);
   if(BM_MAP&&ll.length===2&&!isNaN(ll[0])) BM_MAP.flyTo(ll,Math.max(BM_MAP.getZoom(),14),{duration:.8}); }
 // ---- simple back-stack (Overview -> Complaint -> Mule file -> Complaint ...) ----
-function bmPush(){ BM_HIST.push(BM_VIEW==='case'?{v:'case',id:BM_ACK}:BM_VIEW==='mule'?{v:'mule',id:BM_MULE}:{v:'home'}); if(BM_HIST.length>30)BM_HIST.shift(); }
-function bmBack(){ const s=BM_HIST.pop(); if(!s||s.v==='home')baseHome(true); else if(s.v==='case')baseCase(s.id,true); else baseMule(s.id,true); }
+function bmPush(){ BM_HIST.push(BM_VIEW==='case'?{v:'case',id:BM_ACK}:BM_VIEW==='mule'?{v:'mule',id:BM_MULE}:BM_VIEW==='ticket'?{v:'ticket',id:BM_TKACK}
+    :['db','tickets','newticket'].includes(BM_VIEW)?{v:BM_VIEW}:{v:'home'}); if(BM_HIST.length>30)BM_HIST.shift(); }
+function bmBack(){ const s=BM_HIST.pop(); if(!s||s.v==='home')baseHome(true); else if(s.v==='db')baseDb(true);
+  else if(s.v==='tickets')baseTickets(true); else if(s.v==='newticket')baseNewTicket(true); else if(s.v==='ticket')baseTicket(s.id,true); else if(s.v==='case')baseCase(s.id,true); else baseMule(s.id,true); }
 const bmBackLink=()=>`<a class="bm-back" onclick="bmBack()">&lsaquo; Back</a>`;
 
-// ================= OVERVIEW: risk map first, then cases / mule register =================
+// ================= OVERVIEW: risk map first, then the cases needing action =================
 function baseHome(top){
   const fresh=BM_VIEW!=='home'||!$('bmBody');   // the 30 s poll only refreshes the lists, it keeps the map
   BM_VIEW='home'; BM_ACK=null; BM_MULE=null; BM_HIST=[];
@@ -1270,9 +1276,8 @@ function baseHome(top){
           <div class="bm-side"><h3>Districts by predicted risk</h3><ol class="bm-areas" id="bmAreas"></ol>
             <p class="bm-note" style="margin-top:10px">Numbers on the map rank the districts. Shaded circles are the most likely ~5 km cash-out areas.</p></div></div>
       </div>
-      <div class="bm-tabs"><span class="bm-tab" id="bmTabCases" onclick="bmSetTab('cases')">Cases needing action<span id="bmNCases"></span></span>
-        <span class="bm-tab" id="bmTabMules" onclick="bmSetTab('mules')">Mule register<span id="bmNMules"></span></span></div>
-      <input id="bmSearch" class="bm-search" oninput="BM_Q=this.value;bmBody()">
+      <div class="bm-tabs"><span class="bm-tab on">Cases needing action<span id="bmNCases"></span></span></div>
+      <input id="bmSearch" class="bm-search" placeholder="Find a case by complaint number, mule name or account" oninput="BM_Q=this.value;bmBody()">
       <div class="bm-card flush" id="bmBody"></div>
       <p class="bm-foot" id="bmFoot"></p>`;
     $('bmSearch').value=BM_Q;
@@ -1280,47 +1285,237 @@ function baseHome(top){
   bmBody();
   if(!BM_MAP) bmHomeMap();
   if(top) window.scrollTo(0,0);
-  if(!BM_NET) jget('/network?limit=120').then(d=>{ BM_NET=d; (d.nodes||[]).forEach(n=>BM_NAMES[n.id]=n.codename); if(BM_VIEW==='home')bmBody(); }).catch(()=>{});
-  bmNames((QUEUE||[]).map(i=>i.top_account)).then(()=>{ if(BM_VIEW==='home'&&BM_TAB==='cases')bmBody(); });
+  bmNames((QUEUE||[]).map(i=>i.top_account)).then(()=>{ if(BM_VIEW==='home')bmBody(); });
+  bmLoadTickets().then(()=>{ if(BM_VIEW==='home')bmBody(); });
 }
-function bmSetTab(t){ BM_TAB=t; BM_Q=''; const s=$('bmSearch'); if(s)s.value=''; bmBody(); }
 function bmBody(){ const el=$('bmBody'); if(!el)return;
-  const order={RED:0,AMBER:1,GREY:2}, q=BM_Q.trim().toLowerCase();
-  const all=(QUEUE||[]).slice().sort((a,b)=>(order[a.tier]-order[b.tier])||(b.p_cashout_10m-a.p_cashout_10m));
-  const n=t=>all.filter(i=>i.tier===t).length, mules=(BM_NET&&BM_NET.nodes)||[];
-  const s=$('bmSum'); if(s)s.innerHTML=`<span class="bm-pill RED">${n('RED')} freeze now</span><span class="bm-pill AMBER">${n('AMBER')} to watch</span><span class="bm-pill GREY">${n('GREY')} no action yet</span>`;
-  $('bmNCases').textContent=`(${all.length})`; $('bmNMules').textContent=BM_NET?`(${mules.length})`:'';
-  $('bmTabCases').classList.toggle('on',BM_TAB==='cases'); $('bmTabMules').classList.toggle('on',BM_TAB==='mules');
-  $('bmSearch').placeholder=BM_TAB==='cases'?'Find a case by complaint number, mule name or account':'Find a mule by name, account, area or role';
-  const foot=$('bmFoot');
-  if(BM_TAB==='cases'){
-    const rows=q?all.filter(i=>(i.ack_no+' '+(i.top_account||'')+' '+bmName(i.top_account)+' '+(i.victim_account||'')).toLowerCase().includes(q)):all;
-    el.innerHTML=`<table class="bm-table"><thead><tr><th>Status</th><th>Complaint no.</th><th>Mule to act on</th><th class="hm">Type</th>
-        <th class="r">Amount</th><th class="hm">Filed</th><th class="r">Chance of cash-out<br>in 10 min</th><th class="hm"></th></tr></thead><tbody>`
-      +(rows.map(i=>`<tr onclick="baseCase('${i.ack_no}')">
-        <td><span class="bm-pill ${i.tier}">${BM_TIER[i.tier]||i.tier}</span></td>
-        <td class="bm-mono">${i.ack_no}</td><td>${i.top_account?bmMuleLink(i.top_account):'&mdash;'}</td>
-        <td class="hm">${esc(bmType(i.fraud_category))}</td><td class="r">${money(i.disputed_amount)}</td>
-        <td class="hm">${bmWhen(i.filed_ts)}</td><td class="r"><b>${pct(i.p_cashout_10m)}</b></td>
-        <td class="r bm-open hm">Open &rsaquo;</td></tr>`).join('')
-      ||`<tr><td colspan="8" class="bm-empty">No case matches &ldquo;${esc(BM_Q)}&rdquo;.</td></tr>`)+'</tbody></table>';
-    if(foot)foot.textContent='Most urgent first. Click a mule name to see every case linked to that account. Percentages are estimates to help you decide what to review first; they are not proof of a crime.';
-  } else {
-    if(!BM_NET){ el.innerHTML='<div class="bm-empty">Loading the mule register&hellip;</div>'; return; }
-    const alert={}; all.forEach(i=>{ const a=i.top_account; if(a&&(alert[a]==null||order[i.tier]<order[alert[a]]))alert[a]=i.tier; });
-    const rows=mules.filter(m=>!q||(m.codename+' '+m.id+' '+(m.district||'')+' '+(BM_ROLE[m.group]||'')).toLowerCase().includes(q))
-      .sort((a,b)=>(b.n_cases-a.n_cases)||(b.tainted_in-a.tainted_in));
-    el.innerHTML=`<table class="bm-table"><thead><tr><th>Mule</th><th class="hm">Role</th><th class="hm">Registered area</th>
-        <th class="r">Linked cases</th><th class="r">Stolen money received</th><th>Open alert</th><th class="hm"></th></tr></thead><tbody>`
-      +(rows.map(m=>`<tr onclick="baseMule('${m.id}')">
-        <td><span class="bm-mule">${esc(m.codename)}<small>${esc(m.id)}</small></span></td>
-        <td class="hm"><span class="bm-role">${esc(BM_ROLE[m.group]||m.group)}</span></td><td class="hm">${esc(m.district||'—')}</td>
-        <td class="r"><b>${m.n_cases}</b></td><td class="r">${money(m.tainted_in)}</td>
-        <td>${alert[m.id]?`<span class="bm-pill ${alert[m.id]}">${BM_TIER[alert[m.id]]}</span>`:'<span class="bm-note">none</span>'}</td>
-        <td class="r bm-open hm">Open file &rsaquo;</td></tr>`).join('')
-      ||`<tr><td colspan="7" class="bm-empty">No mule matches &ldquo;${esc(BM_Q)}&rdquo;.</td></tr>`)+'</tbody></table>';
-    if(foot)foot.textContent=`The ${mules.length} suspected mule accounts linked to the most complaints in the (synthetic) data, one row per account, most cases first. Open a file to see all of its cases. Roles come from simple rules about how money moves through the account. A listing is a lead for review, not proof of a crime.`;
-  }
+  const q=BM_Q.trim().toLowerCase();
+  const all=(QUEUE||[]).map(i=>Object.assign({},i,{st:bmState(i.ack_no,i.tier)}))
+    .sort((a,b)=>(a.st.rank-b.st.rank)||(b.p_cashout_10m-a.p_cashout_10m));
+  const n=k=>all.filter(i=>i.st.key===k).length, done=n('SENT')+n('CLOSED');
+  const s=$('bmSum'); if(s)s.innerHTML=`<span class="bm-pill RED">${n('RED')} freeze now</span><span class="bm-pill AMBER">${n('AMBER')} to watch</span><span class="bm-pill GREY">${n('GREY')} no action yet</span>`
+    +(done?`<span class="bm-pill SENT">${done} already handled</span>`:'');
+  const nc=$('bmNCases'); if(nc)nc.textContent=`(${all.length})`;
+  const rows=q?all.filter(i=>(i.ack_no+' '+(i.top_account||'')+' '+bmName(i.top_account)+' '+(i.victim_account||'')).toLowerCase().includes(q)):all;
+  el.innerHTML=`<table class="bm-table"><thead><tr><th>Status</th><th>Complaint no.</th><th>Mule to act on</th><th class="hm">Type</th>
+      <th class="r">Amount</th><th class="hm">Filed</th><th class="r">Chance of cash-out<br>in 10 min</th><th class="hm"></th></tr></thead><tbody>`
+    +(rows.map((i,k)=>{ const g=Math.min(i.st.rank,3), head=(k===0||Math.min(rows[k-1].st.rank,3)!==g)
+        ?`<tr class="bm-grp g${g}"><td colspan="8">${BM_GROUP[g]} <span>${rows.filter(x=>Math.min(x.st.rank,3)===g).length}</span></td></tr>`:'';
+      return head+`<tr class="${i.st.rank>=3?'bm-done':''}" onclick="baseCase('${i.ack_no}')">
+      <td><span class="bm-pill ${i.st.key}">${i.st.label}</span></td>
+      <td class="bm-mono">${i.ack_no}</td><td>${i.top_account?bmMuleLink(i.top_account):'&mdash;'}</td>
+      <td class="hm">${esc(bmType(i.fraud_category))}</td><td class="r">${money(i.disputed_amount)}</td>
+      <td class="hm">${bmWhen(i.filed_ts)}</td><td class="r"><b>${pct(i.p_cashout_10m)}</b></td>
+      <td class="r bm-open hm">Open &rsaquo;</td></tr>`; }).join('')
+    ||`<tr><td colspan="8" class="bm-empty">No case matches &ldquo;${esc(BM_Q)}&rdquo;.</td></tr>`)+'</tbody></table>';
+  const foot=$('bmFoot'); if(foot)foot.textContent='Cases to freeze first, then cases to watch; cases already handled drop to the bottom. Click a mule name to see its recent cases; the Mule database (top bar) lists every suspected mule. Percentages are estimates to help you decide what to review first; they are not proof of a crime.';
+}
+// ================= MULE DATABASE: every suspected mule (top-bar button) -> its file with recent cases =================
+async function loadMuleDb(){   // shared with the Advanced Case Centre
+  if(!MULE_DB){ MULE_DB=await jget('/mules'); (MULE_DB.mules||[]).forEach(m=>BM_NAMES[m.id]=m.codename); }
+  return MULE_DB; }
+function muleAlerts(){ const a={};   // most urgent open-case state per mule (it is the account to act on there)
+  (QUEUE||[]).forEach(i=>{ const t=i.top_account; if(!t)return; const s=bmState(i.ack_no,i.tier); if(!a[t]||s.rank<a[t].rank)a[t]=s; }); return a; }
+const muleRank=(al,id)=>al[id]&&al[id].rank<=1?al[id].rank:5;   // freeze now (0), watch (1), then everyone else
+function muleDbFilter(q, sort){ q=(q||'').trim().toLowerCase();
+  const rows=((MULE_DB&&MULE_DB.mules)||[]).filter(m=>!q||(m.codename+' '+m.id+' '+(m.district||'')+' '+(m.bank||'')+' '+(BM_ROLE[m.role]||m.role)).toLowerCase().includes(q));
+  const by={cases:(a,b)=>(b.n_cases-a.n_cases)||(b.tainted_in-a.tainted_in),
+            recent:(a,b)=>String(b.last_case||'').localeCompare(String(a.last_case||'')),
+            money:(a,b)=>b.tainted_in-a.tainted_in};
+  const al=muleAlerts();
+  return rows.sort((a,b)=>(muleRank(al,a.id)-muleRank(al,b.id))||(by[sort]||by.cases)(a,b)); }
+async function baseDb(noPush){
+  if(!noPush&&BM_VIEW!=='db') bmPush();
+  BM_VIEW='db'; BM_ACK=null; BM_MULE=null; bmDropMap();
+  const m=bmShell(); if(!m)return; window.scrollTo(0,0);
+  m.innerHTML=bmBackLink()+`<h1>Mule database</h1>
+    <p class="bm-sub" id="bmDbSum">Loading&hellip;</p>
+    <div class="bm-tools"><input id="bmDbQ" class="bm-search" placeholder="Search by mule name, account, area, bank or role" oninput="BM_DBQ=this.value;bmDbRows()">
+      <select id="bmDbSort" class="bm-search bm-select" onchange="BM_DBSORT=this.value;bmDbRows()">
+        <option value="cases">Sort: most linked cases</option><option value="recent">Sort: most recent case</option><option value="money">Sort: most stolen money</option></select></div>
+    <div class="bm-card flush" id="bmDbBody"><div class="bm-empty">Loading the mule database&hellip;</div></div>
+    <p class="bm-foot">Every account that received stolen money in a complaint (synthetic data), one row per account. Click a mule to see its recent cases. Roles come from simple rules about how money moves through the account. A listing is a lead for review, not proof of a crime.</p>`;
+  $('bmDbQ').value=BM_DBQ; $('bmDbSort').value=BM_DBSORT;
+  try{ await Promise.all([loadMuleDb(), bmLoadTickets()]); }catch(e){ const x=$('bmDbBody'); if(x)x.innerHTML='<div class="bm-empty">Could not load the mule database. Please try again.</div>'; return; }
+  if(BM_VIEW==='db') bmDbRows();
+}
+function bmDbRows(){ const el=$('bmDbBody'); if(!el||!MULE_DB)return;
+  const all=MULE_DB.mules||[], alert=muleAlerts(), rows=muleDbFilter(BM_DBQ,BM_DBSORT);
+  const nr=k=>all.filter(m=>muleRank(alert,m.id)===k).length;
+  const sum=$('bmDbSum'); if(sum)sum.innerHTML=`<span class="bm-pill RED">${nr(0)} to freeze now</span><span class="bm-pill AMBER">${nr(1)} to watch</span> &middot; <b>${all.length}</b> suspected mule accounts &middot; <b>${all.filter(m=>m.n_cases>1).length}</b> linked to more than one complaint`
+    +(BM_DBQ.trim()?` &middot; showing <b>${rows.length}</b>`:'');
+  el.innerHTML=`<table class="bm-table"><thead><tr><th>Mule</th><th class="hm">Role</th><th class="hm">Registered area</th><th class="hm">Bank</th>
+      <th class="r">Linked cases</th><th class="r">Stolen money received</th><th>Most recent case</th><th>Open alert</th><th class="hm"></th></tr></thead><tbody>`
+    +(rows.map((m,k)=>{ const g=muleRank(alert,m.id), head=(k===0||muleRank(alert,rows[k-1].id)!==g)
+        ?`<tr class="bm-grp g${g===5?2:g}"><td colspan="9">${g===0?'Freeze now &mdash; accounts to act on first':g===1?'Watch':'All other suspected mules'} <span>${rows.filter(x=>muleRank(alert,x.id)===g).length}</span></td></tr>`:'';
+      return head+`<tr onclick="baseMule('${m.id}')">
+      <td><span class="bm-mule">${esc(m.codename)}<small>${esc(m.id)}</small></span></td>
+      <td class="hm"><span class="bm-role">${esc(BM_ROLE[m.role]||m.role)}</span></td><td class="hm">${esc(m.district||'—')}</td><td class="hm">${esc(m.bank||'—')}</td>
+      <td class="r"><b>${m.n_cases}</b></td><td class="r">${money(m.tainted_in)}</td><td>${m.last_case?bmDate(m.last_case):'—'}</td>
+      <td>${alert[m.id]?`<span class="bm-pill ${alert[m.id].key}">${alert[m.id].label}</span>`:'<span class="bm-note">none</span>'}</td>
+      <td class="r bm-open hm">Recent cases &rsaquo;</td></tr>`; }).join('')
+    ||`<tr><td colspan="9" class="bm-empty">No mule matches &ldquo;${esc(BM_DBQ)}&rdquo;.</td></tr>`)+'</tbody></table>';
+}
+// ================= TICKETS: assigned (default) / unassigned / all, one ticket, open a ticket by hand =================
+let BM_TKTAB='assigned', BM_TKQ='', BM_TKLIST=null, BM_TKACK=null;
+const BM_PRIO={P1:{cls:'RED',label:'P1 · urgent'},P2:{cls:'AMBER',label:'P2 · high'},P3:{cls:'GREY',label:'P3 · normal'}};
+const BM_FTYPES=[['upi_fraud','UPI / payment fraud'],['investment_scam','Investment scam'],['job_scam','Job scam'],
+  ['kyc_refund_scam','KYC / refund scam'],['loan_app','Loan app fraud'],['other','Other']];
+const BM_OPEN_ST=['NEW','ASSIGNED','INVESTIGATING','FREEZE_SENT'];
+const BM_OUTCOME={FROZEN:'account frozen in time',RECOVERED:'money recovered',CASHED_OUT:'cash withdrawn before a freeze',FALSE_POSITIVE:'false alarm'};
+const bmTkType=t=>{ const f=BM_FTYPES.find(x=>x[0]===t); return f?f[1]:bmType(t); };
+const bmTs=s=>bmWhen(String(s||'').replace(' ','T'));
+async function bmLoadTicketList(){ BM_TKLIST=await jget('/tickets'); BM_TKLIST.forEach(t=>BM_TK[t.ack_no]=t.status);
+  await bmNames(BM_TKLIST.map(t=>t.suspect_account).filter(Boolean)); return BM_TKLIST; }
+// shared with Advanced: create a ticket from a form whose fields are <pfx>Title, <pfx>Ack, ... ; returns the API reply
+async function tkCreate(pfx, actor){
+  const v=id=>(($(pfx+id)||{}).value||'').trim();
+  let sus=v('Sus'); const hit=((MULE_DB&&MULE_DB.mules)||[]).find(x=>x.codename.toLowerCase()===sus.toLowerCase()); if(hit)sus=hit.id;
+  const pri=(document.querySelector(`input[name=${pfx}Pri]:checked`)||$(pfx+'Pri')||{}).value||'P2';
+  const body={title:v('Title'), ack_no:v('Ack')||null, fraud_category:v('Type')||'other', disputed_amount:parseFloat(v('Amt'))||0,
+    victim_account:v('Vic')||null, suspect_account:sus||null, assignee:v('Asg')||null, priority:pri, description:v('Desc')||null, actor};
+  if(!body.title) return {detail:'Please give the ticket a title.'};
+  try{ return await jpostB('/tickets',body); }catch(e){ return {detail:'Could not save. Please try again.'}; } }
+// shared with Advanced: assign / status / note / resolve on the ticket form whose fields are <pfx>Asg, <pfx>St, <pfx>Note, <pfx>Rec
+async function tkAction(kind, ack, pfx, actor){
+  const enc=encodeURIComponent(ack), a=encodeURIComponent(actor);
+  try{
+    if(kind==='assign'){ const w=$(pfx+'Asg').value; return await jpatch(`/tickets/${enc}?assignee=${encodeURIComponent(w==='Unassigned'?'':w)}&actor=${a}`); }
+    if(kind==='status') return await jpatch(`/tickets/${enc}?status=${$(pfx+'St').value}&actor=${a}`);
+    if(kind==='note'){ const txt=($(pfx+'Note').value||'').trim(); if(!txt) return {detail:'Write a note first.'};
+      return await jpostB(`/tickets/${enc}/note`,{text:txt,actor}); }
+    return await jpostB(`/tickets/${enc}/resolve`,{outcome:kind,recovered_amount:parseFloat(($(pfx+'Rec')||{}).value)||0,actor});
+  }catch(e){ return {detail:'Could not save. Please try again.'}; } }
+const tkErr=r=>!r?'Could not save.':typeof r.detail==='string'?r.detail:'Please check the form (for example, the amount must be a number).';
+
+async function baseTickets(noPush){
+  if(!noPush&&BM_VIEW!=='tickets') bmPush();
+  BM_VIEW='tickets'; BM_ACK=null; BM_MULE=null; bmDropMap();
+  const m=bmShell(); if(!m)return; window.scrollTo(0,0);
+  m.innerHTML=bmBackLink()+`<h1>Tickets</h1>
+    <p class="bm-sub" id="bmTkSum">Loading&hellip;</p>
+    <div class="bm-tools"><div class="bm-seg" id="bmTkSeg"></div>
+      <input id="bmTkQ" class="bm-search" placeholder="Search ticket, complaint no., mule, officer or type" oninput="BM_TKQ=this.value;bmTkRows()">
+      <button class="bm-btn" onclick="baseNewTicket()">+ New ticket</button></div>
+    <div class="bm-flash" id="bmTkFlash"></div>
+    <div class="bm-card flush" id="bmTkBody"><div class="bm-empty">Loading tickets&hellip;</div></div>
+    <p class="bm-foot">Shows your assigned tickets first; open <b>Unassigned</b> to pick up work. Open tickets come before closed ones, most urgent first.</p>`;
+  $('bmTkQ').value=BM_TKQ;
+  try{ await bmLoadTicketList(); }catch(e){ const x=$('bmTkBody'); if(x)x.innerHTML='<div class="bm-empty">Could not load tickets. Please try again.</div>'; return; }
+  if(BM_VIEW==='tickets') bmTkRows();
+}
+function bmTkSet(tab){ BM_TKTAB=tab; bmTkRows(); }
+function bmTkRows(){ const el=$('bmTkBody'); if(!el||!BM_TKLIST)return;
+  const all=BM_TKLIST, isOpen=t=>BM_OPEN_ST.includes(t.status), asg=all.filter(t=>t.assignee), una=all.filter(t=>!t.assignee);
+  const seg=$('bmTkSeg'); if(seg)seg.innerHTML=[['assigned','Assigned',asg],['unassigned','Unassigned',una],['all','All',all]]
+    .map(([k,l,a])=>`<span class="${BM_TKTAB===k?'on':''}" onclick="bmTkSet('${k}')">${l}<b>${a.length}</b></span>`).join('');
+  const sum=$('bmTkSum'); if(sum)sum.innerHTML=`<b>${all.filter(isOpen).length}</b> open tickets &middot; <b>${asg.filter(isOpen).length}</b> assigned &middot; <b>${una.filter(isOpen).length}</b> waiting for an officer`
+    +(all.some(t=>t.source==='manual')?` &middot; <b>${all.filter(t=>t.source==='manual').length}</b> opened by hand`:'');
+  const q=BM_TKQ.trim().toLowerCase(), pr={P1:0,P2:1,P3:2};
+  const rows=(BM_TKTAB==='assigned'?asg:BM_TKTAB==='unassigned'?una:all)
+    .filter(t=>!q||(t.ack_no+' '+(t.title||'')+' '+bmTkType(t.fraud_category)+' '+(t.assignee||'')+' '+(t.suspect_account||'')+' '+bmName(t.suspect_account)+' '+(BM_STATUS[t.status]||'')).toLowerCase().includes(q))
+    .sort((a,b)=>(isOpen(b)-isOpen(a))||((pr[a.priority]??3)-(pr[b.priority]??3))||String(b.updated||'').localeCompare(String(a.updated||'')));
+  el.innerHTML=rows.length?`<table class="bm-table"><thead><tr><th>Priority</th><th>Ticket</th><th class="hm">Mule / suspect</th><th class="r hm">Amount</th>
+      <th>${BM_TKTAB==='unassigned'?'Assign to':'Assigned to'}</th><th>Status</th><th class="hm">Updated</th></tr></thead><tbody>`
+    +rows.map(t=>{ const pp=BM_PRIO[t.priority]||BM_PRIO.P3;
+      return `<tr class="${isOpen(t)?'':'bm-done'}" onclick="baseTicket('${t.ack_no}')">
+      <td><span class="bm-pill ${pp.cls}">${pp.label}</span></td>
+      <td><span class="bm-cell"><b>${esc(t.source==='manual'?t.title:bmTkType(t.fraud_category))}</b><small>${esc(t.ack_no)}${t.source==='manual'?' &middot; opened by hand':''}</small></span></td>
+      <td class="hm">${t.suspect_account?bmMuleLink(t.suspect_account):'&mdash;'}</td>
+      <td class="r hm">${money(t.disputed_amount||0)}</td>
+      <td>${t.assignee?esc(t.assignee):`<select class="bm-mini" onclick="event.stopPropagation()" onchange="bmAssign('${t.ack_no}',this.value)"><option value="">Assign to&hellip;</option>${ANALYSTS.map(a=>`<option>${esc(a)}</option>`).join('')}</select>`}</td>
+      <td>${esc(BM_STATUS[t.status]||t.status)}${t.outcome?`<small class="bm-note" style="display:block">${esc(BM_OUTCOME[t.outcome]||t.outcome)}</small>`:''}</td>
+      <td class="hm">${bmTs(t.updated)}</td></tr>`; }).join('')+'</tbody></table>'
+    :`<div class="bm-empty">${q?`No ticket matches &ldquo;${esc(BM_TKQ)}&rdquo;.`
+      :BM_TKTAB==='assigned'?'No tickets are assigned yet. Open <b>Unassigned</b> to pick one up, or create a new ticket.'
+      :BM_TKTAB==='unassigned'?'Every ticket has an officer. Nothing is waiting.':'No tickets yet.'}</div>`;
+}
+async function bmAssign(ack, who){ if(!who)return;
+  const f=$('bmTkFlash');
+  let r; try{ r=await jpatch(`/tickets/${encodeURIComponent(ack)}?assignee=${encodeURIComponent(who)}&actor=${encodeURIComponent('officer (Base)')}`); }catch(e){ r=null; }
+  if(!r||r.detail){ if(f){f.className='bm-flash err';f.textContent='Could not assign. Please try again.';} return; }
+  const i=(BM_TKLIST||[]).findIndex(x=>x.ack_no===ack); if(i>=0){ BM_TKLIST[i]=r; BM_TK[ack]=r.status; }
+  if(f){f.className='bm-flash ok';f.textContent=`${ack} assigned to ${who}. It is now under Assigned.`;}
+  bmTkRows(); }
+async function baseTicket(ack, noPush){
+  if(!noPush&&!(BM_VIEW==='ticket'&&BM_TKACK===ack)) bmPush();
+  BM_VIEW='ticket'; BM_TKACK=ack; BM_ACK=null; BM_MULE=null; bmDropMap();
+  const m=bmShell(); if(!m)return; window.scrollTo(0,0);
+  m.innerHTML=bmBackLink()+`<div class="bm-load">Loading ticket ${esc(ack)}&hellip;</div>`;
+  let t; try{ t=await jget('/tickets/'+encodeURIComponent(ack)); }catch(e){ t=null; }
+  if(BM_VIEW!=='ticket'||BM_TKACK!==ack)return;
+  if(!t||t.detail){ m.innerHTML=bmBackLink()+`<div class="bm-load">${esc((t&&t.detail)||'Could not load this ticket.')}</div>`; return; }
+  BM_TK[ack]=t.status; if(t.suspect_account) await bmNames([t.suspect_account]);
+  const pp=BM_PRIO[t.priority]||BM_PRIO.P3, open=BM_OPEN_ST.includes(t.status), forecast=t.source!=='manual';
+  const row=(k,v)=>v?`<dt>${k}</dt><dd>${v}</dd>`:'';
+  m.innerHTML=bmBackLink()+`
+    <h1>${esc(forecast?bmTkType(t.fraud_category):t.title)}<small>${esc(t.ack_no)}</small></h1>
+    <p class="bm-meta"><span class="bm-pill ${pp.cls}">${pp.label}</span> Status <b>${esc(BM_STATUS[t.status]||t.status)}</b> &middot; Assigned to <b>${esc(t.assignee||'nobody yet')}</b>
+      &middot; Opened <b>${bmTs(t.created)}</b> &middot; Updated ${bmTs(t.updated)}</p>
+    ${forecast?`<div class="bm-action ${open&&t.tier==='RED'?'RED':open&&t.tier==='AMBER'?'AMBER':''}"><div class="t">This ticket is a complaint the system is tracking</div>
+      <div class="s">The complaint page shows where the money went, the cash-out forecast and the freeze request.</div>
+      <div class="bm-btns"><button class="bm-btn" onclick="baseCase('${t.ack_no}')">Open forecast and money trail &rsaquo;</button></div></div>`:''}
+    <div class="bm-grid">
+      <div class="bm-card"><h2>Details</h2><dl class="bm-kv">
+        ${row('Ticket / complaint no.',esc(t.ack_no))}${row('Type',esc(bmTkType(t.fraud_category)))}${row('Amount',money(t.disputed_amount||0))}
+        ${row('Victim account',t.victim_account?esc(t.victim_account):'')}
+        ${row('Mule / suspect',t.suspect_account?bmMuleInline(t.suspect_account)+' ('+esc(t.suspect_account)+')':'')}
+        ${row('Source',forecast?'Forecast queue (complaint)':'Opened by hand')}
+        ${row('Outcome',t.outcome?esc(BM_OUTCOME[t.outcome]||t.outcome)+(t.recovered_amount?' &middot; '+money(t.recovered_amount)+' recovered':''):'')}
+        ${row('Description',t.description?esc(t.description).replace(/\n/g,'<br>'):'')}
+      </dl></div>
+      <div class="bm-card bm-form" style="max-width:none"><h2>Manage</h2>
+        <label>Assigned officer</label>
+        <div class="bm-inline"><select id="bmTkAsg">${['Unassigned',...ANALYSTS].map(a=>`<option ${a===(t.assignee||'Unassigned')?'selected':''}>${esc(a)}</option>`).join('')}</select>
+          <button class="bm-btn ghost" onclick="bmTkDo('assign','${t.ack_no}')">Save</button></div>
+        <label>Status</label>
+        <div class="bm-inline"><select id="bmTkSt">${Object.keys(BM_STATUS).map(k=>`<option value="${k}" ${k===t.status?'selected':''}>${BM_STATUS[k]}</option>`).join('')}</select>
+          <button class="bm-btn ghost" onclick="bmTkDo('status','${t.ack_no}')">Save</button></div>
+        <label>Add a note</label><textarea id="bmTkNote" placeholder="What you found, what you did, what happens next"></textarea>
+        <div class="bm-btns" style="margin-top:8px"><button class="bm-btn ghost" onclick="bmTkDo('note','${t.ack_no}')">Add note</button></div>
+        ${open?`<label>Close with the real outcome</label><input id="bmTkRec" type="number" min="0" placeholder="₹ recovered (optional)">
+        <div class="bm-btns" style="margin-top:8px">
+          <button class="bm-btn" onclick="bmTkDo('FROZEN','${t.ack_no}')">Frozen in time</button><button class="bm-btn" onclick="bmTkDo('RECOVERED','${t.ack_no}')">Money recovered</button>
+          <button class="bm-btn ghost" onclick="bmTkDo('CASHED_OUT','${t.ack_no}')">Cashed out (missed)</button><button class="bm-btn ghost" onclick="bmTkDo('FALSE_POSITIVE','${t.ack_no}')">False alarm</button></div>`:''}
+        <div class="bm-flash" id="bmTkFlash"></div>
+      </div>
+    </div>
+    <div class="bm-card"><h2>History</h2><ul class="bm-tl">${(t.timeline||[]).map(e=>`<li><div class="k">${esc(e.kind)}</div><div>${esc(e.detail)}</div>
+      <div class="m">${esc(e.actor)} &middot; ${esc(e.ts)}</div></li>`).join('')||'<li class="bm-note">No activity yet.</li>'}</ul></div>`;
+}
+async function bmTkDo(kind, ack){
+  const r=await tkAction(kind, ack, 'bmTk', 'officer (Base)');
+  if(!r||r.detail){ const f=$('bmTkFlash'); if(f){f.className='bm-flash err';f.textContent=tkErr(r);} return; }
+  BM_TKLIST=null; baseTicket(ack,true); }
+async function baseNewTicket(noPush){
+  if(!noPush&&BM_VIEW!=='newticket') bmPush();
+  BM_VIEW='newticket'; BM_ACK=null; BM_MULE=null; bmDropMap();
+  const m=bmShell(); if(!m)return; window.scrollTo(0,0);
+  m.innerHTML=bmBackLink()+`<h1>New ticket</h1>
+    <p class="bm-sub">Open a ticket for a new complaint or lead. It is saved to the Case Centre, so Advanced sees it too.</p>
+    <div class="bm-card bm-form">
+      <label for="ntTitle">Title <span class="req">*</span></label><input id="ntTitle" maxlength="140" placeholder="e.g. UPI fraud reported at Hadapsar PS, ₹45,000">
+      <div class="row"><div><label for="ntAck">Complaint / acknowledgement no.</label><input id="ntAck" maxlength="40" placeholder="leave empty to create one"></div>
+        <div><label for="ntType">Type of fraud</label><select id="ntType">${BM_FTYPES.map(([k,l])=>`<option value="${k}">${l}</option>`).join('')}</select></div></div>
+      <div class="row"><div><label for="ntAmt">Amount lost (₹)</label><input id="ntAmt" type="number" min="0" step="1" placeholder="0"></div>
+        <div><label for="ntAsg">Assign to</label><select id="ntAsg"><option value="">Unassigned</option>${ANALYSTS.map(a=>`<option>${esc(a)}</option>`).join('')}</select></div></div>
+      <div class="row"><div><label for="ntVic">Victim account</label><input id="ntVic" maxlength="40" placeholder="optional"></div>
+        <div><label for="ntSus">Suspected mule account</label><input id="ntSus" list="bmMuleList" maxlength="60" placeholder="account or mule name (optional)"><datalist id="bmMuleList"></datalist></div></div>
+      <label>Priority</label>
+      <div class="bm-prio">${Object.entries(BM_PRIO).map(([k,v])=>`<label><input type="radio" name="ntPri" value="${k}" ${k==='P2'?'checked':''}> ${v.label}</label>`).join('')}</div>
+      <label for="ntDesc">Description</label><textarea id="ntDesc" maxlength="2000" placeholder="What the victim reported, transaction details, anything the next officer needs"></textarea>
+      <div class="bm-btns" style="margin-top:16px"><button class="bm-btn" id="ntGo" onclick="bmCreateTicket()">Create ticket</button><button class="bm-btn ghost" onclick="bmBack()">Cancel</button></div>
+      <div class="bm-flash" id="ntFlash"></div>
+    </div>`;
+  loadMuleDb().then(()=>{ const dl=$('bmMuleList'); if(dl)dl.innerHTML=(MULE_DB.mules||[]).map(x=>`<option value="${esc(x.id)}">${esc(x.codename)}</option>`).join(''); }).catch(()=>{});
+  const t=$('ntTitle'); if(t)t.focus();
+}
+async function bmCreateTicket(){
+  const f=$('ntFlash'), btn=$('ntGo'); btn.disabled=true; f.className='bm-flash'; f.textContent='Saving…';
+  const r=await tkCreate('nt','officer (Base)'); btn.disabled=false;
+  if(!r||r.detail){ f.className='bm-flash err'; f.textContent=tkErr(r); return; }
+  BM_TKLIST=null; BM_TKTAB=r.assignee?'assigned':'unassigned';
+  baseTicket(r.ack_no,true);   // Back from the new ticket returns to the list, not to the empty form
 }
 function bmHomeMap(){
   const el=$('bmHomeMap'); if(!el||typeof L==='undefined'||!HOT)return;
@@ -1527,7 +1722,7 @@ async function baseMule(id, noPush){
   BM_VIEW='mule'; BM_MULE=id; BM_ACK=null; bmDropMap();
   const m=bmShell(); if(!m)return; window.scrollTo(0,0);
   m.innerHTML=bmBackLink()+`<div class="bm-load">Loading the file for ${esc(bmName(id))}&hellip;</div>`;
-  let d; try{ d=await jget('/account/'+encodeURIComponent(id)+'?limit=2000'); }
+  let d; try{ [d]=await Promise.all([jget('/account/'+encodeURIComponent(id)+'?limit=2000'), bmLoadTickets()]); }
   catch(e){ m.innerHTML=bmBackLink()+'<div class="bm-load">Could not load this file. Please try again.</div>'; return; }
   if(BM_VIEW!=='mule'||BM_MULE!==id)return;
   if(!d||d.detail){ m.innerHTML=bmBackLink()+`<div class="bm-load">No record found for ${esc(id)}.</div>`; return; }
@@ -1543,14 +1738,18 @@ async function baseMule(id, noPush){
   const atms={}; cash.forEach(t=>{ if(!t.atm_id)return; const a=atms[t.atm_id]||(atms[t.atm_id]={id:t.atm_id,n:0,stolen:0,last:t.ts});
     a.n++; if(t.tainted)a.stolen++; if(t.ts>a.last)a.last=t.ts; });
   const atmList=Object.values(atms).sort((a,b)=>b.n-a.n);
-  const order={RED:0,AMBER:1,GREY:2}, open=(QUEUE||[]).filter(q=>q.top_account===id).sort((a,b)=>order[a.tier]-order[b.tier]);
+  const qs={}; (QUEUE||[]).filter(q=>q.top_account===id).forEach(q=>qs[q.ack_no]=Object.assign({},q,{st:bmState(q.ack_no,q.tier)}));
+  const open=Object.values(qs).filter(q=>q.st.rank<=1).sort((a,b)=>a.st.rank-b.st.rank);   // still needs action
   BM_TXALL=tx;
   const chip=(lab,val,hot)=>`<div class="bm-chip${hot?' hot':''}"><b>${val}</b><span>${lab}</span></div>`;
-  const caseRows=(d.linked_cases||[]).map(c=>`<tr ${c.ack_no?`onclick="baseCase('${c.ack_no}')"`:''}>
+  const cRank=c=>c.ack_no&&qs[c.ack_no]&&qs[c.ack_no].st.rank<=1?qs[c.ack_no].st.rank:5;
+  const recent=(d.linked_cases||[]).slice().sort((a,b)=>(cRank(a)-cRank(b))||String(b.filed_ts||'').localeCompare(String(a.filed_ts||'')));   // freeze now, watch, then newest
+  const caseRows=recent.map(c=>`<tr ${c.ack_no?`onclick="baseCase('${c.ack_no}')"`:''}>
       <td class="bm-mono">${esc(c.ack_no||c.case_ref)}</td><td>${c.role==='MULE'?'Mule':'Victim'}</td>
       <td class="hm">${c.role==='MULE'&&c.victim_account?esc(c.victim_account):'&mdash;'}</td>
       <td class="r">${c.disputed_amount!=null?money(c.disputed_amount):'&mdash;'}</td><td class="hm">${esc(bmType(c.fraud_category))}</td>
-      <td class="hm">${bmWhen(c.filed_ts)}</td><td>${c.ticket?esc(BM_STATUS[c.ticket.status]||c.ticket.status):'<span class="bm-note">not in open list</span>'}</td>
+      <td>${bmWhen(c.filed_ts)}</td><td>${cRank(c)<=1?`<span class="bm-pill ${qs[c.ack_no].st.key}">${qs[c.ack_no].st.label}</span>`
+        :c.ticket?esc(BM_STATUS[(BM_TK[c.ack_no]||c.ticket.status)]||c.ticket.status):'<span class="bm-note">not in open list</span>'}</td>
       <td class="r bm-open hm">${c.ack_no?'Open &rsaquo;':''}</td></tr>`).join('');
   const links=[...(d.ring_members||[]).map(a=>`<span class="bm-link" onclick="baseMule('${a}')"><b>${esc(bmName(a))}</b><small>${esc(a)} &middot; same group</small></span>`),
     ...cps.filter(c=>!(d.ring_members||[]).includes(c.account)).slice(0,10).map(c=>`<span class="bm-link" onclick="baseMule('${c.account}')"><b>${esc(bmName(c.account))}</b><small>${esc(c.account)} &middot; ${c.n} transfer${c.n===1?'':'s'} &middot; ${money(c.amount)}</small></span>`)].join('');
@@ -1558,9 +1757,17 @@ async function baseMule(id, noPush){
     <h1>${esc(d.codename)}<small>${kind} &middot; ${esc(id)}</small></h1>
     <p class="bm-meta">Bank <b>${esc(k.bank_code||'—')}</b> &middot; Registered area <b>${esc(k.district||'—')}</b>${k.pin?' (PIN '+esc(k.pin)+')':''}
       &middot; Account opened <b>${bmDate(k.open_date)}</b>${role?` &middot; Role <b>${esc(role)}</b>`:''}${k.ring_id?` &middot; Mule group <b>${esc(k.ring_id)}</b>`:''}</p>
-    ${open.length?`<div class="bm-action ${open[0].tier}"><div class="t">${BM_TIER[open[0].tier]}: this is the account to act on in ${open.length} open case${open.length===1?'':'s'}</div>
+    ${open.length?`<div class="bm-action ${open[0].st.key}"><div class="t">${open[0].st.label}: this is the account to act on in ${open.length} open case${open.length===1?'':'s'}</div>
       <div class="s">Open the complaint to see the forecast and send the request.</div>
-      <div class="bm-btns">${open.map(q=>`<button class="bm-btn ${q.tier==='RED'?'red':'ghost'}" onclick="baseCase('${q.ack_no}')">Complaint ${q.ack_no} &middot; ${pct(q.p_cashout_10m)} &rsaquo;</button>`).join('')}</div></div>`:''}
+      <div class="bm-btns">${open.map(q=>`<button class="bm-btn ${q.st.key==='RED'?'red':'ghost'}" onclick="baseCase('${q.ack_no}')">Complaint ${q.ack_no} &middot; ${pct(q.p_cashout_10m)} &rsaquo;</button>`).join('')}</div></div>`:''}
+    <div class="bm-chips">
+      ${chip('Linked cases',asMule.length,asMule.length>1)}${chip('Victims',(d.victims||[]).length,(d.victims||[]).length>0)}
+      ${chip('Stolen money received',moneyC(s.tainted_inflow||0),s.tainted_inflow>0)}${chip('Stolen cash withdrawn',moneyC(stolenCash),stolenCash>0)}
+      ${chip('ATMs used',atmList.length)}${chip('Accounts dealt with',s.unique_counterparties||0)}
+    </div>
+    <div class="bm-card flush" style="margin-bottom:16px"><div style="padding:14px 18px 4px"><h2>Recent cases (${recent.length}) &middot; cases to freeze first, then newest</h2></div>
+      <table class="bm-table"><thead><tr><th>Complaint no.</th><th>Role</th><th class="hm">Victim account</th><th class="r">Amount</th><th class="hm">Type</th><th>Filed</th><th>Action / status</th><th class="hm"></th></tr></thead>
+      <tbody>${caseRows||'<tr><td colspan="8" class="bm-empty">No complaints linked to this account.</td></tr>'}</tbody></table></div>
     <div class="bm-card bm-mapcard">
       <div class="hd"><h2>Where this account operates</h2><span class="bm-note">registered area and every ATM it has withdrawn cash from</span></div>
       <div class="bm-mapgrid"><div class="bm-map" id="bmMap"></div>
@@ -1570,14 +1777,6 @@ async function baseMule(id, noPush){
       <div class="bm-legend"><span><i style="background:var(--b-red)"></i>Registered (KYC) area</span><span><i class="sq" style="background:var(--b-cash)"></i>ATM used</span>
         <span><i class="sq" style="background:var(--b-red)"></i>ATM used with stolen money</span></div>
     </div>
-    <div class="bm-chips">
-      ${chip('Linked cases',asMule.length,asMule.length>1)}${chip('Victims',(d.victims||[]).length,(d.victims||[]).length>0)}
-      ${chip('Stolen money received',moneyC(s.tainted_inflow||0),s.tainted_inflow>0)}${chip('Stolen cash withdrawn',moneyC(stolenCash),stolenCash>0)}
-      ${chip('ATMs used',atmList.length)}${chip('Accounts dealt with',s.unique_counterparties||0)}
-    </div>
-    <div class="bm-sec"><div class="bm-card flush"><div style="padding:14px 18px 4px"><h2>Linked cases (${(d.linked_cases||[]).length})</h2></div>
-      <table class="bm-table"><thead><tr><th>Complaint no.</th><th>Role</th><th class="hm">Victim account</th><th class="r">Amount</th><th class="hm">Type</th><th class="hm">Filed</th><th>Case status</th><th class="hm"></th></tr></thead>
-      <tbody>${caseRows||'<tr><td colspan="8" class="bm-empty">No complaints linked to this account.</td></tr>'}</tbody></table></div></div>
     ${links?`<div class="bm-sec bm-card"><h2>Linked accounts</h2><div class="bm-links">${links}</div></div>`:''}
     <div class="bm-sec"><div class="bm-card flush"><div style="padding:14px 18px 4px"><h2>Account activity (${tx.length})</h2></div>
       <div id="bmTx">${bmTxTable(tx.slice(0,12))}</div>
@@ -1620,7 +1819,7 @@ async function bmSend(btn, ack, acc){
   if(r.deduped) msg='A request for this account was already sent in the last 15 minutes.';
   else if(r.dispatched&&r.dispatched.length){
     if(rec.tier==='RED'){ msg=`Freeze request sent to the bank, and ${rec.target_station||'the district cyber police station'} alerted by SMS.`;
-      try{ await jpatch(`/tickets/${ack}?status=FREEZE_SENT&actor=${encodeURIComponent('officer (Base)')}`); }catch(e){} }
+      try{ await jpatch(`/tickets/${ack}?status=FREEZE_SENT&actor=${encodeURIComponent('officer (Base)')}`); BM_TK[ack]='FREEZE_SENT'; }catch(e){} }
     else msg=`Monitoring note emailed to the ${rec.target_district||'district'} desk.`;
   } else msg='No alert is needed at this risk level.';
   if(f){f.className='bm-flash ok';f.textContent=msg+' (Demo: no real message is sent.)';}
@@ -1633,7 +1832,7 @@ async function bmReviewed(ack){
   if(f){f.className='bm-flash ok';f.textContent='Marked as reviewed and saved to the case history.';}
   bmStatus(ack);
 }
-async function bmStatus(ack){ try{ const t=await jget('/tickets/'+ack); const el=$('bmStatus');
+async function bmStatus(ack){ try{ const t=await jget('/tickets/'+ack); const el=$('bmStatus'); if(!t.detail)BM_TK[ack]=t.status;
   if(el&&!t.detail)el.textContent=(BM_STATUS[t.status]||t.status)+(t.assignee?' · '+t.assignee:''); }catch(e){} }
 function bmAdvanced(ack){ SEL=ack; VIEW='case'; setMode('advanced'); }   // same case, full analyst console
 // ===================== MULE / ACCOUNT PROFILE — persistent entity view =====================
@@ -1651,7 +1850,7 @@ function closeMule(){ const m=$('muleModal'); if(m)m.classList.remove('on'); }
 function renderMule(d){
   const s=d.stats, k=d.kyc;
   const chip=(lab,val,hot)=>`<div class="mp-chip${hot?' hot':''}"><div class="k">${lab}</div><div class="v">${val}</div></div>`;
-  const cases=d.linked_cases.map(c=>{
+  const cases=d.linked_cases.slice().sort((a,b)=>String(b.filed_ts||'').localeCompare(String(a.filed_ts||''))).map(c=>{   // newest first
     const tk=c.ticket?c.ticket.status:'&mdash;';
     const amt=c.disputed_amount?money(c.disputed_amount):'&mdash;';
     const open=c.ack_no?`<button class="mp-open" onclick="closeMule();selectCase('${c.ack_no}')">Open case &rsaquo;</button>`:'';
@@ -1684,7 +1883,7 @@ function renderMule(d){
        ${chip('Counterparties',s.unique_counterparties)}
        ${chip('ATMs used',s.distinct_atms)}
      </div>
-     <div class="mp-h">&#9670; Linked cases &mdash; the same mule across ${s.n_linked_cases} complaint(s)</div>
+     <div class="mp-h">&#9670; Recent cases &mdash; the same mule across ${s.n_linked_cases} complaint(s), newest first</div>
      <table class="mp-cases"><thead><tr><th>Role</th><th>Victim</th><th>Amount</th><th>Type</th><th>Filed</th><th>Ticket</th><th></th></tr></thead>
        <tbody>${cases||'<tr><td colspan="7" class="cap">no fraud cases linked</td></tr>'}</tbody></table>
      <div class="mp-h">Ring members</div><div>${ring}</div>
@@ -1701,6 +1900,7 @@ const NET_GL={CASHER:'Cash-out specialist',DISTRIBUTOR:'Fan-out distributor',COL
 const netHit=n=>{ const q=NET_Q.trim().toLowerCase();
   return !q||(n.codename+' '+n.id+' '+(n.district||'')+' '+n.group+' '+(NET_GL[n.group]||'')).toLowerCase().includes(q); };
 let NMAP=null, NMAP_MARKERS=[];
+let NET_CLICK_T=null, NET_SELID=null, NET_ACC={};   // one click shows the mule on the map; a double click opens its file
 async function showNetwork(){
   VIEW='network';
   if(MAP){try{MAP.remove();}catch(e){}MAP=null;FLOWL=HEATL=MESHL=ATML=MKL=RETL=RSVG=null;}
@@ -1709,7 +1909,7 @@ async function showNetwork(){
    <div class="netview">
      <div class="nethead">
        <div><h1 class="nettitle">MULE NETWORK</h1>
-         <span class="netsub">Each node is a suspected mule account (labelled in the synthetic data) under a codename, sized by how many frauds it touches and coloured by a rule-based behaviour role (not a clustering model; a role is a lead to review, not proof). Lines link mules that worked the same case, moved money to each other, or share a ring. <b>Click a node to open its case file.</b></span></div>
+         <span class="netsub">Each node is a suspected mule account (labelled in the synthetic data) under a codename, sized by how many frauds it touches and coloured by a rule-based behaviour role (not a clustering model; a role is a lead to review, not proof). Lines link mules that worked the same case, moved money to each other, or share a ring. <b>Click a node to see it on the map; double-click to open its file.</b></span></div>
        <div class="netlegend" id="netLegend"></div>
      </div>
      <div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin:0 0 10px">
@@ -1771,13 +1971,14 @@ function renderNetwork(data){
     +`<span class="netlg" style="cursor:default"><span class="d" style="background:transparent;border:1px solid var(--faint)"></span>bigger = more cases</span>`;
   const svg=d3.select(canvas).append('svg').attr('id','netSvg').attr('viewBox',`0 0 ${W} ${H}`).attr('preserveAspectRatio','xMidYMid meet');
   const root=svg.append('g');
-  svg.call(d3.zoom().scaleExtent([0.4,4]).on('zoom',ev=>root.attr('transform',ev.transform)));
+  svg.call(d3.zoom().scaleExtent([0.4,4]).on('zoom',ev=>root.attr('transform',ev.transform))).on('dblclick.zoom',null);   // double-click opens a file, not a zoom
   const linkSel=root.append('g').attr('stroke','#3d5964').selectAll('line').data(links).join('line')
     .attr('class','net-edge').attr('stroke-linecap','round')
     .attr('stroke-opacity',d=>0.16+0.06*d.weight).attr('stroke-width',d=>0.6+d.weight*0.5)
     .attr('stroke-dasharray',d=>d.kind==='ring'?'2 3':null);
   const nodeSel=root.append('g').selectAll('g').data(nodes).join('g').attr('class','net-node')
-    .on('click',(ev,d)=>openMule(d.id))
+    .on('click',(ev,d)=>{ if(ev.defaultPrevented)return; clearTimeout(NET_CLICK_T); NET_CLICK_T=setTimeout(()=>netSelect(d.id),240); })
+    .on('dblclick',(ev,d)=>{ ev.stopPropagation(); clearTimeout(NET_CLICK_T); netSelect(d.id); openMule(d.id); })
     .on('mouseenter',(ev,d)=>netHover(d,true,links,linkSel,nodeSel))
     .on('mouseleave',(ev,d)=>netHover(d,false,links,linkSel,nodeSel))
     .call(d3.drag()
@@ -1873,6 +2074,13 @@ function fitNetworkMap(){
   if(pts.length>1)NMAP.fitBounds(L.latLngBounds(pts),{padding:[48,48],maxZoom:13});
   else if(pts.length===1)NMAP.setView(pts[0],12);
 }
+// one click: ring the node and show its registered area + ATMs on the location map (no pop-up)
+async function netSelect(id){ NET_SELID=id;
+  if(typeof d3!=='undefined') d3.selectAll('.net-node circle.core')
+    .style('stroke',n=>n.id===id?'var(--ink)':null).style('stroke-width',n=>n.id===id?'3px':null);
+  let d=NET_ACC[id];
+  if(!d){ try{ d=await jget('/account/'+encodeURIComponent(id)); }catch(e){ return; } if(!d||d.detail)return; NET_ACC[id]=d; }
+  if(NET_SELID===id) focusMuleOnMap(d); }
 function netFilter(q){ NET_Q=q||'';
   if(typeof d3!=='undefined'){ d3.selectAll('.net-node').style('opacity',n=>netHit(n)?1:.12);
     d3.selectAll('.net-node text').style('opacity',n=>(NET_Q.trim()?netHit(n):n.n_cases>=6)?1:0); }
@@ -1899,7 +2107,7 @@ function netHover(d,on,links,linkSel,nodeSel){
     nodeSel.selectAll('text').style('opacity',n=>nb.has(n.id)?1:0);
     linkSel.attr('stroke-opacity',l=>((l.source.id||l.source)===d.id||(l.target.id||l.target)===d.id)?.7:.04);
     if(tip){ tip.style.display='block';
-      tip.innerHTML=`<b>${d.codename}</b> <span class="g">${d.group}</span><br>${d.id}${d.district?' · '+d.district:''}<br>${d.n_cases} linked case(s) · ₹${Number(d.tainted_in||0).toLocaleString('en-IN')} in<div class="hint">click to open its case file →</div>`;
+      tip.innerHTML=`<b>${d.codename}</b> <span class="g">${d.group}</span><br>${d.id}${d.district?' · '+d.district:''}<br>${d.n_cases} linked case(s) · ₹${Number(d.tainted_in||0).toLocaleString('en-IN')} in<div class="hint">click: show on map &middot; double-click: open file</div>`;
       const w=$('netCanvas').clientWidth;
       tip.style.left=Math.min(w-236,Math.max(6,d.x+14))+'px'; tip.style.top=Math.max(6,d.y-8)+'px'; }
   } else {
@@ -1913,134 +2121,6 @@ function netToggle(g){
   NET_HIDDEN[g]=!NET_HIDDEN[g];
   if(typeof d3!=='undefined') d3.selectAll('.net-node').style('display',d=>NET_HIDDEN[d.group]?'none':null);
   const lg=document.querySelector('.netlg[data-g="'+g+'"]'); if(lg)lg.classList.toggle('off',NET_HIDDEN[g]);
-}
-// ===================== CASE STUDIO — cinematic synthetic-case generator =====================
-let ST_BUSY=false;
-const ST_SCEN=[['cashout','Cash-out (default)'],['simple','Simple chain'],['branching','Branching'],['mule_chain','Mule chain'],['complex','Complex / converging']];
-const stSleep=ms=>new Promise(r=>setTimeout(r,ms));
-function stLog(t,cls){const el=$('stlog');if(!el)return;const d=document.createElement('div');d.className='stln'+(cls?' '+cls:'');d.textContent=t;el.appendChild(d);el.scrollTop=el.scrollHeight;}
-function showStudio(){
-  VIEW='studio';
-  if(MAP){try{MAP.remove();}catch(e){}MAP=null;FLOWL=HEATL=MESHL=ATML=MKL=RETL=RSVG=null;}
-  const seed=Math.floor(Math.random()*89)+10;
-  $('stage').innerHTML=`
-   <div class="studio">
-    <div class="sthead">
-      <div><h1 class="sttitle">CASE STUDIO</h1><span class="stsub">synthetic incident generator &middot; manufactures leakage-safe demo cases (input kept separate from the hidden answer)</span></div>
-      <span class="stsafe">&#9679; SYNTHETIC &middot; NO REAL DATA</span>
-    </div>
-    <div class="stbar">
-      <label>Scenario</label>
-      <select id="stScenario">${ST_SCEN.map(s=>`<option value="${s[0]}">${s[1]}</option>`).join('')}</select>
-      <label>Seed</label><input id="stSeed" type="number" value="${seed}">
-      <label>Accounts</label><input id="stAcc" type="number" value="60">
-      <button class="stgen" id="stGen" onclick="genStudioCase()">&#9654;&nbsp;GENERATE CASE</button>
-    </div>
-    <div class="ststage idle" id="ststage">
-      <div class="stletter t"></div><div class="stletter b"></div>
-      <div class="sthud"><span class="rec"><span class="d"></span>REC</span><span class="tc" id="sttc">T 00:00</span><span class="act" id="stact">STANDBY</span></div>
-      <div class="stcanvas" id="stcanvas"><div class="stidle">Configure a scenario and press <b>GENERATE</b>.<br><span>The generator manufactures the case &mdash; a model would have to predict the cash-out from the observed flow only.</span></div></div>
-      <div class="streveal" id="streveal"></div>
-    </div>
-    <div class="stcols">
-      <div class="stlog" id="stlog"><div class="stln dim">// terminal ready &mdash; python -m generator.case</div></div>
-      <div class="stmeta" id="stmeta"><div class="stmh">READY</div><div class="stfile dim">no case generated yet</div></div>
-    </div>
-   </div>`;
-  setNav();
-}
-async function genStudioCase(){
-  if(ST_BUSY)return; ST_BUSY=true;
-  const scen=$('stScenario').value, seed=$('stSeed').value, acc=$('stAcc').value;
-  const stage=$('ststage'), btn=$('stGen'); btn.disabled=true;
-  stage.classList.remove('idle','climax'); stage.classList.add('rolling');
-  const rv=$('streveal'); rv.classList.remove('show'); rv.innerHTML='';
-  $('stcanvas').innerHTML=''; $('stmeta').innerHTML=''; $('stlog').innerHTML='';
-  $('stact').textContent='BOOT'; $('sttc').textContent='T 00:00';
-  stLog('$ python -m generator.case --scenario '+scen+' --seed '+seed+' --accounts '+acc,'cmd');
-  for(const l of ['initializing synthetic incident…','seeding deterministic RNG ('+seed+')','manufacturing victim + mule population','laying money-flow topology → '+scen,'reconstructing observed transfers (leakage-safe)…']){ await stSleep(220); stLog(l,'dim'); }
-  let data;
-  try{ const r=await fetch('/studio/generate?scenario='+scen+'&seed='+seed+'&accounts='+acc); data=await r.json(); }
-  catch(e){ stLog('! generation failed: '+e,'err'); ST_BUSY=false; btn.disabled=false; return; }
-  const inp=data.input, gt=data.ground_truth;
-  await stSleep(280);
-  stLog('case '+inp.case_id+' ready · '+inp.stats.n_transactions+' txns · '+inp.graph.nodes.length+' nodes · '+inp.graph.edges.length+' edges','ok');
-  const fg=stFlowSubgraph(inp);
-  stRenderGraph(fg);
-  await stPlay(fg, inp, gt);
-  ST_BUSY=false; btn.disabled=false;
-}
-function stFlowSubgraph(inp){
-  const V=inp.victim_account, adj={};
-  inp.graph.edges.forEach(e=>{(adj[e.source_node]=adj[e.source_node]||[]).push(e);});
-  const hop={}; hop[V]=0; const q=[V], nodes=new Set([V]), edges=[];
-  while(q.length){ const u=q.shift(); (adj[u]||[]).forEach(e=>{ edges.push(e); if(!(e.destination_node in hop)){ hop[e.destination_node]=hop[u]+1; nodes.add(e.destination_node); q.push(e.destination_node);} }); }
-  const outc={}; edges.forEach(e=>outc[e.source_node]=(outc[e.source_node]||0)+1);
-  const leaves=[...nodes].filter(n=>n!==V && !outc[n]);
-  return {V,nodes:[...nodes],edges,hop,leaves};
-}
-function stRenderGraph(fg){
-  const maxhop=Math.max(0,...Object.values(fg.hop)), W=1000,H=460,padX=90,padY=54;
-  const colW=(W-2*padX)/Math.max(1,maxhop+1);
-  const byhop={}; fg.nodes.forEach(n=>{(byhop[fg.hop[n]]=byhop[fg.hop[n]]||[]).push(n);});
-  const pos={};
-  Object.keys(byhop).forEach(h=>{const a=byhop[h];a.forEach((n,i)=>{const y=a.length===1?H/2:padY+(H-2*padY)*i/(a.length-1);pos[n]={x:padX+h*colW,y};});});
-  const coY=fg.leaves.length?fg.leaves.reduce((s,n)=>s+pos[n].y,0)/fg.leaves.length:H/2;
-  pos['__CO__']={x:padX+(maxhop+1)*colW,y:coY};
-  const edge=(a,b,cls,dh)=>{const mx=(a.x+b.x)/2;return `<path class="stedge ${cls}" data-hop="${dh}" d="M${a.x} ${a.y} C ${mx} ${a.y}, ${mx} ${b.y}, ${b.x} ${b.y}"/>`;};
-  const node=(p,id,kind,h)=>{const lbl=id==='__CO__'?'?':id.replace('ACC_SYN_','');const rol=kind==='v'?'VICTIM':kind==='hold'?'HOLDING':kind==='co'?'CASH-OUT':'MULE';return `<g class="stnode ${kind}" data-hop="${h}" transform="translate(${p.x.toFixed(1)},${p.y.toFixed(1)})"><circle class="ring" r="18"/><circle class="core" r="18"/><text class="lbl" y="4">${lbl}</text><text class="rol" y="33">${rol}</text></g>`;};
-  let e='',n='';
-  fg.edges.forEach(ed=>{e+=edge(pos[ed.source_node],pos[ed.destination_node],'obs',fg.hop[ed.destination_node]);});
-  fg.leaves.forEach(l=>{e+=edge(pos[l],pos['__CO__'],'pred',maxhop+1);});
-  fg.nodes.forEach(nd=>{const kind=nd===fg.V?'v':(fg.leaves.includes(nd)?'hold':'mu');n+=node(pos[nd],nd,kind,fg.hop[nd]);});
-  n+=node(pos['__CO__'],'__CO__','co',maxhop+1);
-  $('stcanvas').innerHTML=`<svg id="stsvg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet"><g class="edges">${e}</g><g class="nodes">${n}</g></svg>`;
-}
-async function stPlay(fg,inp,gt){
-  const svg=$('stsvg'); if(!svg)return;
-  const maxhop=Math.max(0,...Object.values(fg.hop));
-  const acts=['MONEY ENTERS','TRACING THE FLOW','LAYERING','CONVERGING ON CASH-OUT'];
-  let clock=0;
-  for(let h=0;h<=maxhop;h++){
-    $('stact').textContent=acts[Math.min(h,acts.length-1)];
-    svg.querySelectorAll('.stnode[data-hop="'+h+'"]').forEach(x=>x.classList.add('show'));
-    svg.querySelectorAll('.stedge[data-hop="'+h+'"]').forEach(x=>x.classList.add('show'));
-    if(h>0){const t0=Math.min(...fg.edges.map(e=>Date.parse(e.timestamp))), th=fg.edges.filter(e=>fg.hop[e.destination_node]===h).map(e=>Date.parse(e.timestamp));
-      clock=th.length?Math.round((Math.max(...th)-t0)/60000):clock;$('sttc').textContent='T +'+String(clock).padStart(2,'0')+' min';}
-    stLog(h===0?'hop 0 · money enters at VICTIM':'hop '+h+' · funds forwarded, taint attributed','dim');
-    await stSleep(720);
-  }
-  $('stact').textContent='FORECASTING CASH-OUT'; $('ststage').classList.add('climax');
-  svg.querySelectorAll('.stedge.pred').forEach(x=>x.classList.add('show'));
-  stLog('candidate cash-out cells for the forecast → '+inp.stats.candidate_cells.join(', '),'dim');
-  await stSleep(520);
-  const co=svg.querySelector('.stnode.co'); if(co)co.classList.add('show');
-  await stSleep(1100);
-  stReveal(gt,inp);
-}
-function stReveal(gt,inp){
-  $('sttc').textContent='T +'+gt.lead_time_min+' min'; $('stact').textContent='⚠ CASH-OUT WINDOW';
-  const inr=Number(gt.cashout_amount).toLocaleString('en-IN');
-  const rv=$('streveal');
-  rv.innerHTML=`<div class="stcard">
-    <div class="sthidden">◆ GROUND TRUTH · was hidden from the model</div>
-    <div class="stbig">${gt.true_cashout_cell}</div>
-    <div class="strow"><span>cash-out account</span><b>${gt.true_cashout_account}</b></div>
-    <div class="strow"><span>cash-out time</span><b>${gt.true_cashout_time.replace('T',' ')}</b></div>
-    <div class="strow"><span>amount</span><b>₹${inr}</b></div>
-    <div class="strow"><span>lead time</span><b class="lead">${gt.lead_time_min} min</b></div>
-    <div class="stfoot">the hidden answer a forecast is scored against — it is never fed into the model input</div>
-  </div>`;
-  rv.classList.add('show');
-  stLog('★ ground truth revealed · '+gt.true_cashout_cell+' @ '+gt.true_cashout_time.slice(11,16)+' · lead '+gt.lead_time_min+'min','ok');
-  $('stmeta').innerHTML=`
-    <div class="stmh">CANDIDATE CASH-OUT CELLS <span>WHERE search space</span></div>
-    ${inp.stats.candidate_cells.map(c=>`<div class="stcell${c===gt.true_cashout_cell?' true':''}">${c}${c===gt.true_cashout_cell?' <i>← actual</i>':''}</div>`).join('')}
-    <div class="stmh">FLOW PATH <span>reconstructed</span></div>
-    <div class="stpath">${gt.flow_path.map(a=>a.replace('ACC_SYN_','…')).join(' → ')} → <b>CASH-OUT</b></div>
-    <div class="stmh">WRITE THE BUNDLE</div>
-    <div class="stfile">python -m generator.case --scenario ${inp.scenario} --seed ${inp.seed}</div>
-    <div class="stfile dim">→ cases/${inp.case_id}/ · case.json · transactions/nodes/edges.csv · ground_truth.json</div>`;
 }
 function showOverview(){
   VIEW='overview';
@@ -2102,9 +2182,9 @@ function renderOverview(){
       <span class="sub">the honest version &mdash; every number below is measured on data the model never trained on</span>
     </div>
     <div class="impact">
-      <div class="imp"><div class="k">Cash-out model</div><div class="v">0.913 <small style="font-size:12px">ROC-AUC</small></div><div class="s">on later cases the model never trained on; 0.879 on a sealed set with fraud patterns it never saw (0.98 would mean a data leak)</div></div>
+      <div class="imp"><div class="k">Cash-out model</div><div class="v">0.913 <small style="font-size:12px">ROC-AUC</small></div><div class="s">on later cases the model never trained on; 0.885 on a sealed set with fraud patterns it never saw (0.98 would mean a data leak)</div></div>
       <div class="imp"><div class="k">Channel model</div><div class="v">92% <small style="font-size:12px">acc.</small></div><div class="s">predicts how the money leaves &mdash; ATM vs POS vs onward transfer vs dormant (always guessing &ldquo;dormant&rdquo; would score 77%)</div></div>
-      <div class="imp"><div class="k">Lead time</div><div class="v">~12 <small style="font-size:12px">min median</small></div><div class="s">warning before the cash withdrawal, when we can act; in ~66% of cases the cash was already out before the complaint was filed</div></div>
+      <div class="imp"><div class="k">Lead time</div><div class="v">~8 <small style="font-size:12px">min median</small></div><div class="s">warning before the cash withdrawal, when we can act; in ~70% of cases the cash was already out before the complaint was filed</div></div>
       <div class="imp"><div class="k">Discipline</div><div class="v" style="color:var(--green)">Honest</div><div class="s">as-of features (no future leakage) &middot; abstains from naming an ATM when it isn't sure</div></div>
     </div>`;
   buildOverviewMap();
@@ -2133,7 +2213,7 @@ function buildOverviewMap(){
 
 // ================= CASE CENTRE (ticket queue + lifecycle) =================
 const ANALYSTS=['Insp. Sharma','SI Kulkarni','Cst. Patil','ASI Deshmukh','Insp. Rao'];
-let TICKETS=[];
+let TICKETS=[], TK_TAB='inc', TK_MQ='', TK_MSORT='cases', TK_ASG='assigned';   // incidents: assigned (default) | unassigned | all   // Case Centre tabs: incidents | mule database
 function stBadge(s){return `<span class="st ${s}">${(s||'').replace('_',' ')}</span>`;}
 function priBadge(p){return `<span class="pri ${p}">${p}</span>`;}
 async function showTickets(){
@@ -2144,7 +2224,7 @@ async function showTickets(){
 }
 async function renderTickets(){
   const [sum, list]=await Promise.all([jget('/tickets/summary'), jget('/tickets')]);
-  TICKETS=list;
+  TICKETS=list; list.forEach(t=>BM_TK[t.ack_no]=t.status);   // shared statuses (freeze-first ordering)
   const tile=(k,v,c)=>`<div class="tktile"><div class="k">${k}</div><div class="v" style="color:${c||'var(--ink)'}">${v}</div></div>`;
   $('stage').innerHTML=`
     <div class="ovhead"><h1 style="font-size:24px">CASE CENTRE</h1>
@@ -2159,9 +2239,29 @@ async function renderTickets(){
         ${tile('Resolved', sum.resolved,'var(--green)')}
         ${tile('₹ recovered', moneyC(sum.recovered||0),'var(--green)')}
       </div>
-      <div class="card" style="padding:14px">
+      <div class="tktabs">
+        <span class="navbtn" id="tkTabInc" onclick="tkTab('inc')">&#9776;&nbsp; Incidents</span>
+        <span class="navbtn" id="tkTabMul" onclick="tkTab('mules')">&#9670;&nbsp; Mule database</span>
+      </div>
+      <div class="card" style="padding:14px" id="tkPaneMul">
+        <div class="tktoolbar" style="margin-bottom:8px">
+          <input class="tksearch" id="tkMulQ" placeholder="Search mule name, account, area, bank or role…" oninput="TK_MQ=this.value;tkMuleRows()">
+          <select class="tksearch" id="tkMulSort" style="flex:0 0 auto;min-width:0;cursor:pointer" onchange="TK_MSORT=this.value;tkMuleRows()">
+            <option value="cases">most linked cases</option><option value="recent">most recent case</option><option value="money">most stolen money</option></select>
+        </div>
+        <div class="cap" id="tkMulSum" style="margin-bottom:10px">loading the mule database&hellip;</div>
+        <div style="overflow:auto;max-height:60vh">
+          <table class="tktable"><thead><tr>
+            <th>Mule</th><th>Role</th><th>Registered area</th><th>Bank</th><th>Linked cases</th><th>Stolen money in</th><th>Most recent case</th><th>Open alert</th><th>Action</th>
+          </tr></thead><tbody id="tkMulRows"></tbody></table>
+        </div>
+        <div class="cap" style="margin-top:8px">every account that received stolen money in a complaint (synthetic data) &middot; roles come from fixed flow rules &middot; a listing is a lead for review, not proof</div>
+      </div>
+      <div class="card" style="padding:14px" id="tkPaneInc">
         <div class="tktoolbar" style="margin-bottom:12px">
-          <input class="tksearch" id="tkSearch" placeholder="Search incident id, mule name or account, type, analyst, status…" oninput="filterTickets()">
+          <span class="tktabs" id="tkAsgSeg"></span>
+          <input class="tksearch" id="tkSearch" placeholder="Search incident id, title, mule name or account, type, analyst, status…" oninput="filterTickets()">
+          <button class="btn sm" onclick="openNewTicket()">+ New ticket</button>
           <a class="btn ghost sm" href="${API}/tickets.csv" download>&#8681; Export CSV</a>
         </div>
         <div style="overflow:auto;max-height:60vh">
@@ -2172,27 +2272,117 @@ async function renderTickets(){
       </div>
     </div>`;
   drawTicketRows(TICKETS);
-  bmNames(TICKETS.map(t=>tkMule(t.ack_no))).then(filterTickets);   // mule names for the new column
+  filterTickets();
+  bmNames(TICKETS.map(t=>t.suspect_account||tkMule(t.ack_no)).filter(Boolean)).then(filterTickets);   // mule names for the column
+  tkTab(TK_TAB);
 }
+// ---- Case Centre > Mule database: every suspected mule; open one -> its profile with recent cases first ----
+function tkTab(t){ TK_TAB=t;
+  const inc=$('tkPaneInc'), mul=$('tkPaneMul'); if(!inc||!mul)return;
+  inc.style.display=t==='inc'?'':'none'; mul.style.display=t==='mules'?'':'none';
+  $('tkTabInc').classList.toggle('on',t==='inc'); $('tkTabMul').classList.toggle('on',t==='mules');
+  if(t==='mules'){ $('tkMulQ').value=TK_MQ; $('tkMulSort').value=TK_MSORT;
+    loadMuleDb().then(tkMuleRows).catch(()=>{ const x=$('tkMulSum'); if(x)x.textContent='could not load the mule database'; }); } }
+function tkMuleRows(){ const tb=$('tkMulRows'); if(!tb||!MULE_DB)return;
+  const all=MULE_DB.mules||[], alert=muleAlerts(), rows=muleDbFilter(TK_MQ,TK_MSORT);
+  const sum=$('tkMulSum'); if(sum)sum.innerHTML=`${all.filter(m=>muleRank(alert,m.id)===0).length} to freeze now &middot; ${all.filter(m=>muleRank(alert,m.id)===1).length} to watch &middot; ${all.length} suspected mule accounts &middot; ${all.filter(m=>m.n_cases>1).length} linked to more than one complaint${TK_MQ.trim()?` &middot; showing ${rows.length}`:''} &middot; freeze-now accounts listed first`;
+  tb.innerHTML=rows.map(m=>`<tr style="cursor:pointer" onclick="openMule('${m.id}')">
+      <td><span class="mulelink">${esc(m.codename)}<small>${esc(m.id)}</small></span></td>
+      <td><span style="color:${NET_COL[m.role]||'var(--dim)'}">&#9679;</span> ${esc(NET_GL[m.role]||m.role)}</td>
+      <td>${esc(m.district||'—')}</td><td class="mono">${esc(m.bank||'—')}</td>
+      <td class="mono"><b>${m.n_cases}</b></td><td class="mono">${money(m.tainted_in)}</td>
+      <td class="mono">${m.last_case?bmDate(m.last_case):'—'}</td>
+      <td>${alert[m.id]?`<span class="tier ${alert[m.id].rank<=1?alert[m.id].key:'GREY'}" style="padding:3px 8px">${alert[m.id].label.toUpperCase()}</span>`:'<span class="cap" style="margin:0">none</span>'}</td>
+      <td><button class="btn sm" onclick="event.stopPropagation();openMule('${m.id}')">Recent cases &rsaquo;</button></td></tr>`).join('')
+    ||`<tr><td colspan="9" class="cap" style="padding:24px;text-align:center">No mule matches &ldquo;${esc(TK_MQ)}&rdquo;.</td></tr>`; }
 // the account to act on for a ticket = the queue's top account for that complaint
 const tkMule=ack=>((QUEUE||[]).find(q=>q.ack_no===ack)||{}).top_account||null;
 function drawTicketRows(rows){
   const tb=$('tkRows'); if(!tb)return;
-  tb.innerHTML=rows.map(t=>{ const mu=tkMule(t.ack_no); return `<tr>
-    <td><span class="tkid">INC-${t.ack_no.slice(0,12)}</span></td>
+  tb.innerHTML=rows.map(t=>{ const mu=t.suspect_account||tkMule(t.ack_no), man=t.source==='manual'; return `<tr>
+    <td><span class="tkid">${man?esc(t.ack_no):'INC-'+t.ack_no.slice(0,12)}</span>${man?`<div class="cap" style="margin:2px 0 0">${esc(t.title)}</div>`:''}</td>
     <td>${mu?`<span class="mulelink" onclick="openMule('${mu}')">${esc(bmName(mu))}<small>${esc(mu)}</small></span>`:'—'}</td>
-    <td>${t.fraud_category||'—'}</td>
+    <td>${esc(man?bmTkType(t.fraud_category):(t.fraud_category||'—'))}</td>
     <td>${priBadge(t.priority)}</td>
     <td>${stBadge(t.status)}</td>
     <td class="tkasg ${t.assignee?'':'none'}">${t.assignee?('&#128100; '+t.assignee):'&#9888; Unassigned'}</td>
     <td>${t.outcome?('<span class="mono" style="color:var(--dim)">'+t.outcome.replace('_',' ')+'</span>'):'<span class="mono" style="color:var(--faint)">—</span>'}</td>
     <td class="mono">${money(t.disputed_amount||0)}</td>
-    <td><button class="btn sm" onclick="selectCase('${t.ack_no}')">&#128269; Investigate</button></td>
+    <td><button class="btn sm" onclick="${man?`openTicketModal('${t.ack_no}')`:`selectCase('${t.ack_no}')`}">&#128269; ${man?'Open':'Investigate'}</button></td>
   </tr>`; }).join('')||'<tr><td colspan="9" class="cap" style="padding:24px;text-align:center">No incidents match.</td></tr>';
 }
+function tkAsgSet(k){ TK_ASG=k; filterTickets(); }
 function filterTickets(){const s=$('tkSearch'); if(!s)return; const q=(s.value||'').toLowerCase();
-  drawTicketRows(TICKETS.filter(t=>{ const mu=tkMule(t.ack_no)||'';
-    return !q||((t.ack_no+' '+mu+' '+bmName(mu)+' '+(t.fraud_category||'')+' '+(t.assignee||'')+' '+t.status+' '+t.priority).toLowerCase().includes(q)); }));}
+  const asg=TICKETS.filter(t=>t.assignee), una=TICKETS.filter(t=>!t.assignee);
+  const seg=$('tkAsgSeg'); if(seg)seg.innerHTML=[['assigned','Assigned',asg],['unassigned','Unassigned',una],['all','All',TICKETS]]
+    .map(([k,l,a])=>`<span class="navbtn${TK_ASG===k?' on':''}" onclick="tkAsgSet('${k}')">${l} <b>${a.length}</b></span>`).join('');
+  const base=TK_ASG==='assigned'?asg:TK_ASG==='unassigned'?una:TICKETS;
+  const rows=base.filter(t=>{ const mu=t.suspect_account||tkMule(t.ack_no)||'';
+    return !q||((t.ack_no+' '+(t.title||'')+' '+mu+' '+bmName(mu)+' '+(t.fraud_category||'')+' '+(t.assignee||'')+' '+t.status+' '+t.priority).toLowerCase().includes(q)); });
+  if(!rows.length&&!q){ const tb=$('tkRows'); if(tb)tb.innerHTML=`<tr><td colspan="9" class="cap" style="padding:24px;text-align:center">${TK_ASG==='assigned'
+      ?'No incidents are assigned yet. Open <b>Unassigned</b> to pick one up, or create a new ticket.':'No incidents here.'}</td></tr>`; return; }
+  drawTicketRows(rows); }
+// ---- Case Centre: open a ticket by hand, and the window for a hand-opened ticket (complaints open the case view) ----
+function closeTicketModal(){ const m=$('ticketModal'); if(m)m.classList.remove('on'); }
+function openNewTicket(){ const m=$('ticketModal'), b=$('ticketBox'); if(!m||!b)return;
+  const opt=a=>a.map(([k,l])=>`<option value="${k}">${l}</option>`).join('');
+  b.innerHTML=`<div class="mp-hd"><div><div class="mp-id">New ticket</div><div class="mp-sub">a new complaint or lead &middot; saved to the Case Centre (shared with Base)</div></div>
+      <span class="mp-x" onclick="closeTicketModal()">CLOSE &#10005;</span></div>
+    <div class="mp-body amctl">
+      <label>Title *</label><input id="atTitle" maxlength="140" placeholder="e.g. UPI fraud reported at Hadapsar PS, ₹45,000">
+      <div class="amgrid">
+        <div><label>Complaint / acknowledgement no.</label><input id="atAck" maxlength="40" placeholder="leave empty to create one"></div>
+        <div><label>Type of fraud</label><select id="atType">${opt(BM_FTYPES)}</select></div>
+        <div><label>Amount lost (₹)</label><input id="atAmt" type="number" min="0" placeholder="0"></div>
+        <div><label>Priority</label><select id="atPri">${opt(Object.entries(BM_PRIO).map(([k,v])=>[k,v.label]))}</select></div>
+        <div><label>Victim account</label><input id="atVic" maxlength="40" placeholder="optional"></div>
+        <div><label>Suspected mule account</label><input id="atSus" list="advMuleList" maxlength="60" placeholder="account or mule name (optional)"><datalist id="advMuleList"></datalist></div>
+        <div><label>Assign to</label><select id="atAsg"><option value="">Unassigned</option>${ANALYSTS.map(a=>`<option>${esc(a)}</option>`).join('')}</select></div>
+      </div>
+      <label>Description</label><textarea id="atDesc" maxlength="2000" placeholder="What the victim reported, transaction details, anything the next analyst needs"></textarea>
+      <div class="amrow" style="margin-top:12px"><button class="btn" id="atGo" onclick="advCreateTicket()">Create ticket</button><button class="btn ghost" onclick="closeTicketModal()">Cancel</button></div>
+      <div class="flash" id="atFlash"></div></div>`;
+  $('atPri').value='P2'; m.classList.add('on');
+  loadMuleDb().then(()=>{ const dl=$('advMuleList'); if(dl)dl.innerHTML=(MULE_DB.mules||[]).map(x=>`<option value="${esc(x.id)}">${esc(x.codename)}</option>`).join(''); }).catch(()=>{});
+  setTimeout(()=>{ const t=$('atTitle'); if(t)t.focus(); },60); }
+async function advCreateTicket(){
+  const f=$('atFlash'), btn=$('atGo'); btn.disabled=true; f.style.color=''; f.textContent='saving…';
+  const r=await tkCreate('at','analyst'); btn.disabled=false;
+  if(!r||r.detail){ f.style.color='var(--red)'; f.textContent=tkErr(r); return; }
+  TK_ASG=r.assignee?'assigned':'unassigned'; TK_TAB='inc';
+  if(VIEW==='tickets') await renderTickets();
+  openTicketModal(r.ack_no); }
+async function openTicketModal(ack){ const m=$('ticketModal'), b=$('ticketBox'); if(!m||!b)return;
+  m.classList.add('on'); b.innerHTML='<div class="mp-load">Loading ticket '+esc(ack)+'&hellip;</div>';
+  let t; try{ t=await jget('/tickets/'+encodeURIComponent(ack)); }catch(e){ t=null; }
+  if(!t||t.detail){ b.innerHTML='<div class="mp-load">'+esc((t&&t.detail)||'Could not load this ticket.')+'</div>'; return; }
+  if(t.suspect_account) await bmNames([t.suspect_account]);
+  const open=BM_OPEN_ST.includes(t.status), kv=(k,v)=>v?`<div class="kv">${k} <b>${v}</b></div>`:'';
+  b.innerHTML=`<div class="mp-hd"><div><div class="mp-id">${esc(t.title)}</div>
+      <div class="mp-sub">${esc(t.ack_no)} &middot; ${priBadge(t.priority)} ${stBadge(t.status)} &middot; ${esc(t.assignee||'unassigned')}</div></div>
+      <span class="mp-x" onclick="closeTicketModal()">CLOSE &#10005;</span></div>
+    <div class="mp-body"><div class="amgrid">
+      <div>${kv('Type',esc(bmTkType(t.fraud_category)))}${kv('Amount',money(t.disputed_amount||0))}${kv('Victim account',t.victim_account?esc(t.victim_account):'')}
+        ${kv('Mule / suspect',t.suspect_account?`<span class="mulelink" onclick="closeTicketModal();openMule('${esc(t.suspect_account)}')">${esc(bmName(t.suspect_account))}</span>`:'')}
+        ${kv('Opened',esc(t.created))}${kv('Outcome',t.outcome?esc(BM_OUTCOME[t.outcome]||t.outcome):'')}
+        ${t.description?`<div class="cap" style="margin-top:8px;white-space:pre-wrap">${esc(t.description)}</div>`:''}
+        <label class="lbl" style="display:block;margin:14px 0 6px">History</label>
+        <ul class="tl">${(t.timeline||[]).map(e=>`<li class="${e.kind}"><div class="tlk">${esc(e.kind)}</div><div class="tld">${esc(e.detail)}</div><div class="tlm">${esc(e.actor)} &middot; ${esc(e.ts)}</div></li>`).join('')}</ul></div>
+      <div class="amctl">
+        <label>Assign analyst</label><div class="amrow"><select id="atmAsg">${['Unassigned',...ANALYSTS].map(a=>`<option ${a===(t.assignee||'Unassigned')?'selected':''}>${esc(a)}</option>`).join('')}</select>
+          <button class="btn sm" onclick="advTkDo('assign','${t.ack_no}')">Assign</button></div>
+        <label>Incident status</label><div class="amrow"><select id="atmSt">${Object.keys(BM_STATUS).map(k=>`<option value="${k}" ${k===t.status?'selected':''}>${k.replace('_',' ')}</option>`).join('')}</select>
+          <button class="btn sm" onclick="advTkDo('status','${t.ack_no}')">Update</button></div>
+        <label>Add investigation note</label><textarea id="atmNote" placeholder="Observations, decision, evidence or next steps…"></textarea>
+        <div class="amrow"><button class="btn ghost sm" onclick="advTkDo('note','${t.ack_no}')">Add note</button></div>
+        ${open?`<label>Resolve with the real outcome</label><input id="atmRec" type="number" min="0" placeholder="₹ recovered (optional)">
+        <div class="amrow" style="flex-wrap:wrap"><button class="btn sm" onclick="advTkDo('FROZEN','${t.ack_no}')">Frozen</button><button class="btn sm" onclick="advTkDo('RECOVERED','${t.ack_no}')">Recovered</button>
+          <button class="btn ghost sm" onclick="advTkDo('CASHED_OUT','${t.ack_no}')">Cashed out</button><button class="btn ghost sm" onclick="advTkDo('FALSE_POSITIVE','${t.ack_no}')">False positive</button></div>`:''}
+        <div class="flash" id="atmFlash"></div></div></div></div>`; }
+async function advTkDo(kind, ack){
+  const r=await tkAction(kind, ack, 'atm', 'analyst');
+  if(!r||r.detail){ const f=$('atmFlash'); if(f){f.style.color='var(--red)';f.textContent=tkErr(r);} return; }
+  await openTicketModal(ack); if(VIEW==='tickets') renderTickets(); }
 
 // ---- per-case ticket lifecycle (on the case view) ----
 let CURTICKET=null;
@@ -2514,9 +2704,9 @@ function frameWhole(trail, loc){
     MAP.flyToBounds(bnds,{duration:1.1,maxZoom:14});
     setTimeout(()=>{try{MAP.fitBounds(bnds,{maxZoom:14,animate:false});}catch(e){}},1250);}catch(e){}
 }
-function endReplay(){ if(PLAY){clearInterval(PLAY);PLAY=null;} const b=$('playbtn');
+function endReplay(){ PLAY=null; const b=$('playbtn');
   if(b)b.innerHTML='&#9654; Replay simulation'; REPLAYING=false;
-  setTimeout(()=>{ if(!REPLAYING){ exitCinema(); if(CASEFULL){drawFlow(CASEFULL.trail,CASEFULL.loc); frameCase(CASEFULL.trail,CASEFULL.loc);} } }, 2800);  // hold the climax, then restore the interactive zone view (menu + routes)
+  setTimeout(()=>{ if(!REPLAYING){ exitCinema(); if(CASEFULL){drawFlow(CASEFULL.trail,CASEFULL.loc); frameCase(CASEFULL.trail,CASEFULL.loc);} } }, 1800);  // hold the climax briefly, then restore the interactive zone view (menu + routes)
 }
 // move just the reticle (used during replay -- the frame stays fixed so you watch the whole flow)
 function lockReticleOnly(highlight){
@@ -3139,20 +3329,32 @@ async function loadAlerts(){const a=await jget('/alerts');
 
 // ---------- replay ----------
 function togglePlay(){const b=$('playbtn');
-  if(PLAY){clearInterval(PLAY);PLAY=null;if(b)b.innerHTML='&#9654; Replay simulation';REPLAYING=false;exitCinema();
+  if(PLAY){PLAY=null;if(b)b.innerHTML='&#9654; Replay simulation';REPLAYING=false;exitCinema();
     if(CASEFULL){drawFlow(CASEFULL.trail,CASEFULL.loc);frameCase(CASEFULL.trail,CASEFULL.loc);} return;}  // pause -> restore interactive zone view
   if(!SEL)return;if(b)b.innerHTML='&#10073;&#10073; Pause';
   REPLAYING=true; FRAMED=true; REPLAY_T=0; CINE_BEAT=-1; LAST_TRAIL_SIG=null; PREDS_REVEALED=false;
   if(FOCUSATM){try{MAP.removeLayer(FOCUSATM);}catch(e){}FOCUSATM=null;}
   enterCinema(); if(CASEFULL)frameWhole(CASEFULL.trail,CASEFULL.loc);   // fix the camera on the whole case, hold it
-  scrubTo(0);
-  PLAY=setInterval(()=>{REPLAY_T+=3; if(REPLAY_T>120){ endReplay(); return; }
-    const sc=$('scrub');if(sc)sc.value=REPLAY_T; scrubTo(REPLAY_T);},480);}
+  // One frame at a time (never overlapping). Linger when something happens -- money moves, the tier
+  // changes, a new act starts, the targets appear -- and fast-forward the minutes where nothing does.
+  const tok=PLAY=Date.now(), nap=ms=>new Promise(z=>setTimeout(z,ms));
+  (async()=>{ let prev=null, prevBeat=-1;
+    await nap(600);                                   // let the camera settle on the whole case
+    for(let t=0;t<=120;t+=3){ if(PLAY!==tok)return;
+      const sc=$('scrub'); if(sc)sc.value=t;
+      let sig=null; try{ sig=await scrubTo(t); }catch(e){}
+      if(PLAY!==tok)return;
+      const beat=t<24?0:t<64?1:t<100?2:3, reveal=t>=88&&t-3<88;
+      const dwell=reveal?1000:(sig!==prev?650:(beat!==prevBeat?550:90));   // ms: targets appear / money moved / new act / nothing new
+      prev=sig; prevBeat=beat; await nap(dwell); }
+    if(PLAY===tok) endReplay(); })(); }
 async function scrubTo(t){REPLAY_T=+t;if(!SEL)return;
   REPLAYING=true;
   const st=await jget(`/replay/state?case=${SEL}&t=${t}`);
   const p=st.prediction;p._trail=st.trail; bmNames(((st.trail||{}).nodes||[]).map(n=>n.account_id));   // names for accounts the replay reveals
-  updateBriefing(p, st.as_of.slice(11,19));}
+  updateBriefing(p, st.as_of.slice(11,19));
+  const tr=st.trail||{};   // what the viewer can see change: the money trail and the tier
+  return `${(tr.nodes||[]).length}/${(tr.edges||[]).length}/${(p.recommendation||{}).tier}`; }
 
 // ---------- init ----------
 (async function(){
@@ -3163,12 +3365,13 @@ async function scrubTo(t){REPLAY_T=+t;if(!SEL)return;
     b.innerHTML=(ALERTS_ON?'&#128276; alerts on':'&#128277; alerts off');}
   advApplyTheme();                       // Advanced light/dark preference (before anything draws)
   populateVoices();await loadQueue();await loadHotspots();
-  showOverview();                        // land on the command centre, not a single case
   if(UIMODE==='base') setMode('base');   // restore the simple operator view if it was chosen
+  else showOverview();                   // land on the command centre (not built while hidden behind Base)
   // no pop-up on load. Only genuinely NEW red cases (via the poll) alert, throttled.
-  POLL=setInterval(async()=>{await loadQueue();if(UIMODE!=='base'&&VIEW==='overview')renderOverview();
+  POLL=setInterval(async()=>{try{await loadQueue();}catch(e){return;}   // server restarting: try again next tick
+    if(UIMODE!=='base'&&VIEW==='overview')renderOverview();
     if(UIMODE==='base'&&BM_VIEW==='home')baseHome();checkNewUrgent();}, 30000);
-  document.addEventListener('keydown',e=>{if(e.key==='Escape'){dismissUrgent();closeMule();}});})();
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'){dismissUrgent();closeMule();closeTicketModal();}});})();
 </script>
 </body>
 </html>

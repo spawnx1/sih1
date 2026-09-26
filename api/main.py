@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import hashlib
 import os
+import re
 import threading
 import uuid
 from datetime import datetime, timedelta
@@ -529,6 +530,12 @@ def _tdb():
     con.execute("""CREATE TABLE IF NOT EXISTS ticket_events(
         id INTEGER PRIMARY KEY AUTOINCREMENT, ack_no TEXT, ts TEXT,
         actor TEXT, kind TEXT, detail TEXT)""")
+    # hand-opened tickets carry a title, description and the accounts involved; add the
+    # columns to an existing database in place (old rows keep NULL there)
+    have = {r[1] for r in con.execute("PRAGMA table_info(tickets)")}
+    for col in ("title", "description", "victim_account", "suspect_account", "source"):
+        if col not in have:
+            con.execute(f"ALTER TABLE tickets ADD COLUMN {col} TEXT")
     return con
 
 
@@ -560,7 +567,12 @@ def _fetch_ticket(con, ack_no):
     ev = [dict(e) for e in con.execute(
         "SELECT * FROM ticket_events WHERE ack_no=? ORDER BY id DESC", (ack_no,))]
     d = dict(r)
-    d["title"] = f"{d['fraud_category']} — {d['ack_no']}"
+    d["title"] = d.get("title") or f"{d['fraud_category']} — {d['ack_no']}"
+    d["source"] = d.get("source") or "forecast"
+    if not d.get("suspect_account"):
+        if "top_by_ack" not in STATE:
+            STATE["top_by_ack"] = {q.ack_no: q.top_account for q in _build_queue()}
+        d["suspect_account"] = STATE["top_by_ack"].get(d["ack_no"])
     d["timeline"] = ev
     return d
 
@@ -573,6 +585,7 @@ def ticket_summary():
             "open": sum(1 for r in rows if r["status"] in _OPEN),
             "p1_open": sum(1 for r in rows if r["priority"] == "P1" and r["status"] in _OPEN),
             "assigned": sum(1 for r in rows if r["assignee"]),
+            "unassigned_open": sum(1 for r in rows if not r["assignee"] and r["status"] in _OPEN),
             "resolved": sum(1 for r in rows if r["status"] in ("RESOLVED", "CLOSED")),
             "recovered": round(sum((r["recovered_amount"] or 0) for r in rows), 2)}
 
@@ -581,8 +594,9 @@ def ticket_summary():
 def tickets_csv():
     con = _tdb(); _seed_tickets(con)
     rows = [dict(r) for r in con.execute("SELECT * FROM tickets")]; con.close()
-    cols = ["ack_no", "priority", "tier", "fraud_category", "status", "assignee",
-            "outcome", "recovered_amount", "disputed_amount", "created", "updated"]
+    cols = ["ack_no", "title", "source", "priority", "tier", "fraud_category", "status", "assignee",
+            "suspect_account", "victim_account", "outcome", "recovered_amount", "disputed_amount",
+            "created", "updated"]
     lines = [",".join(cols)]
     for r in rows:
         lines.append(",".join(str(r.get(c, "") if r.get(c) is not None else "") for c in cols))
@@ -606,6 +620,57 @@ def list_tickets(status: str | None = None, assignee: str | None = None, q: str 
     rows.sort(key=lambda r: (r["status"] in ("RESOLVED", "CLOSED"),
                              order.get(r["priority"], 9), -(r["disputed_amount"] or 0)))
     return rows
+
+
+_TPRIO = {"P1": "RED", "P2": "AMBER", "P3": "GREY"}
+
+
+def _new_ack(con) -> str:
+    """MAN-YYYYMMDD-NNN: a readable id for a ticket opened by hand."""
+    day = datetime.now().strftime("%Y%m%d")
+    n = con.execute("SELECT COUNT(*) FROM tickets WHERE ack_no LIKE ?", (f"MAN-{day}-%",)).fetchone()[0]
+    return f"MAN-{day}-{n + 1:03d}"
+
+
+@app.post("/tickets")
+def create_ticket(title: str = Body(..., embed=True), priority: str = Body("P2", embed=True),
+                  fraud_category: str = Body("other", embed=True),
+                  disputed_amount: float = Body(0.0, embed=True),
+                  ack_no: str | None = Body(None, embed=True),
+                  victim_account: str | None = Body(None, embed=True),
+                  suspect_account: str | None = Body(None, embed=True),
+                  description: str | None = Body(None, embed=True),
+                  assignee: str | None = Body(None, embed=True),
+                  actor: str = Body("analyst", embed=True)):
+    """Open a ticket by hand: a new complaint or lead that is not in the forecast queue."""
+    title = (title or "").strip()
+    if not title:
+        raise HTTPException(status_code=400, detail="a title is required")
+    if priority not in _TPRIO:
+        raise HTTPException(status_code=400, detail=f"bad priority; use {list(_TPRIO)}")
+    clean = lambda v: (v or "").strip() or None
+    con = _tdb(); _seed_tickets(con)
+    ack = clean(ack_no) or _new_ack(con)
+    if not re.fullmatch(r"[A-Za-z0-9_-]{1,40}", ack):   # it is used in URLs and links
+        con.close()
+        raise HTTPException(status_code=400, detail="the complaint / ticket number may use only letters, digits, - and _")
+    if con.execute("SELECT 1 FROM tickets WHERE ack_no=?", (ack,)).fetchone():
+        con.close()
+        raise HTTPException(status_code=409, detail=f"a ticket {ack} already exists")
+    who = clean(assignee)
+    con.execute(
+        """INSERT INTO tickets(ack_no,status,assignee,priority,tier,fraud_category,disputed_amount,
+               created,updated,title,description,victim_account,suspect_account,source)
+           VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+        (ack, "ASSIGNED" if who else "NEW", who, priority, _TPRIO[priority],
+         clean(fraud_category) or "other", max(0.0, float(disputed_amount or 0)), _now(), _now(),
+         title, clean(description), clean(victim_account), clean(suspect_account), "manual"))
+    _log(con, ack, "created", f"Ticket opened by hand at {priority}: {title}", actor)
+    if who:
+        _log(con, ack, "assign", f"Assigned to {who}", actor)
+    con.commit()
+    d = _fetch_ticket(con, ack); con.close()
+    return d
 
 
 @app.get("/tickets/{ack_no}")
@@ -672,31 +737,6 @@ def resolve_ticket(ack_no: str, outcome: str = Body(..., embed=True),
     con.commit()
     d = _fetch_ticket(con, ack_no); con.close()
     return d
-
-
-# ==========================================================================
-# CASE STUDIO -- generate a SYNTHETIC demo case on demand (generator.case).
-# Everything returned is clearly synthetic; ground_truth is a SEPARATE key the
-# front-end only reveals after the models have "predicted" (it is never fed in).
-# ==========================================================================
-@app.get("/studio/scenarios")
-def studio_scenarios():
-    from generator.case import SCENARIOS
-    return {"scenarios": list(SCENARIOS)}
-
-
-@app.get("/studio/generate")
-def studio_generate(scenario: str = "cashout", seed: int | None = None,
-                    accounts: int = 40):
-    from generator.case import SCENARIOS, generate_case
-    if scenario not in SCENARIOS:
-        raise HTTPException(status_code=400, detail=f"bad scenario; use {list(SCENARIOS)}")
-    accounts = max(6, min(400, int(accounts)))
-    case = generate_case(scenario, seed=seed, accounts=accounts, case_number=seed)
-    # model input = everything except ground_truth; ground_truth returned alongside
-    # for the reveal step ONLY. The two are separate objects, never merged.
-    model_case = {k: v for k, v in case.items() if k != "ground_truth"}
-    return {"input": model_case, "ground_truth": case["ground_truth"]}
 
 
 # ==========================================================================
@@ -926,6 +966,35 @@ def mule_network(limit: int = 48):
                      "and grouped by fixed flow rules (not a clustering model). "
                      "A role is a lead for review, not proof of criminal intent.")}
     STATE["network_cache"] = {"limit": limit, "data": data}
+    return data
+
+
+@app.get("/mules")
+def mule_database():
+    """Mule database: EVERY account that received stolen money in at least one case (not just the
+    busiest few the Mule Network draws), with its alias, rule-based role, KYC area, linked cases,
+    stolen money received and the date of its most recent case. Cached after the first build."""
+    if STATE.get("mules_cache") is not None:
+        return STATE["mules_cache"]
+    ctx = STATE["ctx"]
+    tx = ctx.tx
+    recv = tx[tx["label_is_tainted"] & tx["label_case_id"].notna()].dropna(subset=["dst_account"])
+    filed = STATE["complaints"].set_index("seed_txn_id")["filed_ts"]
+    out = []
+    for acc, g in recv.groupby("dst_account"):
+        seeds = set(g["label_case_id"])
+        last = max((filed[s] for s in seeds if s in filed.index), default=None)
+        info = ctx.account_info(acc)
+        out.append({"id": acc, "codename": _codename(acc), "role": _archetype(ctx, acc),
+                    "district": info.get("kyc_district"), "bank": info.get("bank_code"),
+                    "n_cases": len(seeds), "tainted_in": round(float(g["amount"].sum()), 2),
+                    "last_case": _iso_ts(last) if last is not None else None})
+    out.sort(key=lambda m: (-m["n_cases"], -m["tainted_in"]))
+    data = {"mules": out,
+            "note": ("Every account that received stolen money in a complaint, from the synthetic "
+                     "corpus's ground truth. Roles come from fixed flow rules. A listing is a lead "
+                     "for review, not proof of criminal intent.")}
+    STATE["mules_cache"] = data
     return data
 
 
