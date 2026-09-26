@@ -7,6 +7,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Michroma&family=Share+Tech+Mono&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@300;600;800;900&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet"><!-- Simulation tab -->
+
 <style>
   :root{
     --bg:#05070d; --panel:rgba(12,18,28,.66); --panel2:rgba(16,24,36,.7);
@@ -72,7 +74,7 @@
   .sw.AMBER{background:var(--amber);box-shadow:0 0 8px var(--amber)}
   .sw.GREY{background:var(--faint)}
 
-  .app{position:relative;z-index:3;display:grid;grid-template-columns:290px 1fr;height:calc(100vh - 54px)}
+  .app{position:relative;z-index:3;display:grid;grid-template-columns:290px 1fr;height:calc(100vh - var(--hdr,54px))}   /* --hdr = real header height (it wraps on narrow screens) */
   .app.railmin{grid-template-columns:0 1fr}
   .app.railmin .rail{opacity:0;pointer-events:none}
   .app.railmin .stagehead{padding-left:104px}   /* clear the floating CASES button */
@@ -991,6 +993,464 @@
     box-shadow:0 0 6px currentColor;
   }
 
+  /* ===================== SIMULATION TAB — one complaint through the whole pipeline =====================
+     Monochrome + one cyan accent, bold grotesque headlines, mono tags on thin leader lines.
+     Follows the Advanced light / dark switch through the --s-* tokens below. */
+  .app.simfull{grid-template-columns:0 1fr}
+  .app.simfull .rail{opacity:0;pointer-events:none}
+  body.simon .railopen{display:none!important}
+  body.simon::before,body.simon::after,body.simon .scanbar,body.simon .hud{display:none}
+  .stage.simstage{padding:0!important;overflow:hidden;position:relative}
+  .sim{--s-bg:#050606;--s-fg:#f2f4f3;--s-dim:#a2a8a7;--s-faint:#626968;--s-line:rgba(255,255,255,.12);--s-line2:rgba(255,255,255,.3);
+    --s-acc:#3ff3e2;--s-accl:#3ff3e2;--s-ink:#021614;--s-panel:rgba(6,7,7,.9);--s-red:#ff5a6e;--s-amber:#ffb84d;--s-grey:#8e9493;
+    --s-glow:0 2px 26px rgba(0,0,0,.95);--s-mapop:.46;
+    --s-disp:"Inter Tight","Inter",system-ui,"Segoe UI",sans-serif;--s-mono:"IBM Plex Mono",ui-monospace,"Cascadia Mono",Consolas,monospace;
+    position:absolute;inset:0;display:grid;grid-template-rows:auto auto minmax(0,1fr);background:var(--s-bg);color:var(--s-fg);
+    font-family:var(--s-disp);overflow:hidden;z-index:1}
+  body.advlight .sim{--s-bg:#f1f1ee;--s-fg:#0b0c0c;--s-dim:#4d5352;--s-faint:#8a8f8e;--s-line:rgba(0,0,0,.12);--s-line2:rgba(0,0,0,.32);
+    --s-acc:#38ecdc;--s-accl:#078f83;--s-ink:#01201c;--s-panel:rgba(255,255,255,.94);--s-red:#d3283b;--s-amber:#b56c00;--s-grey:#7b8180;
+    --s-glow:0 2px 22px rgba(255,255,255,.98);--s-mapop:.62}
+  .sim *{box-sizing:border-box}
+  .sim button{font:inherit}
+  .s-top{display:flex;align-items:center;gap:18px;height:46px;padding:0 16px;border-bottom:1px solid var(--s-line)}   /* fixed: the Advance button never shifts the layout */
+  .s-brand{font:800 15px/1 var(--s-disp);letter-spacing:.4px;display:flex;align-items:center;white-space:nowrap}
+  .s-brand b{font-weight:300;margin-left:5px}
+  .s-chip{margin-left:12px;font:600 10px/1 var(--s-mono);letter-spacing:1.6px;padding:5px 8px;background:var(--s-acc);color:var(--s-ink)}
+  .s-clock{margin-left:auto;font:500 13px/1 var(--s-mono);letter-spacing:1px;color:var(--s-dim);min-width:92px;text-align:right}
+  .s-ctl{display:flex;gap:6px}
+  .s-ctl button{background:transparent;color:var(--s-fg);border:1px solid var(--s-line2);padding:6px 10px;font:500 10.5px/1 var(--s-mono);
+    letter-spacing:.9px;cursor:pointer;text-transform:uppercase;white-space:nowrap}
+  .s-ctl button:hover{background:var(--s-fg);color:var(--s-bg);border-color:var(--s-fg)}
+  .s-ctl button.on{background:var(--s-acc);color:var(--s-ink);border-color:var(--s-acc)}
+  .s-rail{display:grid;grid-template-columns:repeat(10,minmax(0,1fr));border-bottom:1px solid var(--s-line)}
+  .s-st{position:relative;display:flex;align-items:baseline;gap:7px;padding:9px 10px 10px;font:500 10.5px/1.2 var(--s-mono);letter-spacing:.7px;
+    color:var(--s-faint);text-transform:uppercase;border-right:1px solid var(--s-line);white-space:nowrap;overflow:hidden;transition:color .3s,background .3s}
+  .s-st:last-child{border-right:0}
+  .s-st b{font-weight:600;font-size:9.5px}
+  .s-st::after{content:"";position:absolute;left:0;bottom:-1px;height:2px;width:0;background:var(--s-accl);transition:width .6s cubic-bezier(.2,.8,.2,1)}
+  .s-st.done{color:var(--s-dim)} .s-st.done::after{width:100%}
+  .s-st.on{color:var(--s-ink);background:var(--s-acc)} .s-st.on::after{width:100%;background:var(--s-acc)}
+  .s-body{display:grid;grid-template-columns:minmax(0,1fr) 300px;min-height:0}
+  .s-world{position:relative;overflow:hidden;min-height:0;background:var(--s-bg)}
+  #simMap{position:absolute;inset:0;transition:opacity .9s ease,transform .9s ease;transform-origin:50% 50%}
+  .sim .leaflet-container{background:var(--s-bg)!important;font-family:var(--s-mono);outline:none}
+  .sim .leaflet-tile-pane{filter:grayscale(1) contrast(1.12) brightness(.9)}
+  body.advlight .sim .leaflet-tile-pane{filter:grayscale(1) contrast(1.02)}
+  .s-world.ph-title #simMap,.s-world.ph-proc #simMap{opacity:var(--s-mapop);animation:sKen 38s ease-in-out infinite alternate}
+  .s-world.ph-proc #simMap{opacity:calc(var(--s-mapop) * .7)}
+  @keyframes sKen{from{transform:scale(1.08) translate(0,0)}to{transform:scale(1.15) translate(-2.4%,-1.6%)}}
+  .s-vig{position:absolute;inset:0;pointer-events:none;z-index:400;background:radial-gradient(ellipse at 50% 46%,transparent 40%,var(--s-bg) 100%);opacity:.92;transition:opacity .8s}
+  .s-world.ph-map .s-vig{opacity:.55}
+  .s-grid{position:absolute;inset:0;pointer-events:none;z-index:401;opacity:.55;transition:opacity .8s;
+    background:linear-gradient(var(--s-line) 1px,transparent 1px) 0 0/64px 64px,linear-gradient(90deg,var(--s-line) 1px,transparent 1px) 0 0/64px 64px;
+    -webkit-mask-image:radial-gradient(ellipse at 50% 50%,#000 25%,transparent 78%);mask-image:radial-gradient(ellipse at 50% 50%,#000 25%,transparent 78%)}
+  .s-world.ph-map .s-grid{opacity:.16}
+  .s-scene{position:absolute;inset:0;z-index:500;pointer-events:none}
+  .s-cap{position:absolute;left:24px;bottom:20px;z-index:520;pointer-events:none;max-width:60%}
+  .s-capk{font:500 10.5px/1 var(--s-mono);letter-spacing:1.8px;text-transform:uppercase;color:var(--s-dim);margin-bottom:9px;display:flex;align-items:center;gap:9px;text-shadow:var(--s-glow)}
+  .s-capk::before{content:"";width:26px;height:1px;background:var(--s-dim)}
+  .s-cap h2{margin:0;font:800 clamp(28px,3.3vw,52px)/.98 var(--s-disp);letter-spacing:-1.2px;text-transform:uppercase;text-shadow:var(--s-glow)}
+  .s-cap h2 span{display:block;animation:sCapIn .65s cubic-bezier(.2,.8,.2,1) both}
+  .s-cap h2 span+span{animation-delay:.14s}
+  .s-cap .s-hl{text-shadow:none}
+  @keyframes sCapIn{from{clip-path:inset(0 100% 0 0);transform:translateX(-12px)}to{clip-path:inset(0 0 0 0);transform:none}}
+  .s-wipe{position:absolute;inset:0;z-index:600;pointer-events:none;opacity:0;
+    background:repeating-linear-gradient(180deg,var(--s-fg) 0 6px,transparent 6px 22px)}
+  .s-wipe.go{animation:sWipe .42s steps(7) both}
+  @keyframes sWipe{0%{opacity:.85;transform:translateX(-100%)}70%{opacity:.6}100%{opacity:0;transform:translateX(100%)}}
+  .s-world.paused::after{content:"PAUSED \2014  SPACE TO RESUME";position:absolute;left:50%;top:14px;transform:translateX(-50%);z-index:650;
+    font:600 10.5px/1 var(--s-mono);letter-spacing:2px;padding:7px 11px;background:var(--s-fg);color:var(--s-bg)}
+  .s-log{border-left:1px solid var(--s-line);display:flex;flex-direction:column;min-height:0;background:var(--s-bg)}
+  .s-loghead{padding:10px 12px;font:600 10px/1 var(--s-mono);letter-spacing:1.8px;color:var(--s-dim);border-bottom:1px solid var(--s-line);display:flex;justify-content:space-between}
+  .s-logbody{flex:1;overflow:auto;padding:8px 10px 14px;font:400 11px/1.5 var(--s-mono)}
+  .s-lg{display:grid;grid-template-columns:50px 1fr;gap:6px;padding:2px 0;animation:sFade .3s both}
+  .s-lg .t{color:var(--s-faint);font-size:10px;padding-top:1px}
+  .s-lg .x{color:var(--s-fg);word-break:break-word}
+  .s-lg .g{display:inline-block;padding:0 4px;margin-right:6px;border:1px solid var(--s-line2);font-size:9px;letter-spacing:.7px;color:var(--s-dim);vertical-align:1px}
+  .s-lg.hi .g{background:var(--s-acc);color:var(--s-ink);border-color:var(--s-acc)}
+  .s-lg.dim .x{color:var(--s-dim)}
+  .s-lg.red .g{background:var(--s-red);color:#fff;border-color:var(--s-red)}
+  @keyframes sFade{from{opacity:0;transform:translateY(3px)}to{opacity:1;transform:none}}
+  .s-in{animation:sFade .45s both}
+  .s-hl{font-style:normal;background:var(--s-acc);color:var(--s-ink);padding:0 .14em;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+  .s-kick{font:500 10.5px/1.3 var(--s-mono);letter-spacing:1.7px;text-transform:uppercase;color:var(--s-dim)}
+  /* title */
+  .s-title{position:absolute;left:6%;top:50%;transform:translateY(-52%);width:min(780px,84%);pointer-events:auto}
+  .s-h1{margin:14px 0 16px;font:800 clamp(42px,6.2vw,96px)/.9 var(--s-disp);letter-spacing:-2.5px;text-transform:uppercase;text-shadow:var(--s-glow)}
+  .s-h1 span{display:block;animation:sCapIn .8s cubic-bezier(.2,.8,.2,1) both}
+  .s-h1 span+span{animation-delay:.18s}
+  .s-h1 .s-hl{text-shadow:none}
+  .s-lead{margin:0 0 20px;max-width:580px;font:400 15px/1.55 var(--s-disp);color:var(--s-dim);text-shadow:var(--s-glow)}
+  .s-callform{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:18px}
+  .s-callform label,.s-form label{display:flex;flex-direction:column;gap:5px;font:500 10px/1 var(--s-mono);letter-spacing:1.3px;text-transform:uppercase;color:var(--s-dim)}
+  .sim input,.sim select,.sim textarea{background:var(--s-bg);color:var(--s-fg);border:1px solid var(--s-line2);padding:9px 10px;
+    font:400 13px/1.25 var(--s-mono);outline:none;border-radius:0;min-width:0}
+  .sim textarea{font-size:12px;line-height:1.45}
+  .sim input:focus,.sim select:focus,.sim textarea:focus{border-color:var(--s-accl);box-shadow:0 0 0 1px var(--s-accl)}
+  .s-actions{display:flex;align-items:center;flex-wrap:wrap;gap:10px 16px}
+  .s-go{background:var(--s-acc);color:var(--s-ink);border:0;padding:14px 22px;font:700 13.5px/1 var(--s-mono);letter-spacing:1.4px;
+    text-transform:uppercase;cursor:pointer;position:relative}
+  .s-go:hover{filter:brightness(1.07)} .s-go:disabled{opacity:.35;cursor:not-allowed;filter:none}
+  .s-go:not(:disabled)::after{content:"";position:absolute;inset:-5px;border:1px solid var(--s-accl);animation:sGoRing 2.2s ease-out infinite}
+  @keyframes sGoRing{0%{opacity:.8;transform:scale(1)}100%{opacity:0;transform:scale(1.08,1.3)}}
+  .s-note{font:400 11px/1.4 var(--s-mono);color:var(--s-dim)}
+  .s-note.ok::before{content:"\25CF  ";color:var(--s-accl)}
+  .s-note.bad{color:var(--s-red)}
+  .s-foot{margin-top:24px;font:400 11px/1.5 var(--s-mono);color:var(--s-faint);max-width:600px}
+  /* process scenes: victim -> bank -> cyber cell */
+  .s-proc{position:absolute;left:7%;right:7%;top:9%;display:grid;grid-template-columns:auto minmax(40px,1fr) auto minmax(40px,1fr) auto;align-items:center}
+  .s-node{display:flex;flex-direction:column;align-items:center;gap:10px;opacity:.32;transition:opacity .6s}
+  .s-node.on{opacity:1}
+  .s-ico{width:74px;height:74px;display:grid;place-items:center;border:1px solid var(--s-fg);background:var(--s-bg);position:relative;transition:background .4s,border-color .4s}
+  .s-ico svg{width:36px;height:36px;color:var(--s-fg);transition:color .4s}
+  .s-node.on .s-ico{background:var(--s-acc);border-color:var(--s-acc)} .s-node.on .s-ico svg{color:var(--s-ink)}
+  .s-node.ring .s-ico{animation:sRing .16s linear infinite alternate}
+  .s-node.ring .s-ico::after{content:"";position:absolute;inset:-8px;border:1px solid var(--s-accl);animation:sGoRing 1s ease-out infinite}
+  @keyframes sRing{from{transform:rotate(-4deg)}to{transform:rotate(4deg)}}
+  .s-nl{font:600 11px/1.3 var(--s-mono);letter-spacing:1.4px;text-align:center;text-transform:uppercase;text-shadow:var(--s-glow)}
+  .s-nl small{display:block;font-weight:400;color:var(--s-dim);letter-spacing:.4px;text-transform:none;margin-top:2px}
+  .s-link{position:relative;height:1px;background:var(--s-line2);margin:0 16px;top:-17px;transition:background .5s}
+  .s-link span{position:absolute;left:50%;top:-20px;transform:translateX(-50%);font:500 9.5px/1 var(--s-mono);letter-spacing:1.4px;color:var(--s-dim);text-transform:uppercase;white-space:nowrap}
+  .s-link i{position:absolute;left:0;top:-3px;width:7px;height:7px;background:var(--s-acc);box-shadow:0 0 10px var(--s-acc);opacity:0}
+  .s-link.go{background:var(--s-accl)}
+  .s-link.go i{animation:sPk .9s linear infinite}
+  @keyframes sPk{0%{left:0;opacity:1}100%{left:calc(100% - 7px);opacity:1}}
+  .s-detail{position:absolute;left:50%;top:36%;transform:translateX(-50%);width:min(660px,84%)}
+  .s-call,.s-card{border:1px solid var(--s-line2);background:var(--s-panel);padding:14px 16px;pointer-events:auto}
+  .s-callhead{display:flex;align-items:center;gap:10px;font:600 11px/1 var(--s-mono);letter-spacing:1.4px;text-transform:uppercase}
+  .s-callhead .tm{margin-left:auto;color:var(--s-dim)}
+  .s-rec{width:8px;height:8px;border-radius:50%;background:var(--s-red);animation:sBlink 1s steps(2) infinite}
+  @keyframes sBlink{50%{opacity:.15}}
+  .s-wave{display:flex;align-items:center;gap:3px;height:30px;margin:12px 0 10px}
+  .s-wave i{flex:1;background:var(--s-fg);height:18%;animation:sWave .9s ease-in-out infinite alternate}
+  .s-wave.idle i{animation:none;height:6%;opacity:.5}
+  @keyframes sWave{from{height:10%}to{height:100%}}
+  .s-tx{display:flex;flex-direction:column;gap:7px;max-height:176px;overflow:hidden;justify-content:flex-end}
+  .s-txl{display:grid;grid-template-columns:70px 1fr;gap:8px;font:400 12.5px/1.45 var(--s-mono);flex-shrink:0}
+  .s-txl b{font-weight:600;font-size:10px;letter-spacing:1.2px;padding-top:2px}
+  .s-txl.h b{color:var(--s-accl)} .s-txl.c b{color:var(--s-dim)}
+  .s-ok{margin-top:11px;display:inline-block;background:var(--s-acc);color:var(--s-ink);font:700 11px/1 var(--s-mono);letter-spacing:1.4px;padding:7px 10px;text-transform:uppercase}
+  .s-kv{display:grid;grid-template-columns:130px 1fr;gap:10px;padding:8px 0;border-top:1px solid var(--s-line);font:400 12.5px/1.4 var(--s-mono);
+    opacity:0;transform:translateY(4px);transition:opacity .35s,transform .35s}
+  .s-kv.in{opacity:1;transform:none}
+  .s-kv>span{font-size:10px;letter-spacing:1.3px;text-transform:uppercase;color:var(--s-dim);padding-top:2px}
+  .s-kv b{font-weight:500}
+  .s-big{font:800 32px/1.05 var(--s-disp);margin:8px 0 10px;text-transform:uppercase;letter-spacing:-.6px;min-height:34px}
+  /* ticket form */
+  .s-form{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(1080px,95%);max-height:95%;overflow:auto;
+    background:var(--s-panel);border:1px solid var(--s-line2);pointer-events:auto;display:flex;flex-direction:column;animation:sFormIn .45s both}
+  @keyframes sFormIn{from{opacity:0;transform:translate(-50%,-47%)}to{opacity:1;transform:translate(-50%,-50%)}}
+  .s-fhead{display:flex;align-items:baseline;flex-wrap:wrap;gap:6px 14px;padding:13px 18px;border-bottom:1px solid var(--s-line2)}
+  .s-fhead h3{margin:0;font:800 22px/1 var(--s-disp);text-transform:uppercase;letter-spacing:-.3px}
+  .s-fh-r{margin-left:auto;font:400 11px/1 var(--s-mono);color:var(--s-dim)}
+  .s-fgrid{display:grid;grid-template-columns:minmax(0,.92fr) minmax(0,1.08fr);min-height:0;flex:1}
+  .s-fcol{padding:14px 18px;display:flex;flex-direction:column;gap:10px;min-height:0}
+  .s-fcol+.s-fcol{border-left:1px solid var(--s-line2)}
+  .s-row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .s-form textarea{min-height:54px;resize:vertical}
+  .s-match{border:1px dashed var(--s-line2);padding:10px 12px;font:400 11.5px/1.55 var(--s-mono);color:var(--s-dim)}
+  .s-match.ok{border:1px solid var(--s-accl);color:var(--s-fg)}
+  .s-match .s-kick{margin-bottom:4px;color:var(--s-accl)}
+  .s-match b{font-weight:600}
+  .s-chk{flex-direction:row!important;align-items:center;gap:8px!important;text-transform:none!important;letter-spacing:.2px!important;font-size:11.5px!important;color:var(--s-fg)!important;cursor:pointer}
+  .s-chk input{width:15px;height:15px;accent-color:var(--s-accl);padding:0}
+  .s-pickhead{display:flex;align-items:baseline;flex-wrap:wrap;gap:4px 10px;font:400 11px/1.3 var(--s-mono);color:var(--s-dim)}
+  .s-pickhead b{font:700 12px/1 var(--s-mono);letter-spacing:1.4px;text-transform:uppercase;color:var(--s-fg)}
+  .s-seg{display:flex}
+  .s-seg span{flex:1;text-align:center;padding:8px;border:1px solid var(--s-line2);font:500 10.5px/1 var(--s-mono);letter-spacing:.8px;text-transform:uppercase;cursor:pointer;color:var(--s-dim)}
+  .s-seg span+span{border-left:0}
+  .s-seg span.on{background:var(--s-fg);color:var(--s-bg);border-color:var(--s-fg)}
+  .s-picklist{flex:1;min-height:170px;max-height:44vh;overflow:auto;border:1px solid var(--s-line)}
+  .s-pick{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:3px 10px;padding:9px 12px;border-bottom:1px solid var(--s-line);cursor:pointer;transition:background .15s}
+  .s-pick:hover{background:var(--s-line)}
+  .s-pick.on{background:var(--s-acc);color:var(--s-ink)} .s-pick.on .mt,.s-pick.on small{color:var(--s-ink)}
+  .s-pick .nm{font:700 13px/1.2 var(--s-mono);letter-spacing:.4px}
+  .s-pick .nm small{font-weight:400;color:var(--s-dim);margin-left:7px;font-size:10.5px;letter-spacing:0}
+  .s-pick.on .nm small{color:var(--s-ink);opacity:.75}
+  .s-pick .mt{font:400 10.5px/1.35 var(--s-mono);color:var(--s-dim)}
+  .s-tier{grid-row:1/3;grid-column:2;align-self:center;font:700 9.5px/1 var(--s-mono);letter-spacing:1px;padding:4px 6px;border:1px solid currentColor}
+  .s-tier.RED{color:var(--s-red)} .s-tier.AMBER{color:var(--s-amber)} .s-tier.GREY{color:var(--s-grey)}
+  .s-pick.on .s-tier{color:var(--s-ink)}
+  .s-empty{padding:26px 14px;text-align:center;font:400 11.5px/1.5 var(--s-mono);color:var(--s-dim)}
+  .s-stamp{position:absolute;left:50%;top:50%;z-index:560;padding:18px 30px;background:var(--s-acc);color:var(--s-ink);text-align:center;
+    transform:translate(-50%,-50%) rotate(-2.5deg);animation:sStamp .5s cubic-bezier(.2,1.4,.3,1) both;box-shadow:0 18px 60px rgba(0,0,0,.4)}
+  .s-stamp span{display:block;font:600 11px/1 var(--s-mono);letter-spacing:2.6px;text-transform:uppercase}
+  .s-stamp b{display:block;font:800 36px/1.1 var(--s-disp);margin:9px 0 6px;letter-spacing:-.5px}
+  .s-stamp small{font:400 11.5px/1.3 var(--s-mono)}
+  @keyframes sStamp{from{transform:translate(-50%,-50%) rotate(-2.5deg) scale(1.7);opacity:0}to{transform:translate(-50%,-50%) rotate(-2.5deg) scale(1);opacity:1}}
+  /* map tags, lines and markers */
+  .s-mk{background:none!important;border:0!important}
+  .s-tagw{position:absolute;left:0;top:0;pointer-events:none;animation:sTagIn .4s backwards}   /* backwards: lets .quiet/.final fade it later */
+  @keyframes sTagIn{from{opacity:0}to{opacity:1}}
+  .s-tagw .s-dot{position:absolute;left:-4px;top:-4px;width:8px;height:8px;border-radius:50%;background:var(--s-fg)}
+  .s-tagw .s-lead{position:absolute;left:0;width:1px;background:var(--s-fg);opacity:.85}
+  .s-tagw.ne .s-lead,.s-tagw.nw .s-lead{bottom:0;height:24px}
+  .s-tagw.se .s-lead,.s-tagw.sw .s-lead{top:0;height:24px}
+  .s-tag{position:absolute;white-space:nowrap;font:600 10.5px/1.25 var(--s-mono);letter-spacing:.6px;text-transform:uppercase;padding:4px 7px;
+    background:var(--s-bg);color:var(--s-fg);border:1px solid var(--s-fg)}
+  .s-tag small{display:block;font-weight:400;letter-spacing:.2px;text-transform:none;color:var(--s-dim);font-size:10px;margin-top:1px}
+  .s-tagw.ne .s-tag{left:-1px;bottom:24px} .s-tagw.nw .s-tag{right:-1px;bottom:24px}
+  .s-tagw.se .s-tag{left:-1px;top:24px} .s-tagw.sw .s-tag{right:-1px;top:24px}
+  .s-tagw.hot .s-tag{background:var(--s-acc);color:var(--s-ink);border-color:var(--s-acc)} .s-tagw.hot .s-tag small{color:var(--s-ink)}
+  .s-tagw.hot .s-dot,.s-tagw.hot .s-lead{background:var(--s-accl)}
+  .s-tagw.named .s-tag{border-width:2px;border-color:var(--s-accl)}
+  .s-tagw.co .s-tag{border-style:dashed;border-color:var(--s-red)} .s-tagw.co .s-dot{background:var(--s-red)}
+  .s-tagw.vic .s-tag{border-style:dotted}
+  .s-tagw.area .s-tag{border-color:var(--s-accl);color:var(--s-fg)}
+  .s-tagw.dist .s-tag{background:transparent;border:0;border-left:1px solid var(--s-fg);font-size:11px;letter-spacing:1.6px;padding:0 0 0 7px;text-shadow:var(--s-glow)}
+  .s-tagw.dist .s-dot{width:5px;height:5px;left:-2.5px;top:-2.5px}
+  .s-tagw.big .s-lead{height:36px}
+  .s-world.quiet .s-tagw.tr{opacity:0;transition:opacity .6s}     /* later stages: the traced trail keeps its lines, drops its labels */
+  .s-world.final .s-tagw:not(.hot){opacity:0;transition:opacity .6s}   /* verdict: only the target and the #1 ATM stay labelled */
+  .sim .leaflet-overlay-pane > svg{width:auto;height:auto}   /* the global svg{100%} rule would squash Leaflet's vector layer to 0x0 */
+  .sim path.s-edge{stroke:var(--s-accl);stroke-width:2.4;stroke-opacity:.95;fill:none;stroke-linecap:round}
+  .sim path.s-edge.dash{stroke-dasharray:5 7;animation:sFlow 1.1s linear infinite}
+  .sim path.s-edge.co{stroke:var(--s-red)}
+  @keyframes sFlow{to{stroke-dashoffset:-24}}
+  .sim path.s-ray{stroke:var(--s-fg);stroke-width:1.3;stroke-dasharray:3 5;stroke-opacity:.75;fill:none}
+  .sim path.s-cellhex{stroke:var(--s-accl);stroke-width:1.8;fill:var(--s-acc);fill-opacity:.13;stroke-dasharray:7 4}
+  .s-head{position:absolute;left:-5px;top:-5px;width:10px;height:10px;border-radius:50%;background:var(--s-acc);box-shadow:0 0 14px 4px var(--s-acc)}
+  .s-nd{position:absolute;left:-6px;top:-6px;width:12px;height:12px;border-radius:50%;background:var(--s-fg);border:2px solid var(--s-bg);animation:sPop .35s both}
+  .s-nd.vic{background:var(--s-bg);border:2px solid var(--s-fg)}
+  .s-atmsq{position:absolute;left:-6px;top:-6px;width:12px;height:12px;background:var(--s-red);border:2px solid var(--s-bg);animation:sPop .35s both}
+  @keyframes sPop{from{transform:scale(0)}to{transform:scale(1)}}
+  .s-pulse i{position:absolute;left:-44px;top:-44px;width:88px;height:88px;border:1.5px solid var(--s-accl);border-radius:50%;animation:sPulse 2.4s ease-out infinite;opacity:0}
+  .s-pulse i:nth-child(2){animation-delay:.8s} .s-pulse i:nth-child(3){animation-delay:1.6s}
+  @keyframes sPulse{0%{transform:scale(.08);opacity:.95}100%{transform:scale(1.5);opacity:0}}
+  .s-scanring{position:absolute;left:-20px;top:-20px;width:40px;height:40px;border:2px solid var(--s-accl);border-radius:50%;border-right-color:transparent;animation:sSpin .7s linear infinite}
+  @keyframes sSpin{to{transform:rotate(360deg)}}
+  .s-xh{position:absolute;left:-30px;top:-30px;width:60px;height:60px;animation:sXh .55s cubic-bezier(.2,.8,.2,1) both}
+  .s-xh i{position:absolute;width:15px;height:15px;border:2.5px solid var(--s-accl)}
+  .s-xh i:nth-child(1){left:0;top:0;border-right:0;border-bottom:0} .s-xh i:nth-child(2){right:0;top:0;border-left:0;border-bottom:0}
+  .s-xh i:nth-child(3){left:0;bottom:0;border-right:0;border-top:0} .s-xh i:nth-child(4){right:0;bottom:0;border-left:0;border-top:0}
+  @keyframes sXh{from{transform:scale(2.6) rotate(45deg);opacity:0}to{transform:none;opacity:1}}
+  .s-atm{position:absolute;left:-12px;top:-12px;width:24px;height:24px;display:grid;place-items:center;font:700 11.5px/1 var(--s-mono);
+    background:var(--s-bg);color:var(--s-fg);border:1.5px solid var(--s-fg);animation:sDrop .5s cubic-bezier(.2,.9,.3,1.3) both}
+  .s-atm.r0{background:var(--s-acc);color:var(--s-ink);border-color:var(--s-acc);box-shadow:0 0 0 4px rgba(63,243,226,.25)}
+  @keyframes sDrop{from{transform:translateY(-30px);opacity:0}to{transform:none;opacity:1}}
+  /* identify card (pinned to the account on the map) */
+  .s-pcard{position:absolute;left:-1px;bottom:36px;width:318px;background:var(--s-panel);border:1px solid var(--s-fg);padding:12px 14px 10px;
+    white-space:normal;animation:sFade .4s both}
+  .s-pc-k{font:500 9.5px/1 var(--s-mono);letter-spacing:1.5px;text-transform:uppercase;color:var(--s-accl);margin-bottom:6px}
+  .s-pc-h{font:800 28px/1 var(--s-disp);letter-spacing:-.4px;min-height:28px}
+  .s-pc-s{font:400 11px/1.3 var(--s-mono);color:var(--s-dim);margin:4px 0 8px}
+  .s-pc-r{display:grid;grid-template-columns:112px 1fr;gap:8px;padding:5px 0;border-top:1px solid var(--s-line);font:400 11.5px/1.35 var(--s-mono);transition:opacity .3s,transform .3s}
+  .s-pc-r.h{opacity:0;transform:translateX(-6px)}
+  .s-pc-r span{font-size:9.5px;letter-spacing:1.1px;text-transform:uppercase;color:var(--s-dim);padding-top:2px}
+  .s-pc-r b{font-weight:500}
+  .s-pc-f{margin-top:7px;font:400 9.5px/1.3 var(--s-mono);color:var(--s-faint);letter-spacing:.3px}
+  /* side panels */
+  .s-panel{position:absolute;right:14px;top:14px;width:min(370px,42%);max-height:calc(100% - 28px);overflow:auto;background:var(--s-panel);
+    border:1px solid var(--s-line2);padding:14px 16px;pointer-events:auto;animation:sPanelIn .45s cubic-bezier(.2,.8,.2,1) both}
+  .s-panel.left{left:14px;right:auto;width:min(430px,48%);max-height:calc(100% - 190px)}
+  .s-panel.wide{width:min(410px,46%)}
+  .s-panel.out{animation:sPanelOut .3s both}
+  @keyframes sPanelIn{from{opacity:0;transform:translateX(16px)}to{opacity:1;transform:none}}
+  @keyframes sPanelOut{to{opacity:0;transform:translateX(16px)}}
+  .s-ph{font:700 11.5px/1.2 var(--s-mono);letter-spacing:1.5px;text-transform:uppercase;display:flex;justify-content:space-between;align-items:baseline;gap:10px;
+    padding-bottom:9px;border-bottom:1px solid var(--s-line2);margin-bottom:10px}
+  .s-ph small{font-weight:400;color:var(--s-dim);letter-spacing:.5px;text-transform:none;font-size:10.5px;text-align:right}
+  .s-psub{font:400 11px/1.45 var(--s-mono);color:var(--s-dim);margin:0 0 8px}
+  .s-sub2{font:600 9.5px/1 var(--s-mono);letter-spacing:1.4px;text-transform:uppercase;color:var(--s-dim);margin:12px 0 6px}
+  .s-sub2:first-of-type{margin-top:2px}
+  .s-sr{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:4px 10px;padding:8px 0;border-bottom:1px solid var(--s-line);transition:opacity .3s,background .3s}
+  .s-sr.h{opacity:.22}
+  .s-sr.scan .nm{color:var(--s-accl)}
+  .s-sr .nm{font:600 12.5px/1.2 var(--s-mono)} .s-sr .nm small{font-weight:400;color:var(--s-dim);margin-left:6px;font-size:10px}
+  .s-sr .pv{font:700 14px/1.2 var(--s-mono);text-align:right}
+  .s-sr .bar,.s-ar .bar{grid-column:1/-1;height:5px;background:var(--s-line);position:relative;overflow:hidden}
+  .s-sr .bar i,.s-ar .bar i{position:absolute;left:0;top:0;bottom:0;width:0;background:var(--s-fg);transition:width .7s cubic-bezier(.2,.8,.2,1)}
+  .s-sr .meta,.s-ar .meta{grid-column:1/-1;font:400 10.5px/1.35 var(--s-mono);color:var(--s-dim)}
+  .s-sr.tgt{background:var(--s-acc);color:var(--s-ink);margin:0 -16px;padding:8px 16px}
+  .s-sr.tgt .meta,.s-sr.tgt small{color:var(--s-ink)!important} .s-sr.tgt .bar{background:rgba(0,0,0,.15)} .s-sr.tgt .bar i{background:var(--s-ink)}
+  .s-pnote{margin-top:10px;font:400 11.5px/1.5 var(--s-mono)}
+  .s-chart{width:100%;height:auto;display:block;margin:2px 0 4px;overflow:visible}
+  .s-chart .ax{stroke:var(--s-line2);stroke-width:1}
+  .s-chart text{font:400 9.5px var(--s-mono);fill:var(--s-dim)}
+  .s-chart .ln{fill:none;stroke:var(--s-accl);stroke-width:2.4;stroke-dasharray:1;stroke-dashoffset:1;animation:sDraw 1.3s .15s cubic-bezier(.4,0,.2,1) forwards}
+  .s-chart .ar{fill:var(--s-acc);opacity:0;animation:sArea .8s .9s forwards}
+  .s-chart .pt{fill:var(--s-bg);stroke:var(--s-accl);stroke-width:2;opacity:0;animation:sFadeTo .3s forwards}
+  .s-chart .pl{fill:var(--s-fg);font-weight:600;font-size:10px;opacity:0;animation:sFadeTo .3s forwards}
+  .s-chart .win{fill:var(--s-acc);opacity:.14}
+  .s-chart .wl{font-size:8.5px;letter-spacing:.6px;fill:var(--s-accl)}
+  @keyframes sDraw{to{stroke-dashoffset:0}} @keyframes sArea{to{opacity:.16}} @keyframes sFadeTo{to{opacity:1}}
+  .s-sevrow{display:flex;align-items:center;gap:10px;font:400 11px/1.3 var(--s-mono);color:var(--s-dim)}
+  .s-sev{font:700 10px/1 var(--s-mono);letter-spacing:1.3px;text-transform:uppercase;padding:5px 8px;background:var(--s-fg);color:var(--s-bg)}
+  .s-sev.imminent{background:var(--s-red);color:#fff}
+  .s-chr{display:grid;grid-template-columns:150px 1fr 40px;gap:8px;align-items:center;font:400 11px/1.2 var(--s-mono);padding:3px 0}
+  .s-chr .bar{height:7px;background:var(--s-line);position:relative;overflow:hidden}
+  .s-chr .bar i{position:absolute;left:0;top:0;bottom:0;width:0;background:var(--s-fg);transition:width .8s cubic-bezier(.2,.8,.2,1)}
+  .s-chr.top .bar i{background:var(--s-accl)} .s-chr b{text-align:right;font-weight:600}
+  .s-fx{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+  .s-f{border:1px solid var(--s-line2);padding:5px 8px;transition:opacity .3s,transform .3s}
+  .s-f.h{opacity:0;transform:translateY(4px)}
+  .s-f .k{font:400 8.5px/1.2 var(--s-mono);color:var(--s-dim);text-transform:uppercase;letter-spacing:.6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .s-f .v{font:700 14px/1.2 var(--s-mono);margin-top:2px}
+  .s-ar{display:grid;grid-template-columns:24px minmax(0,1fr) auto;gap:3px 10px;padding:6px 0;border-bottom:1px solid var(--s-line);animation:sFade .35s both}
+  .s-ar .rk{grid-row:1/2;width:22px;height:22px;display:grid;place-items:center;font:700 11px/1 var(--s-mono);border:1.5px solid var(--s-fg)}
+  .s-ar.top .rk{background:var(--s-acc);color:var(--s-ink);border-color:var(--s-acc)}
+  .s-ar .nm{font:600 12px/1.2 var(--s-mono)} .s-ar .nm small{display:block;font-weight:400;color:var(--s-dim);font-size:10px;margin-top:2px}
+  .s-ar .pv{font:700 14px/1.2 var(--s-mono);text-align:right}
+  .s-ar .bar{grid-column:2/-1} .s-ar .meta{grid-column:2/-1}
+  .s-ar.top .bar i{background:var(--s-accl)}
+  .s-abst{margin:0 0 8px;font:400 11.5px/1.55 var(--s-mono);min-height:18px}
+  .s-hist{display:flex;flex-direction:column;gap:5px}
+  .s-hr{display:grid;grid-template-columns:96px 30px minmax(40px,1fr) 78px;gap:8px;align-items:center;font:400 10.5px/1.3 var(--s-mono);transition:opacity .3s}
+  .s-hr.h{opacity:0}
+  .s-hr .t{color:var(--s-dim)} .s-hr .d{font-weight:600;letter-spacing:.8px}
+  .s-hr .b{height:9px;background:var(--s-line)} .s-hr .b i{display:block;height:100%;background:var(--s-fg)}
+  .s-hr .a{text-align:right;font-weight:600}
+  .s-hr .c{grid-column:3/-1;margin-top:-3px;color:var(--s-dim);font-size:10px}
+  .s-hr.cur .b i{background:var(--s-accl)} .s-hr.cur .c em{font-style:normal;background:var(--s-acc);color:var(--s-ink);padding:0 4px;margin-left:4px}
+  .s-sum{position:absolute;right:14px;top:14px;display:flex;background:var(--s-panel);border:1px solid var(--s-line2)}
+  .s-sum span{padding:9px 13px;font:400 10px/1.2 var(--s-mono);letter-spacing:1px;text-transform:uppercase;color:var(--s-dim);border-left:1px solid var(--s-line)}
+  .s-sum span:first-child{border-left:0}
+  .s-sum b{display:block;font:800 20px/1.1 var(--s-disp);color:var(--s-fg);letter-spacing:0;margin-bottom:2px}
+  /* verdict */
+  .s-verdict{position:absolute;left:18px;top:14px;bottom:14px;width:min(620px,60%);background:var(--s-panel);border:1px solid var(--s-line2);
+    padding:20px 24px;overflow:auto;pointer-events:auto;animation:sPanelIn .5s both;display:flex;flex-direction:column}
+  .s-vt{display:flex;align-items:center;flex-wrap:wrap;gap:10px;font:600 10.5px/1 var(--s-mono);letter-spacing:1.6px;text-transform:uppercase;color:var(--s-dim)}
+  .s-vtier{padding:6px 10px;font-weight:700;color:#fff;letter-spacing:1.8px}
+  .s-vtier.RED{background:var(--s-red)} .s-vtier.AMBER{background:var(--s-amber);color:#1b1100} .s-vtier.GREY{background:var(--s-grey);color:#fff}
+  .s-vh{margin:14px 0 6px;font:800 clamp(30px,3.6vw,54px)/.96 var(--s-disp);letter-spacing:-1.4px;text-transform:uppercase}
+  .s-vt .s-vend{margin-left:auto;color:var(--s-fg)} .s-vt .s-vend b{background:var(--s-fg);color:var(--s-bg);padding:3px 6px;margin-left:4px}
+  .s-vsub{font:400 12.5px/1.5 var(--s-mono);color:var(--s-dim);margin-bottom:12px}
+  .s-vr{display:grid;grid-template-columns:118px 1fr;gap:12px;padding:6px 0;border-top:1px solid var(--s-line);font:400 12px/1.4 var(--s-mono)}
+  .s-vr>span{color:var(--s-dim);font-size:10px;letter-spacing:1.3px;text-transform:uppercase;padding-top:2px}
+  .s-vr small{display:block;color:var(--s-faint);font-size:10.5px;margin-top:2px}
+  .s-vbtns{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}
+  .s-btn{background:transparent;color:var(--s-fg);border:1px solid var(--s-fg);padding:9px 11px;font:600 10.5px/1 var(--s-mono);letter-spacing:.8px;text-transform:uppercase;cursor:pointer;white-space:nowrap}
+  .s-btn:hover{background:var(--s-fg);color:var(--s-bg)}
+  .s-btn.pri{background:var(--s-acc);color:var(--s-ink);border-color:var(--s-acc)}
+  .s-btn.red{background:var(--s-red);border-color:var(--s-red);color:#fff}
+  .s-btn:disabled{opacity:.5;cursor:default}
+  .s-vmsg{margin-top:10px;font:400 11.5px/1.45 var(--s-mono);color:var(--s-accl);min-height:16px}
+  .s-end{margin-top:auto;padding-top:14px;border-top:2px solid var(--s-fg);display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px;
+    font:600 10.5px/1.3 var(--s-mono);letter-spacing:1.4px;text-transform:uppercase}
+  .s-end b{background:var(--s-fg);color:var(--s-bg);padding:3px 7px;font-weight:700}
+  /* Advance mode: an explanation card before each stage, played on the presenter's click */
+  .sim{--s-scrim:rgba(5,6,6,.7)} body.advlight .sim{--s-scrim:rgba(241,241,238,.76)}
+  .s-advgo{margin-left:auto;background:var(--s-acc);color:var(--s-ink);border:0;height:30px;padding:0 14px;font:700 11.5px/1 var(--s-mono);letter-spacing:1.3px;
+    text-transform:uppercase;cursor:pointer;display:flex;align-items:center;gap:9px;white-space:nowrap;animation:sAdvPulse 1.6s ease-in-out infinite}
+  .s-advgo small{font-weight:500;letter-spacing:.4px;text-transform:none;opacity:.8;font-size:11px}
+  .s-advgo[hidden]{display:none}
+  .s-advgo:not([hidden])+.s-clock{margin-left:14px}
+  @keyframes sAdvPulse{0%,100%{box-shadow:0 0 0 0 rgba(63,243,226,.6)}60%{box-shadow:0 0 0 8px rgba(63,243,226,0)}}
+  .s-st.next{color:var(--s-fg);box-shadow:inset 0 0 0 1.5px var(--s-accl);animation:sNextBlink 1.3s ease-in-out infinite}
+  @keyframes sNextBlink{50%{box-shadow:inset 0 0 0 1.5px transparent}}
+  .s-advchk{display:flex;align-items:center;gap:10px;cursor:pointer;font:400 11px/1.35 var(--s-mono);color:var(--s-dim)}
+  .s-advchk input{width:17px;height:17px;accent-color:var(--s-accl);padding:0;margin:0}
+  .s-advchk b{display:block;color:var(--s-fg);font-weight:600;letter-spacing:1.2px;text-transform:uppercase;font-size:10.5px}
+  .s-explain{position:absolute;inset:0;z-index:610;display:none;align-items:center;justify-content:center;padding:16px;background:var(--s-scrim);
+    -webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px)}
+  .s-explain.on{display:flex;animation:sFade .35s both}
+  .s-explain.out{animation:sExpOut .32s both}
+  @keyframes sExpOut{to{opacity:0}}
+  .s-exp-card{position:relative;width:min(800px,100%);max-height:100%;overflow:auto;background:var(--s-panel);border:1px solid var(--s-line2);
+    padding:22px 28px 18px 32px;box-shadow:0 24px 70px rgba(0,0,0,.35);animation:sExpIn .55s cubic-bezier(.2,.8,.2,1) both}
+  .s-exp-card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:5px;background:var(--s-acc)}
+  @keyframes sExpIn{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}
+  .s-exp-k{display:flex;align-items:center;gap:8px;font:500 10.5px/1 var(--s-mono);letter-spacing:1.7px;text-transform:uppercase;color:var(--s-dim)}
+  .s-exp-k b{color:var(--s-fg);font-weight:600}
+  .s-exp-k span{margin-left:auto;padding:5px 8px;border:1px solid var(--s-line2);letter-spacing:1.4px}
+  .s-exp-h{margin:12px 0 10px;font:800 clamp(30px,3.4vw,52px)/.96 var(--s-disp);letter-spacing:-1.3px;text-transform:uppercase}
+  .s-exp-h span{display:block;animation:sCapIn .6s cubic-bezier(.2,.8,.2,1) both} .s-exp-h span+span{animation-delay:.12s}
+  .s-exp-w{margin:0 0 14px;max-width:700px;font:400 16px/1.55 var(--s-disp);color:var(--s-fg)}
+  .s-exp-hk{font:600 9.5px/1 var(--s-mono);letter-spacing:1.7px;text-transform:uppercase;color:var(--s-accl);margin-bottom:7px}
+  .s-exp-how{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:6px}
+  .s-exp-how li{position:relative;padding-left:20px;font:400 12.5px/1.5 var(--s-mono);color:var(--s-dim);animation:sFade .45s both}
+  .s-exp-how li::before{content:"";position:absolute;left:0;top:.65em;width:9px;height:2px;background:var(--s-accl)}
+  .s-exp-run{margin-top:14px;padding:9px 12px;border:1px dashed var(--s-line2);font:400 12px/1.45 var(--s-mono)}
+  .s-exp-run span{display:inline-block;margin-right:10px;font-weight:600;font-size:9.5px;letter-spacing:1.5px;text-transform:uppercase;color:var(--s-accl)}
+  .s-exp-run b{font-weight:600}
+  .s-exp-f{display:flex;align-items:center;justify-content:flex-end;gap:16px;margin-top:16px}
+  .s-exp-hint{font:400 10.5px/1 var(--s-mono);color:var(--s-faint);letter-spacing:.6px}
+  /* ===================== CASE CENTRE › MULE DATABASE — names on the left, the open case file on the right ===================== */
+  .mdb{display:grid;grid-template-columns:minmax(260px,360px) minmax(0,1fr);gap:14px;align-items:start}
+  .mdb-list{max-height:64vh;overflow:auto;border:1px solid var(--line);border-radius:10px}
+  .mdb-g{border-bottom:1px solid var(--line)}
+  .mdb-gh{position:sticky;top:0;z-index:1;display:flex;align-items:baseline;gap:10px;padding:9px 12px;cursor:pointer;background:var(--solid);font-family:var(--mono)}
+  .mdb-gh b{font-size:13px;letter-spacing:1.2px;color:var(--ink)} .mdb-gh span{font-size:11px;color:var(--dim)}
+  .mdb-gh:hover,.mdb-gh.on{background:rgba(79,173,186,.14)} .mdb-gh.on b{color:var(--cyan)}
+  .mdb-dot{margin-left:auto;width:8px;height:8px;border-radius:50%;align-self:center}
+  .mdb-dot.RED{background:var(--red)} .mdb-dot.AMBER{background:var(--amber)}
+  .mdb-a{display:flex;align-items:center;gap:10px;padding:7px 12px 7px 24px;cursor:pointer;border-top:1px solid var(--line)}
+  .mdb-a:hover{background:rgba(79,173,186,.07)} .mdb-a.on{background:rgba(79,173,186,.16);box-shadow:inset 3px 0 0 var(--cyan)}
+  .mdb-a b{font-family:var(--mono);font-size:12.5px;color:var(--ink)} .mdb-a small{display:block;font-family:var(--mono);font-size:10.5px;color:var(--faint)}
+  .mdb-r{margin-left:auto;display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:11px;color:var(--dim);white-space:nowrap}
+  .mdb-file{max-height:64vh;overflow:auto;border:1px solid var(--line);border-radius:10px;padding:14px 16px;background:var(--panel)}
+  .mf-hd{display:flex;align-items:flex-start;gap:12px;margin-bottom:10px}
+  .mf-name{font-family:var(--mono);font-size:20px;font-weight:800;letter-spacing:.5px;color:var(--ink)}
+  .mf-sub{font-family:var(--mono);font-size:11.5px;color:var(--dim);margin-top:3px}
+  .mf-acts{margin-left:auto}
+  .mf-chips{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px}
+  .mf-chips span{border:1px solid var(--line);border-radius:8px;padding:5px 9px;font-family:var(--mono);font-size:11px;color:var(--dim)} .mf-chips b{color:var(--ink)}
+  .mf-h{font-family:var(--mono);font-size:10.5px;letter-spacing:1.4px;text-transform:uppercase;color:var(--cyan);margin:6px 0 6px}
+  .mf-case{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:center;padding:9px 0;border-top:1px solid var(--line)}
+  .mf-case b{font-family:var(--mono);font-size:12.5px;color:var(--ink)} .mf-case small{display:block;font-size:11.5px;color:var(--dim);margin-top:2px}
+  .mf-case em{font-style:normal;color:var(--cyan)}
+  .mf-st{font-family:var(--mono);font-size:9.5px;font-weight:800;letter-spacing:.8px;text-transform:uppercase;padding:4px 8px;border-radius:5px;white-space:nowrap;
+    border:1px solid var(--line2);color:var(--dim)}
+  .mf-st.RED{color:#fff;background:var(--red);border-color:var(--red)} .mf-st.AMBER{color:#1b1100;background:var(--amber);border-color:var(--amber)}
+  .mf-st.SENT{color:var(--cyan);border-color:var(--cyan)} .mf-st.CLOSED{color:var(--faint)}
+  .mf-grp{border-top:2px solid var(--line2);padding-top:12px;margin-top:12px}
+  @media (max-width:1100px){ .mdb{grid-template-columns:1fr} }
+  /* ===================== GUARDRAILS — the confirmation every request passes (Advanced, Base and Simulation) ===================== */
+  .gd{--g-bg:#ffffff;--g-fg:#141a20;--g-dim:#56616d;--g-line:#d8dee5;--g-soft:#f2f5f8;--g-acc:#0c7c86;--g-red:#c52f40;--g-amber:#a36600;--g-ok:#1b7f55;
+    position:fixed;inset:0;z-index:5000;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(8,12,18,.58);backdrop-filter:blur(3px)}
+  body:not(.basemode):not(.advlight) .gd,body.basemode.bmdark .gd{--g-bg:#0f151b;--g-fg:#e7eef4;--g-dim:#95a4b3;--g-line:#27323e;--g-soft:#161f28;--g-acc:#4fd1c5;
+    --g-red:#ff6b7d;--g-amber:#e3b45c;--g-ok:#46c495}
+  .gd.on{display:flex}
+  .gd-box{width:min(660px,100%);max-height:92vh;overflow:auto;background:var(--g-bg);color:var(--g-fg);border:1px solid var(--g-line);border-radius:12px;
+    padding:18px 20px 16px;font:14px/1.5 "Inter",system-ui,"Segoe UI",sans-serif;box-shadow:0 22px 64px rgba(0,0,0,.35);animation:gdIn .25s ease-out both}
+  @keyframes gdIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  .gd-hd{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+  .gd-hd h3{margin:0;font:700 18px/1.2 "Inter",system-ui,sans-serif;color:var(--g-fg)}
+  .gd-x{margin-left:auto;cursor:pointer;color:var(--g-dim);font-size:18px;padding:0 4px}
+  .gd-tier{font:700 11px/1 ui-monospace,Consolas,monospace;letter-spacing:1px;padding:5px 8px;border-radius:5px;color:#fff;background:#7b8590}
+  .gd-tier.RED{background:var(--g-red)} .gd-tier.AMBER{background:var(--g-amber)}
+  .gd-sum{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-bottom:12px}
+  .gd-sum div{background:var(--g-soft);border:1px solid var(--g-line);border-radius:8px;padding:8px 10px}
+  .gd-sum span{display:block;font-size:11px;color:var(--g-dim);text-transform:uppercase;letter-spacing:.6px}
+  .gd-sum b{font-weight:600}
+  .gd-h{font:600 11px/1 "Inter",system-ui,sans-serif;letter-spacing:.8px;text-transform:uppercase;color:var(--g-dim);margin:4px 0 6px}
+  .gd-cau{margin:0 0 12px;padding:0;list-style:none;display:flex;flex-direction:column;gap:5px}
+  .gd-cau li{position:relative;padding:6px 10px 6px 28px;border-radius:7px;background:var(--g-soft);font-size:13px;line-height:1.45}
+  .gd-cau li::before{content:"!";position:absolute;left:9px;top:6px;width:13px;height:13px;border-radius:50%;background:var(--g-amber);color:#fff;
+    font:700 9px/13px system-ui;text-align:center}
+  .gd-cau li.lead::before{content:"i";background:var(--g-acc)}
+  .gd-block{padding:10px 12px;border-radius:8px;background:color-mix(in srgb,var(--g-red) 14%,transparent);color:var(--g-red);font-weight:600;margin-bottom:12px}
+  .gd-form{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .gd-form label{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--g-dim)}
+  .gd-form label small{font-size:11px}
+  .gd-form .wide{grid-column:1/-1}
+  .gd-form select,.gd-form textarea{background:var(--g-bg);color:var(--g-fg);border:1px solid var(--g-line);border-radius:7px;padding:8px 10px;font:13px/1.35 "Inter",system-ui,sans-serif}
+  .gd-form textarea{min-height:42px;resize:vertical}
+  .gd-chk{flex-direction:row!important;align-items:flex-start;gap:8px!important;color:var(--g-fg)!important;font-size:13px!important;cursor:pointer}
+  .gd-chk input{margin-top:3px;width:16px;height:16px;accent-color:var(--g-acc)}
+  .gd-msg{min-height:18px;margin-top:10px;font-size:13px;color:var(--g-dim)}
+  .gd-msg.ok{color:var(--g-ok);font-weight:600} .gd-msg.bad{color:var(--g-red);font-weight:600}
+  .gd-f{position:sticky;bottom:-16px;display:flex;justify-content:flex-end;gap:8px;margin:12px -20px -16px;padding:10px 20px 14px;
+    background:var(--g-bg);border-top:1px solid var(--g-line)}   /* Send stays visible on short screens */
+  .gd-btn{border:1px solid var(--g-line);background:var(--g-bg);color:var(--g-fg);border-radius:8px;padding:9px 14px;font:600 13px/1 "Inter",system-ui,sans-serif;cursor:pointer}
+  .gd-btn.pri{background:var(--g-acc);border-color:var(--g-acc);color:#fff}
+  body:not(.basemode):not(.advlight) .gd-btn.pri,body.basemode.bmdark .gd-btn.pri{color:#04181a}
+  .gd-btn:disabled{opacity:.45;cursor:not-allowed}
+  .gd-load{padding:18px 4px;color:var(--g-dim)}
+  .gd-list{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:8px}
+  .gd-list li{display:grid;grid-template-columns:22px 1fr;gap:8px;padding:9px 10px;border:1px solid var(--g-line);border-radius:8px;background:var(--g-soft)}
+  .gd-list li::before{content:"\2713";color:var(--g-ok);font-weight:700}
+  .gd-list b{display:block;font-size:13.5px}
+  .gd-list span{font-size:12.5px;color:var(--g-dim)}
+  body.simon .gd-box{border-radius:0;border-color:var(--g-fg)} body.simon .gd-btn,body.simon .gd-sum div,body.simon .gd-cau li{border-radius:0}
+  /* the guardrail box in the Advanced case view */
+  .gd-case{padding:12px 14px}
+  .gd-case .gdc-h{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:11px;letter-spacing:1.4px;text-transform:uppercase;color:var(--cyan);margin-bottom:6px}
+  .gd-case ul{margin:0 0 10px;padding-left:18px;font-size:12.5px;color:var(--dim)} .gd-case li{margin:3px 0}
+  .gd-case .gdc-f{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+  @media (max-width:1280px){ .s-body{grid-template-columns:minmax(0,1fr) 250px} .s-st span{display:none} .s-st{justify-content:center}
+    .s-st.on span{display:inline} .s-ctl button{padding:6px 8px} .s-brand b{display:none} }
+
 </style>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
@@ -1006,10 +1466,11 @@
   <div class="brand"><span class="dotlogo"></span> CASHOUT&nbsp;FORECAST
     <small>&nbsp;// SIH26184 &middot; I4C-MHA</small></div>
   <div style="display:flex;gap:8px;margin-left:8px">
-    <span class="navbtn on" id="navOverview" onclick="showOverview()">&#9635;&nbsp; Command centre</span>
-    <span class="navbtn" id="navTickets" onclick="showTickets()">&#9776;&nbsp; Case centre</span>
-    <span class="navbtn" id="navCase" onclick="SEL&&selectCase(SEL)">&#9673;&nbsp; Case view</span>
-    <span class="navbtn" id="navNet" onclick="showNetwork()">&#9096;&nbsp; Mule Network</span>
+    <span class="navbtn on" id="navOverview" onclick="showOverview()">&#9635;&nbsp; Situation Room</span>
+    <span class="navbtn" id="navTickets" onclick="showTickets()">&#9776;&nbsp; Incident Desk</span>
+    <span class="navbtn" id="navCase" onclick="SEL&&selectCase(SEL)">&#9673;&nbsp; Investigation</span>
+    <span class="navbtn" id="navNet" onclick="showNetwork()">&#9096;&nbsp; Link Analysis</span>
+    <span class="navbtn" id="navSim" onclick="showSim()" title="Play one complaint through the whole pipeline">&#9654;&nbsp; Simulation</span>
   </div>
   <div class="chips" id="chips"><span class="chip">initialising&hellip;</span></div>
   <span class="atgl" id="alertToggle" onclick="toggleAlerts()" title="auto pop-up for new urgent cases">&#128276; alerts on</span>
@@ -1067,6 +1528,8 @@
 <div class="modal" id="ticketModal" onclick="if(event.target===this)closeTicketModal()">
   <div class="muleprof" id="ticketBox" style="width:min(820px,95vw)"></div>
 </div>
+
+<div class="gd" id="guardModal" onclick="if(event.target===this)guardClose()"><div class="gd-box" id="guardBox"></div></div>   <!-- guardrails: every request is confirmed here -->
 
 <div class="modal" id="resolveModal" onclick="if(event.target===this)closeResolve()">
   <div class="urgent" style="background:linear-gradient(180deg,rgba(10,26,20,.97),rgba(8,16,13,.97));border-color:rgba(55,230,166,.5);box-shadow:0 0 0 1px rgba(55,230,166,.25),0 0 60px rgba(55,230,166,.35)">
@@ -1173,17 +1636,17 @@ function showUrgent(it, opened){ if(!it)return;
   $('urgentModal').classList.add('on'); URGENT_SEEN.add(it.ack_no); }
 function dismissUrgent(){ $('urgentModal').classList.remove('on'); }
 function urgentOpen(ack){ SUPPRESS_URGENT=true; dismissUrgent(); selectCase(ack); }
-async function urgentFreeze(ack){
-  const r=await jpost(`/alerts/dispatch?ack_no=${ack}`);
-  const f=$('uflash'); if(f)f.textContent=r.deduped?'Already dispatched < 15 min ago.'
-    :(r.dispatched&&r.dispatched.length)?'✓ Freeze alert sent: '+r.dispatched.map(a=>a.channel).join(', ')
-    :'Logged (tier '+((r.recommendation&&r.recommendation.tier)||'?')+').';
-  loadQueue(); setTimeout(dismissUrgent, 1500); }
+function urgentFreeze(ack){   // guardrails: officer, reason and checks before anything is sent
+  guardOpen({ack, onDone:r=>{ const f=$('uflash'); if(f)f.textContent=r.message;
+    if((r.dispatched||[]).length&&(r.recommendation||{}).tier==='RED')
+      jpatch(`/tickets/${ack}?status=FREEZE_SENT&actor=${encodeURIComponent(r.officer)}`).catch(()=>{});
+    loadQueue(); setTimeout(dismissUrgent, 1500); }}); }
 // Calm auto-alerts: only pop for a RED case that arrived AFTER the app loaded
 // (never for cases already on screen), at most once every 2 minutes, and never
 // while a popup is open. Muteable from the header. Clicking a case does NOT pop.
 function checkNewUrgent(){
   if(!ALERTS_ON) return;
+  if(VIEW==='sim') return;                                  // never interrupt the Simulation cut-scene
   if($('urgentModal').classList.contains('on')) return;
   if(Date.now()-ALERT_LAST < 120000) return;                // throttle: >=2 min between auto-alerts
   const base=BASELINE_ACKS||new Set();
@@ -1209,7 +1672,9 @@ function setNav(){ const o=$('navOverview'),t=$('navTickets'),c=$('navCase');
   if(o)o.className='navbtn'+(VIEW==='overview'?' on':'');
   if(t)t.className='navbtn'+(VIEW==='tickets'?' on':'');
   if(c)c.className='navbtn'+(VIEW==='case'?' on':'');
-  const nw=$('navNet'); if(nw)nw.className='navbtn'+(VIEW==='network'?' on':''); }
+  const nw=$('navNet'); if(nw)nw.className='navbtn'+(VIEW==='network'?' on':'');
+  const sm=$('navSim'); if(sm)sm.className='navbtn'+(VIEW==='sim'?' on':'');
+  if(typeof simLayout==='function') simLayout(); }   // the Simulation tab takes the full width; leaving it stops the cut-scene
 
 // ===================== BASE MODE — same console, fewer panels (hides .adv) =====================
 let UIMODE=(()=>{try{return localStorage.getItem('uimode')||'advanced';}catch(e){return 'advanced';}})();
@@ -1222,6 +1687,7 @@ function setMode(m){
   if(m==='base'){
     if(PLAY){clearInterval(PLAY);PLAY=null;REPLAYING=false;}   // the console is hidden: stop replay + voice
     try{stopVoice();}catch(e){}
+    try{simHalt();}catch(e){}   // and the Simulation cut-scene
     try{closeMule();dismissUrgent();closeResolve();closeTicketModal();}catch(e){}   // no Advanced pop-up left floating over Base
     clearTimeout(BM_OPENMULE_T);
     if(prev!=='base'){ BM_HIST=[];   // mirror the console: same case open, else the overview
@@ -1239,7 +1705,7 @@ function setMode(m){
       if(BM_VIEW==='db'){VIEW='tickets';TK_TAB='mules';}          // Base mule database -> Case Centre mule database
       if(['tickets','ticket','newticket'].includes(BM_VIEW)){VIEW='tickets';TK_TAB='inc';}   // Base tickets -> Case Centre incidents
       if(VIEW==='case'&&SEL) selectCase(SEL); else if(VIEW==='tickets') showTickets();
-      else if(VIEW==='network') showNetwork(); else showOverview();
+      else if(VIEW==='network') showNetwork(); else if(VIEW==='sim') showSim(); else showOverview();
       if(BM_VIEW==='mule'&&BM_MULE) BM_OPENMULE_T=setTimeout(()=>{ if(UIMODE!=='base')openMule(BM_MULE); },300);   // same mule, as the console's profile
     }
   }
@@ -1256,7 +1722,7 @@ function advSwapTiles(map, withLabels){ if(!map)return;   // swap the street map
   const u=advTileUrls(); L.tileLayer(u.base,{maxZoom:16}).addTo(map).bringToBack(); if(withLabels) L.tileLayer(u.ref,{maxZoom:16}).addTo(map); }
 function advToggleTheme(){ ADV_THEME=ADV_THEME==='light'?'dark':'light'; try{localStorage.setItem('themeAdv',ADV_THEME);}catch(e){}
   advApplyTheme(); try{ advSwapTiles(MAP,true); advSwapTiles(OMAP,false); }catch(e){}
-  if(VIEW==='network') showNetwork(); }
+  if(VIEW==='network') showNetwork(); if(VIEW==='sim') simTheme(); }
 // ===================== BASE MODE — a separate, simple screen for field officers (light or dark) =====================
 // Same API as the Advanced console (/queue, /hotspots, /predict, /trail, /case, /tickets, /network, /account,
 // /codenames, /alerts/dispatch); no second backend. Three pages:
@@ -1306,9 +1772,8 @@ function bmToggleTheme(){ BM_THEME=BM_THEME==='dark'?'light':'dark'; try{localSt
 function bmShell(){ const a=$('baseApp'); if(!a)return null;
   if(!$('bmMain')) a.innerHTML=`<div class="bm-top">
       <div class="bm-brand">Mule Connection<small>Cyber-fraud cash-out alerts &middot; Pune</small></div>
-      <span class="bm-demo">Synthetic demo data</span>
-      <button class="bm-themebtn" id="bmTkBtn" onclick="baseTickets()" title="Assigned and unassigned tickets; open a new one">&#9636; Tickets</button>
-      <button class="bm-themebtn" id="bmDbBtn" onclick="baseDb()" title="Every suspected mule account and its recent cases">&#9776; Mule database</button>
+      <button class="bm-themebtn" id="bmTkBtn" onclick="baseTickets()" title="Assigned and unassigned incident tickets; open a new one">&#9636; Incidents</button>
+      <button class="bm-themebtn" id="bmDbBtn" onclick="baseDb()" title="Every suspected mule account and its recent cases">&#9776; Suspect Registry</button>
       <button class="bm-themebtn" id="bmThemeBtn" onclick="bmToggleTheme()" title="Light or dark screen"></button>
       <div class="modesw" title="Base = simple view &middot; Advanced = full analyst console">
         <span class="seg on" onclick="setMode('base')">Base</span><span class="seg" onclick="setMode('advanced')">Advanced</span></div>
@@ -1379,7 +1844,7 @@ function bmBody(){ const el=$('bmBody'); if(!el)return;
       <td class="hm">${bmWhen(i.filed_ts)}</td><td class="r"><b>${pct(i.p_cashout_10m)}</b></td>
       <td class="r bm-open hm">Open &rsaquo;</td></tr>`; }).join('')
     ||`<tr><td colspan="8" class="bm-empty">No case matches &ldquo;${esc(BM_Q)}&rdquo;.</td></tr>`)+'</tbody></table>';
-  const foot=$('bmFoot'); if(foot)foot.textContent='Cases to freeze first, then cases to watch; cases already handled drop to the bottom. Click a mule name to see its recent cases; the Mule database (top bar) lists every suspected mule. Percentages are estimates to help you decide what to review first; they are not proof of a crime.';
+  const foot=$('bmFoot'); if(foot)foot.textContent='Cases to freeze first, then cases to watch; cases already handled drop to the bottom. Click a mule name to see its recent cases; the Suspect Registry (top bar) lists every suspected mule. Percentages are estimates to help you decide what to review first; they are not proof of a crime.';
 }
 // ================= MULE DATABASE: every suspected mule (top-bar button) -> its file with recent cases =================
 async function loadMuleDb(){   // shared with the Advanced Case Centre
@@ -1399,15 +1864,15 @@ async function baseDb(noPush){
   if(!noPush&&BM_VIEW!=='db') bmPush();
   BM_VIEW='db'; BM_ACK=null; BM_MULE=null; bmDropMap();
   const m=bmShell(); if(!m)return; window.scrollTo(0,0);
-  m.innerHTML=bmBackLink()+`<h1>Mule database</h1>
+  m.innerHTML=bmBackLink()+`<h1>Suspect Registry</h1>
     <p class="bm-sub" id="bmDbSum">Loading&hellip;</p>
     <div class="bm-tools"><input id="bmDbQ" class="bm-search" placeholder="Search by mule name, account, area, bank or role" oninput="BM_DBQ=this.value;bmDbRows()">
       <select id="bmDbSort" class="bm-search bm-select" onchange="BM_DBSORT=this.value;bmDbRows()">
         <option value="cases">Sort: most linked cases</option><option value="recent">Sort: most recent case</option><option value="money">Sort: most stolen money</option></select></div>
-    <div class="bm-card flush" id="bmDbBody"><div class="bm-empty">Loading the mule database&hellip;</div></div>
+    <div class="bm-card flush" id="bmDbBody"><div class="bm-empty">Loading the suspect registry&hellip;</div></div>
     <p class="bm-foot">Every account that received stolen money in a complaint (synthetic data), one row per account. Click a mule to see its recent cases. Roles come from simple rules about how money moves through the account. A listing is a lead for review, not proof of a crime.</p>`;
   $('bmDbQ').value=BM_DBQ; $('bmDbSort').value=BM_DBSORT;
-  try{ await Promise.all([loadMuleDb(), bmLoadTickets()]); }catch(e){ const x=$('bmDbBody'); if(x)x.innerHTML='<div class="bm-empty">Could not load the mule database. Please try again.</div>'; return; }
+  try{ await Promise.all([loadMuleDb(), bmLoadTickets()]); }catch(e){ const x=$('bmDbBody'); if(x)x.innerHTML='<div class="bm-empty">Could not load the suspect registry. Please try again.</div>'; return; }
   if(BM_VIEW==='db') bmDbRows();
 }
 function bmDbRows(){ const el=$('bmDbBody'); if(!el||!MULE_DB)return;
@@ -1463,7 +1928,7 @@ async function baseTickets(noPush){
   if(!noPush&&BM_VIEW!=='tickets') bmPush();
   BM_VIEW='tickets'; BM_ACK=null; BM_MULE=null; bmDropMap();
   const m=bmShell(); if(!m)return; window.scrollTo(0,0);
-  m.innerHTML=bmBackLink()+`<h1>Tickets</h1>
+  m.innerHTML=bmBackLink()+`<h1>Incidents</h1>
     <p class="bm-sub" id="bmTkSum">Loading&hellip;</p>
     <div class="bm-tools"><div class="bm-seg" id="bmTkSeg"></div>
       <input id="bmTkQ" class="bm-search" placeholder="Search ticket, complaint no., mule, officer or type" oninput="BM_TKQ=this.value;bmTkRows()">
@@ -1562,8 +2027,8 @@ async function baseNewTicket(noPush){
   if(!noPush&&BM_VIEW!=='newticket') bmPush();
   BM_VIEW='newticket'; BM_ACK=null; BM_MULE=null; bmDropMap();
   const m=bmShell(); if(!m)return; window.scrollTo(0,0);
-  m.innerHTML=bmBackLink()+`<h1>New ticket</h1>
-    <p class="bm-sub">Open a ticket for a new complaint or lead. It is saved to the Case Centre, so Advanced sees it too.</p>
+  m.innerHTML=bmBackLink()+`<h1>New incident ticket</h1>
+    <p class="bm-sub">Open an incident ticket for a new complaint or lead. It is saved to the Incident Desk, so Advanced sees it too.</p>
     <div class="bm-card bm-form">
       <label for="ntTitle">Title <span class="req">*</span></label><input id="ntTitle" maxlength="140" placeholder="e.g. UPI fraud reported at Hadapsar PS, ₹45,000">
       <div class="row"><div><label for="ntAck">Complaint / acknowledgement no.</label><input id="ntAck" maxlength="40" placeholder="leave empty to create one"></div>
@@ -1878,23 +2343,17 @@ function bmMuleMap(k, atmList){
   }catch(e){}
 }
 // ---- actions ----
-// two-step send: the first click arms the button, the second sends (no accidental freeze requests)
-async function bmSend(btn, ack, acc){
-  if(!btn.dataset.armed){ const lbl=btn.textContent; btn.dataset.armed='1'; btn.textContent='Click again to confirm';
-    setTimeout(()=>{ if(btn.isConnected&&btn.dataset.armed){ delete btn.dataset.armed; btn.textContent=lbl; } },5000); return; }
-  delete btn.dataset.armed; btn.disabled=true;
-  const f=$('bmFlash'); if(f){f.className='bm-flash';f.textContent='Sending…';}
-  let r; try{ r=await jpost(`/alerts/dispatch?ack_no=${ack}&account=${encodeURIComponent(acc)}`); }
-  catch(e){ if(f){f.className='bm-flash err';f.textContent='Could not send. Please try again.';} btn.disabled=false; return; }
-  const rec=r.recommendation||{}; let msg;
-  if(r.deduped) msg='A request for this account was already sent in the last 15 minutes.';
-  else if(r.dispatched&&r.dispatched.length){
-    if(rec.tier==='RED'){ msg=`Freeze request sent to the bank, and ${rec.target_station||'the district cyber police station'} alerted by SMS.`;
-      try{ await jpatch(`/tickets/${ack}?status=FREEZE_SENT&actor=${encodeURIComponent('officer (Base)')}`); BM_TK[ack]='FREEZE_SENT'; }catch(e){} }
-    else msg=`Monitoring note emailed to the ${rec.target_district||'district'} desk.`;
-  } else msg='No alert is needed at this risk level.';
-  if(f){f.className='bm-flash ok';f.textContent=msg+' (Demo: no real message is sent.)';}
-  bmStatus(ack);
+// guardrails: the officer confirms who is sending, why, and (for big freezes) who approves; the server checks it all
+function bmSend(btn, ack, acc){
+  guardOpen({ack, account:acc, onDone:async r=>{ const f=$('bmFlash'), rec=r.recommendation||{}; let msg;
+    if(r.deduped) msg='A request for this account was already sent in the last 15 minutes.';
+    else if((r.dispatched||[]).length){
+      if(rec.tier==='RED'){ msg=`Freeze request sent to the bank, and ${rec.target_station||'the district cyber police station'} alerted by SMS.`;
+        try{ await jpatch(`/tickets/${ack}?status=FREEZE_SENT&actor=${encodeURIComponent(r.officer)}`); BM_TK[ack]='FREEZE_SENT'; }catch(e){} }
+      else msg=`Monitoring note emailed to the ${rec.target_district||'district'} desk.`;
+    } else msg='No alert is needed at this risk level; your review was logged.';
+    if(f){ f.className='bm-flash ok'; f.textContent=`${msg} Sent by ${r.officer}${r.approver?', approved by '+r.approver:''}. (Demo: no real message is sent.)`; }
+    bmStatus(ack); }});
 }
 async function bmReviewed(ack){
   const f=$('bmFlash');
@@ -1979,7 +2438,7 @@ async function showNetwork(){
   $('stage').innerHTML=`
    <div class="netview">
      <div class="nethead">
-       <div><h1 class="nettitle">MULE NETWORK</h1>
+       <div><h1 class="nettitle">LINK ANALYSIS</h1>
          <span class="netsub">Each node is a suspected mule account (labelled in the synthetic data) under a codename, sized by how many frauds it touches and coloured by a rule-based behaviour role (not a clustering model; a role is a lead to review, not proof). Lines link mules that worked the same case, moved money to each other, or share a ring. <b>Click a node to see it on the map; double-click to open its file.</b></span></div>
        <div class="netlegend" id="netLegend"></div>
      </div>
@@ -2015,7 +2474,7 @@ async function showNetwork(){
        </div>
      </div>
      <div class="card" style="margin-top:14px;padding:14px">
-       <h3>&#9776; Mule register</h3>
+       <h3>&#9776; Suspects in this network</h3>
        <div class="cap">suspected mule accounts, one row per account, most linked complaints first &middot; the search above filters this list too &middot; click a row for the full file with every linked case</div>
        <div style="overflow:auto;max-height:56vh"><table class="tktable"><thead><tr><th>Mule</th><th>Role</th><th>Registered area</th>
          <th>Linked cases</th><th>Stolen money in</th><th>Open alert</th><th></th></tr></thead><tbody id="netRows"><tr><td colspan="7" class="cap">loading&hellip;</td></tr></tbody></table></div>
@@ -2211,9 +2670,9 @@ function renderOverview(){
   const maxRisk=Math.max(1,...topCells.map(c=>c.risk_norm||0));
   $('stage').innerHTML=`
     <div class="ovhead">
-      <h1>PUNE CASH-OUT COMMAND CENTRE</h1>
+      <h1>PUNE CYBER FRAUD SITUATION ROOM</h1>
       <span class="sub">live cyber-fraud cash-out forecasting &middot; I4C / MHA</span>
-      <span class="trustbadge">&#10003; leakage-safe as-of engine</span>
+      <span class="trustbadge" style="cursor:pointer" onclick="showGuardrails()" title="The safety checks every freeze request passes">&#128737; Guardrails on</span>
       <span class="live"><span class="d"></span>LIVE &middot; ${zones} zones</span>
     </div>
     <div class="bx">This is your home screen. The boxes below are today&rsquo;s totals; the map shows where cash-outs are likely across the city. <b>Open a case from the list on the left</b> (most urgent at the top) to see what to do.</div>
@@ -2284,7 +2743,7 @@ function buildOverviewMap(){
 
 // ================= CASE CENTRE (ticket queue + lifecycle) =================
 const ANALYSTS=['Insp. Sharma','SI Kulkarni','Cst. Patil','ASI Deshmukh','Insp. Rao'];
-let TICKETS=[], TK_TAB='inc', TK_MQ='', TK_MSORT='cases', TK_ASG='assigned';   // incidents: assigned (default) | unassigned | all   // Case Centre tabs: incidents | mule database
+let TICKETS=[], TK_TAB='inc', TK_MQ='', TK_MSORT='name', TK_ASG='assigned';   // incidents: assigned (default) | unassigned | all   // Case Centre tabs: incidents | mule database
 function stBadge(s){return `<span class="st ${s}">${(s||'').replace('_',' ')}</span>`;}
 function priBadge(p){return `<span class="pri ${p}">${p}</span>`;}
 async function showTickets(){
@@ -2298,7 +2757,7 @@ async function renderTickets(){
   TICKETS=list; list.forEach(t=>BM_TK[t.ack_no]=t.status);   // shared statuses (freeze-first ordering)
   const tile=(k,v,c)=>`<div class="tktile"><div class="k">${k}</div><div class="v" style="color:${c||'var(--ink)'}">${v}</div></div>`;
   $('stage').innerHTML=`
-    <div class="ovhead"><h1 style="font-size:24px">CASE CENTRE</h1>
+    <div class="ovhead"><h1 style="font-size:24px">INCIDENT DESK</h1>
       <span class="sub">incident tickets &middot; assign, investigate, freeze, resolve &mdash; every action logged</span>
       <span class="live"><span class="d"></span>LIVE TICKET DATA</span></div>
     <div class="tkwrap">
@@ -2311,22 +2770,18 @@ async function renderTickets(){
         ${tile('₹ recovered', moneyC(sum.recovered||0),'var(--green)')}
       </div>
       <div class="tktabs">
-        <span class="navbtn" id="tkTabInc" onclick="tkTab('inc')">&#9776;&nbsp; Incidents</span>
-        <span class="navbtn" id="tkTabMul" onclick="tkTab('mules')">&#9670;&nbsp; Mule database</span>
+        <span class="navbtn" id="tkTabInc" onclick="tkTab('inc')">&#9776;&nbsp; Incident Queue</span>
+        <span class="navbtn" id="tkTabMul" onclick="tkTab('mules')">&#9670;&nbsp; Suspect Registry</span>
       </div>
       <div class="card" style="padding:14px" id="tkPaneMul">
         <div class="tktoolbar" style="margin-bottom:8px">
-          <input class="tksearch" id="tkMulQ" placeholder="Search mule name, account, area, bank or role…" oninput="TK_MQ=this.value;tkMuleRows()">
+          <input class="tksearch" id="tkMulQ" placeholder="Type a mule name (e.g. NOMAD), an account, area or bank&hellip;" oninput="TK_MQ=this.value;tkMuleRows(true)">
           <select class="tksearch" id="tkMulSort" style="flex:0 0 auto;min-width:0;cursor:pointer" onchange="TK_MSORT=this.value;tkMuleRows()">
-            <option value="cases">most linked cases</option><option value="recent">most recent case</option><option value="money">most stolen money</option></select>
+            <option value="name">names A&ndash;Z</option><option value="urgent">freeze-now first</option><option value="cases">most linked cases</option></select>
         </div>
-        <div class="cap" id="tkMulSum" style="margin-bottom:10px">loading the mule database&hellip;</div>
-        <div style="overflow:auto;max-height:60vh">
-          <table class="tktable"><thead><tr>
-            <th>Mule</th><th>Role</th><th>Registered area</th><th>Bank</th><th>Linked cases</th><th>Stolen money in</th><th>Most recent case</th><th>Open alert</th><th>Action</th>
-          </tr></thead><tbody id="tkMulRows"></tbody></table>
-        </div>
-        <div class="cap" style="margin-top:8px">every account that received stolen money in a complaint (synthetic data) &middot; roles come from fixed flow rules &middot; a listing is a lead for review, not proof</div>
+        <div class="cap" id="tkMulSum" style="margin-bottom:10px">loading the suspect registry&hellip;</div>
+        <div class="mdb"><div class="mdb-list" id="tkMulList"></div><div class="mdb-file" id="tkMulFile"></div></div>
+        <div class="cap" style="margin-top:8px">every account that received stolen money in a complaint &middot; names group accounts for quick lookup; each line is its own bank account &middot; roles come from fixed flow rules &middot; a listing is a lead for review, not proof</div>
       </div>
       <div class="card" style="padding:14px" id="tkPaneInc">
         <div class="tktoolbar" style="margin-bottom:12px">
@@ -2353,19 +2808,62 @@ function tkTab(t){ TK_TAB=t;
   inc.style.display=t==='inc'?'':'none'; mul.style.display=t==='mules'?'':'none';
   $('tkTabInc').classList.toggle('on',t==='inc'); $('tkTabMul').classList.toggle('on',t==='mules');
   if(t==='mules'){ $('tkMulQ').value=TK_MQ; $('tkMulSort').value=TK_MSORT;
-    loadMuleDb().then(tkMuleRows).catch(()=>{ const x=$('tkMulSum'); if(x)x.textContent='could not load the mule database'; }); } }
-function tkMuleRows(){ const tb=$('tkMulRows'); if(!tb||!MULE_DB)return;
-  const all=MULE_DB.mules||[], alert=muleAlerts(), rows=muleDbFilter(TK_MQ,TK_MSORT);
-  const sum=$('tkMulSum'); if(sum)sum.innerHTML=`${all.filter(m=>muleRank(alert,m.id)===0).length} to freeze now &middot; ${all.filter(m=>muleRank(alert,m.id)===1).length} to watch &middot; ${all.length} suspected mule accounts &middot; ${all.filter(m=>m.n_cases>1).length} linked to more than one complaint${TK_MQ.trim()?` &middot; showing ${rows.length}`:''} &middot; freeze-now accounts listed first`;
-  tb.innerHTML=rows.map(m=>`<tr style="cursor:pointer" onclick="openMule('${m.id}')">
-      <td><span class="mulelink">${esc(m.codename)}<small>${esc(m.id)}</small></span></td>
-      <td><span style="color:${NET_COL[m.role]||'var(--dim)'}">&#9679;</span> ${esc(NET_GL[m.role]||m.role)}</td>
-      <td>${esc(m.district||'—')}</td><td class="mono">${esc(m.bank||'—')}</td>
-      <td class="mono"><b>${m.n_cases}</b></td><td class="mono">${money(m.tainted_in)}</td>
-      <td class="mono">${m.last_case?bmDate(m.last_case):'—'}</td>
-      <td>${alert[m.id]?`<span class="tier ${alert[m.id].rank<=1?alert[m.id].key:'GREY'}" style="padding:3px 8px">${alert[m.id].label.toUpperCase()}</span>`:'<span class="cap" style="margin:0">none</span>'}</td>
-      <td><button class="btn sm" onclick="event.stopPropagation();openMule('${m.id}')">Recent cases &rsaquo;</button></td></tr>`).join('')
-    ||`<tr><td colspan="9" class="cap" style="padding:24px;text-align:center">No mule matches &ldquo;${esc(TK_MQ)}&rdquo;.</td></tr>`; }
+    loadMuleDb().then(tkMuleRows).catch(()=>{ const x=$('tkMulSum'); if(x)x.textContent='could not load the suspect registry'; }); } }
+// Grouped by name: NOMAD -> NOMAD-6636, NOMAD-2397 ... Click an account for its case file, or a name for every
+// case of every account under that name (each account keeps its own heading: they are separate bank accounts).
+let TK_MSEL=null, MDB_Q=null, MDB_ACC={};
+const mdbWord=m=>String(m.codename||m.id).split('-')[0];
+async function mdbQueue(){ if(!MDB_Q){ const q=await jget('/queue?limit=600'); MDB_Q={}; q.forEach(i=>MDB_Q[i.ack_no]=i); } return MDB_Q; }
+async function mdbAccount(id){ if(!MDB_ACC[id]){ const d=await jget('/account/'+encodeURIComponent(id)+'?limit=1'); if(d&&!d.detail)MDB_ACC[id]=d; } return MDB_ACC[id]; }
+function tkMuleRows(typed){ const box=$('tkMulList'); if(!box||!MULE_DB)return;
+  const all=MULE_DB.mules||[], alert=muleAlerts(), q=TK_MQ.trim().toLowerCase();
+  const rows=all.filter(m=>!q||(m.codename+' '+m.id+' '+(m.district||'')+' '+(m.bank||'')+' '+(BM_ROLE[m.role]||m.role)).toLowerCase().includes(q));
+  const byAcc=(a,b)=>(muleRank(alert,a.id)-muleRank(alert,b.id))||(b.n_cases-a.n_cases)||(b.tainted_in-a.tainted_in);
+  const groups={}; rows.forEach(m=>(groups[mdbWord(m)]=groups[mdbWord(m)]||[]).push(m));
+  const G=Object.entries(groups).map(([w,ms])=>({w,ms:ms.sort(byAcc),rank:Math.min(...ms.map(m=>muleRank(alert,m.id))),cases:ms.reduce((s,m)=>s+m.n_cases,0)}));
+  G.sort(TK_MSORT==='urgent'?(a,b)=>(a.rank-b.rank)||a.w.localeCompare(b.w):TK_MSORT==='cases'?(a,b)=>(b.cases-a.cases)||a.w.localeCompare(b.w):(a,b)=>a.w.localeCompare(b.w));
+  const sum=$('tkMulSum'); if(sum)sum.innerHTML=`<b>${all.filter(m=>muleRank(alert,m.id)===0).length}</b> to freeze now &middot; <b>${all.filter(m=>muleRank(alert,m.id)===1).length}</b> to watch &middot; ${all.length} mule accounts under ${new Set(all.map(mdbWord)).size} names${q?` &middot; <b>${rows.length}</b> match &ldquo;${esc(TK_MQ.trim())}&rdquo;`:''} &middot; click a name for all its cases, or an account for its case file`;
+  const badge=id=>{ const a=alert[id]; return a&&a.rank<=1?`<span class="tier ${a.key}" style="padding:2px 7px;font-size:9.5px">${a.label.toUpperCase()}</span>`:''; };
+  box.innerHTML=G.map(g=>`<div class="mdb-g">
+      <div class="mdb-gh${TK_MSEL&&TK_MSEL.kind==='name'&&TK_MSEL.id===g.w?' on':''}" onclick="tkMuleOpen('name','${esc(g.w)}')">
+        <b>${esc(g.w)}</b><span>${g.ms.length} account${g.ms.length===1?'':'s'} &middot; ${g.cases} case${g.cases===1?'':'s'}</span>${g.rank===0?'<i class="mdb-dot RED"></i>':g.rank===1?'<i class="mdb-dot AMBER"></i>':''}</div>
+      ${g.ms.map(m=>`<div class="mdb-a${TK_MSEL&&TK_MSEL.kind==='acc'&&TK_MSEL.id===m.id?' on':''}" onclick="tkMuleOpen('acc','${esc(m.id)}')">
+        <div><b>${esc(m.codename)}</b><small>${esc(m.id)} &middot; ${esc(m.district||'—')}</small></div>
+        <div class="mdb-r">${badge(m.id)}<span>${m.n_cases} case${m.n_cases===1?'':'s'}</span></div></div>`).join('')}</div>`).join('')
+    ||`<div class="cap" style="padding:18px">No mule matches &ldquo;${esc(TK_MQ)}&rdquo;.</div>`;
+  // typing a whole name (e.g. "nomad") opens that name; otherwise keep the open file, or open the most urgent mule
+  const word=q&&G.find(g=>g.w.toLowerCase()===q);
+  if(typed&&word) tkMuleOpen('name',word.w);
+  else if(!TK_MSEL&&G.length){ const first=G.slice().sort((a,b)=>a.rank-b.rank)[0]; tkMuleOpen('acc',first.ms[0].id); } }
+async function tkMuleOpen(kind,id){ TK_MSEL={kind,id}; const f=$('tkMulFile'); if(!f)return;
+  document.querySelectorAll('#tkMulList .mdb-gh').forEach(e=>e.classList.toggle('on',kind==='name'&&e.querySelector('b').textContent===id));
+  document.querySelectorAll('#tkMulList .mdb-a').forEach(e=>e.classList.toggle('on',kind==='acc'&&(e.getAttribute('onclick')||'').includes(`'${id}'`)));
+  const accs=kind==='acc'?[id]:((MULE_DB&&MULE_DB.mules)||[]).filter(m=>mdbWord(m)===id).sort((a,b)=>b.n_cases-a.n_cases).map(m=>m.id);
+  f.innerHTML=`<div class="cap" style="padding:18px">Opening ${esc(kind==='acc'?bmName(id):id)}&hellip;</div>`;
+  let Q, files; try{ [Q,files]=await Promise.all([mdbQueue(), Promise.all(accs.map(mdbAccount))]); }
+  catch(e){ f.innerHTML='<div class="cap" style="padding:18px">Could not load this file.</div>'; return; }
+  if(!TK_MSEL||TK_MSEL.id!==id)return;   // another mule was clicked meanwhile
+  const alert=muleAlerts(), m0=a=>((MULE_DB.mules||[]).find(m=>m.id===a)||{});
+  const rk=c=>c.ack_no?bmState(c.ack_no,(Q[c.ack_no]||{}).tier).rank:9;   // freeze now first, then watch ... then newest
+  const caseRows=(d)=>{ const cs=(d.linked_cases||[]).filter(c=>c.role==='MULE').sort((a,b)=>(rk(a)-rk(b))||String(b.filed_ts||'').localeCompare(String(a.filed_ts||'')));
+    return cs.map(c=>{ const qi=Q[c.ack_no]||{}, st=c.ack_no?bmState(c.ack_no,qi.tier):{key:'GREY',label:'Unreported',rank:2}, act=qi.top_account===d.account_id;
+      return `<div class="mf-case"><span class="mf-st ${st.key}">${esc(st.label)}</span>
+        <div><b>${c.ack_no?'Complaint '+esc(c.ack_no):'Unreported case'}</b>
+          <small>${esc(bmWhen(c.filed_ts))} &middot; ${c.disputed_amount?money(c.disputed_amount):'—'} &middot; ${esc(bmType(c.fraud_category))}${act?' &middot; <em>account to act on</em>':''}</small></div>
+        ${c.ack_no?`<button class="btn sm" onclick="selectCase('${esc(c.ack_no)}')">Open case &rsaquo;</button>`:''}</div>`; }).join('')
+      ||'<div class="cap" style="margin:6px 0">No reported complaints.</div>'; };
+  const head=(d)=>{ const m=m0(d.account_id), a=alert[d.account_id];
+    return `<div class="mf-hd"><div><div class="mf-name">${esc(d.codename)}${a&&a.rank<=1?` <span class="tier ${a.key}" style="padding:3px 8px;font-size:10px;vertical-align:4px">${a.label.toUpperCase()}</span>`:''}</div>
+      <div class="mf-sub">${esc(d.account_id)} &middot; ${esc(d.kyc.bank_code||'—')} &middot; ${esc(d.kyc.district||'—')}${d.kyc.pin?' '+esc(d.kyc.pin):''} &middot; ${esc(NET_GL[d.role]||d.role)}</div></div>
+      <div class="mf-acts"><button class="btn ghost sm" onclick="openMule('${esc(d.account_id)}')">Full profile &rsaquo;</button></div></div>
+      <div class="mf-chips"><span><b>${m.n_cases||d.stats.n_linked_cases}</b> linked case${(m.n_cases||0)===1?'':'s'}</span><span><b>${moneyC(m.tainted_in||d.stats.tainted_inflow)}</b> stolen money in</span>
+        <span>last case <b>${m.last_case?bmDate(m.last_case):'—'}</b></span><span><b>${d.stats.distinct_atms}</b> ATMs used</span></div>`; };
+  if(kind==='acc'){ const d=files[0]; if(!d){ f.innerHTML='<div class="cap" style="padding:18px">No record for this account.</div>'; return; }
+    f.innerHTML=head(d)+`<div class="mf-h">All cases of ${esc(d.codename)} &middot; freeze-now first, then newest</div>${caseRows(d)}`; }
+  else { const ds=files.filter(Boolean), n=ds.reduce((s,d)=>s+(d.linked_cases||[]).filter(c=>c.role==='MULE').length,0);
+    f.innerHTML=`<div class="mf-hd"><div><div class="mf-name">${esc(id)}</div><div class="mf-sub">${ds.length} account${ds.length===1?'':'s'} named ${esc(id)} &middot; ${n} case${n===1?'':'s'} in total &middot; each account below is a separate bank account</div></div></div>`
+      +ds.map(d=>`<div class="mf-grp">${head(d)}<div class="mf-h">Cases &middot; freeze-now first, then newest</div>${caseRows(d)}</div>`).join(''); }
+  f.scrollTop=0; }
 // the account to act on for a ticket = the queue's top account for that complaint
 const tkMule=ack=>((QUEUE||[]).find(q=>q.ack_no===ack)||{}).top_account||null;
 function drawTicketRows(rows){
@@ -2397,7 +2895,7 @@ function filterTickets(){const s=$('tkSearch'); if(!s)return; const q=(s.value||
 function closeTicketModal(){ const m=$('ticketModal'); if(m)m.classList.remove('on'); }
 function openNewTicket(){ const m=$('ticketModal'), b=$('ticketBox'); if(!m||!b)return;
   const opt=a=>a.map(([k,l])=>`<option value="${k}">${l}</option>`).join('');
-  b.innerHTML=`<div class="mp-hd"><div><div class="mp-id">New ticket</div><div class="mp-sub">a new complaint or lead &middot; saved to the Case Centre (shared with Base)</div></div>
+  b.innerHTML=`<div class="mp-hd"><div><div class="mp-id">New ticket</div><div class="mp-sub">a new complaint or lead &middot; saved to the Incident Desk (shared with Base)</div></div>
       <span class="mp-x" onclick="closeTicketModal()">CLOSE &#10005;</span></div>
     <div class="mp-body amctl">
       <label>Title *</label><input id="atTitle" maxlength="140" placeholder="e.g. UPI fraud reported at Hadapsar PS, ₹45,000">
@@ -3260,6 +3758,7 @@ function renderBriefing(p, clockHTML, speakNow){
           <div><div class="big" id="actBig" style="color:${tierColor(r.tier)}">${r.action}</div>
             <div class="why" id="actWhy">${r.reason}</div></div>
         </div>
+        <div class="card gd-case" id="caseGuard"><div class="cap">checking guardrails&hellip;</div></div>
         <div class="card">
           <div class="jhead" style="margin-bottom:8px"><span class="rc"></span> JARVIS &mdash; situation
             <select class="sp" id="voiceSel" onchange="setVoice(this.value)" title="pick voice"
@@ -3382,15 +3881,16 @@ async function selectCase(ack){
   const q=await jget(`/queue?limit=60`);SELMETA=q.find(x=>x.ack_no===ack);
   const p=await jget(`/predict/${ack}`); await bmNames([p.account_id]); renderBriefing(p, null, true);
   loadTicket(ack);   // hydrate the case-management panel + timeline
+  caseGuard(ack, p.account_id);   // guardrail warnings + the guarded send button
   // (no auto-popup on click -- opening a case just shows it; urgent alerts are opt-in)
 }
 
-async function dispatch(ack,acc){const r=await jpost(`/alerts/dispatch?ack_no=${ack}&account=${acc}`);
-  if(r.dispatched&&r.dispatched.length){ try{ jpatch(`/tickets/${ack}?status=FREEZE_SENT`).then(()=>loadTicket(ack)); }catch(e){} }
-  const f=$('flash');if(!f)return;
-  f.textContent=r.deduped?'Deduplicated (alert for this account fired < 15 min ago).'
-    :(r.dispatched&&r.dispatched.length)?'Sent: '+r.dispatched.map(a=>a.channel+' → '+a.recipient).join(', ')
-    :'No alert (tier '+r.recommendation.tier+', below dispatch threshold).';}
+function dispatch(ack,acc){   // guardrails: officer, reason and checks before anything is sent
+  guardOpen({ack, account:acc, onDone:r=>{
+    if((r.dispatched||[]).length&&(r.recommendation||{}).tier==='RED')
+      jpatch(`/tickets/${ack}?status=FREEZE_SENT&actor=${encodeURIComponent(r.officer)}`).then(()=>loadTicket(ack)).catch(()=>{});
+    else { try{ loadTicket(ack); }catch(e){} }
+    const f=$('flash'); if(f)f.textContent=r.message; }}); }
 async function loadAlerts(){const a=await jget('/alerts');
   $('stage').innerHTML=`<div class="card"><h3>Alert delivery log (${a.length})</h3>`+
     (a.length?a.map(x=>`<div class="loc"><span><span class="tier ${x.tier}" style="padding:2px 7px">${x.tier}</span>
@@ -3437,12 +3937,839 @@ async function scrubTo(t){REPLAY_T=+t;if(!SEL)return;
   advApplyTheme();                       // Advanced light/dark preference (before anything draws)
   populateVoices();await loadQueue();await loadHotspots();
   if(UIMODE==='base') setMode('base');   // restore the simple operator view if it was chosen
-  else showOverview();                   // land on the command centre (not built while hidden behind Base)
+  else if(VIEW==='overview') showOverview();   // land on the command centre, unless a tab was opened while loading
   // no pop-up on load. Only genuinely NEW red cases (via the poll) alert, throttled.
   POLL=setInterval(async()=>{try{await loadQueue();}catch(e){return;}   // server restarting: try again next tick
     if(UIMODE!=='base'&&VIEW==='overview')renderOverview();
     if(UIMODE==='base'&&BM_VIEW==='home')baseHome();checkNewUrgent();}, 30000);
   document.addEventListener('keydown',e=>{if(e.key==='Escape'){dismissUrgent();closeMule();closeTicketModal();}});})();
+</script>
+<script>
+// ===================== SIMULATION TAB — one complaint through the whole pipeline =====================
+// A playable cut-scene on ONE real complaint from the test data. The presenter raises the complaint,
+// watches it reach the bank and an investigator, files the ticket (choosing the account the victim
+// paid), and the pipeline runs: identify -> trace -> find the account holding the money -> forecast
+// the cash-out -> top 5 ATMs -> recommendation. Everything after the ticket comes from /sim/run: real
+// model output, cut at the moment the complaint was filed. The call, bank and investigator scenes
+// illustrate the reporting process around the system (1930 helpline -> CFCFRMS -> bank -> police).
+const SIM_STAGES=[['call','Complaint'],['bank','Bank'],['inv','Investigator'],['ticket','Ticket'],['identify','Identify'],
+  ['trace','Trace'],['final','Final mule'],['predict','Predict'],['atms','Top 5 ATMs'],['verdict','Verdict']];
+const SIM_HOLD=[500,500,600,0,1100,1300,1300,1700,1700,0];   // pause after each stage (ms), skippable
+const SIM_CALLERS=['Rahul Mehta','Sneha Kulkarni','Arjun Patil','Priya Deshpande','Imran Shaikh','Kavita Joshi','Rohan Gaikwad','Ayesha Khan'];
+const SIM_SCAMS={kyc:['Fake bank / KYC call','Someone called saying my bank KYC had expired. I shared an OTP and the money left my account.'],
+  invest:['Investment / trading app','A trading group promised double returns. I sent money to the account they gave me.'],
+  job:['Part-time job tasks','They offered paid online tasks, then asked for a deposit to release my earnings.'],
+  shop:['Online shopping','I paid a seller on a marketplace for a phone. Now the number is switched off.'],
+  loan:['Instant loan app','A loan app said I must pay a processing fee first. The loan never came.']};
+const SIM_SRC={C1:'its own past ATMs',C2:'near its usual ATMs',C3:'near its home',C4:"its group's ATMs",C5:'known fraud ATM'};
+const SIM_SVG_PHONE='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="6.5" y="2.5" width="11" height="19" rx="2.2"/><path d="M10.5 18.6h3"/></svg>';
+const SIM_SVG_SHIELD='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"><path d="M12 2.8l7 2.6v5.4c0 4.6-3 8.3-7 10.4-4-2.1-7-5.8-7-10.4V5.4z"/><path d="M9 11.8l2.2 2.2 4.2-4.3"/></svg>';
+let SIM={tok:0,stage:-1,paused:false,ff:false,map:null,L:null,cv:null,bgDim:false,entries:null,entErr:null,run:null,runP:null,runAck:null,runMs:0,
+  pick:null,caller:null,inv:null,ticket:null,t0:0,clock:null,callT:null,filter:'live',q:'',boxes:[],nodeTags:{},
+  gate:null,holds:new Set(),holdT:0,holdSince:0,   // Advance mode: the step waiting for the presenter; clock time spent waiting
+  advance:(()=>{try{return localStorage.getItem('simAdvance')!=='0';}catch(e){return true;}})(),
+  sound:(()=>{try{return localStorage.getItem('simSound')!=='0';}catch(e){return true;}})()};
+
+// ---------- timing: every wait is pausable, and "Skip" fast-forwards the current stage ----------
+const simSleep=ms=>new Promise(r=>setTimeout(r,ms));
+const simAlive=tok=>VIEW==='sim'&&SIM.tok===tok&&!!$('sim');
+async function simW(tok,ms){ let left=ms;
+  while(left>0&&simAlive(tok)&&!SIM.ff){ const t=performance.now(); await simSleep(Math.min(left,90)); if(!SIM.paused)left-=performance.now()-t; } }
+function simFmtT(s){ s=Math.max(0,s); const m=Math.floor(s/60), r=s-m*60; return String(m).padStart(2,'0')+':'+r.toFixed(1).padStart(4,'0'); }
+// the run clock stops while the presenter explains, pauses or fills in the ticket, so it only counts the pipeline
+function simHold(why,on){ const now=performance.now(), was=SIM.holds.size>0;
+  if(on)SIM.holds.add(why); else SIM.holds.delete(why);
+  const is=SIM.holds.size>0; if(!was&&is)SIM.holdSince=now; else if(was&&!is){ SIM.holdT+=now-SIM.holdSince; SIM.holdSince=0; } }
+const simElapsed=()=>{ if(!SIM.t0)return 0; const now=performance.now();
+  return (now-SIM.t0-SIM.holdT-(SIM.holdSince?now-SIM.holdSince:0))/1000; };
+function simClockStart(){ SIM.t0=performance.now(); SIM.holds=new Set(); SIM.holdT=0; SIM.holdSince=0; clearInterval(SIM.clock);
+  SIM.clock=setInterval(()=>{ const c=$('simClock'); if(!c){clearInterval(SIM.clock);return;} c.textContent='T+'+simFmtT(simElapsed()); },100); }
+function simClockStop(reset){ clearInterval(SIM.clock); SIM.clock=null; clearInterval(SIM.callT);
+  if(reset){ SIM.t0=0; const c=$('simClock'); if(c)c.textContent='T+00:00.0'; } }
+
+// ---------- sound (tiny synthesised blips; nothing to download) ----------
+let SIM_AC=null;
+function simTone(f,d,type,vol,at){ if(!SIM.sound)return; try{
+  SIM_AC=SIM_AC||new (window.AudioContext||window.webkitAudioContext)(); if(SIM_AC.state==='suspended')SIM_AC.resume();
+  const t=SIM_AC.currentTime+(at||0), o=SIM_AC.createOscillator(), g=SIM_AC.createGain();
+  o.type=type||'sine'; o.frequency.setValueAtTime(f,t); g.gain.setValueAtTime(0.0001,t);
+  g.gain.exponentialRampToValueAtTime(vol||.03,t+.01); g.gain.exponentialRampToValueAtTime(0.0001,t+d);
+  o.connect(g); g.connect(SIM_AC.destination); o.start(t); o.stop(t+d+.05); }catch(e){} }
+const simSfx={tick:()=>simTone(1320,.05,'sine',.02), blip:()=>simTone(880,.045,'sine',.016),
+  ring:()=>{ for(let k=0;k<2;k++){ simTone(400,.36,'sine',.045,k*.5); simTone(450,.36,'sine',.03,k*.5); } },
+  lock:()=>{ simTone(660,.09,'square',.014); simTone(990,.16,'square',.014,.1); },
+  stamp:()=>{ simTone(170,.2,'triangle',.07); simTone(85,.28,'sine',.06,.02); }};
+function simSoundToggle(){ SIM.sound=!SIM.sound; try{localStorage.setItem('simSound',SIM.sound?'1':'0');}catch(e){}
+  const b=$('simSnd'); if(b)b.innerHTML=SIM.sound?'&#9835; Sound on':'&#9835; Sound off'; }
+
+// ---------- chrome: stage rail, caption, log, wipe ----------
+function simRail(i){ document.querySelectorAll('#simRail .s-st').forEach(el=>{ const k=+el.dataset.i;
+  el.classList.toggle('done',k<i); el.classList.toggle('on',k===i); }); }
+function simCap(num,l1,l2){ const c=$('simCap'); if(!c)return; if(!num){ c.innerHTML=''; return; }
+  const st=SIM_STAGES[+num-1];
+  c.innerHTML=`<div class="s-capk">Stage ${num} / 10 &middot; ${esc(st?st[1]:'')}</div><h2><span>${l1}</span><span>${l2}</span></h2>`; }
+function simLog(tag,html,cls){ const b=$('simLog'); if(!b)return;
+  const d=document.createElement('div'); d.className='s-lg '+(cls||'');
+  d.innerHTML=`<span class="t">${simFmtT(simElapsed())}</span><span class="x"><span class="g">${esc(tag)}</span>${html}</span>`;
+  b.appendChild(d); while(b.children.length>240)b.removeChild(b.firstChild); b.scrollTop=b.scrollHeight;
+  const n=$('simLogN'); if(n)n.textContent=b.children.length+' lines'; }
+function simWipe(){ const w=$('simWipe'); if(!w)return; w.classList.remove('go'); void w.offsetWidth; w.classList.add('go'); }
+function simPhase(p){ const w=$('simWorld'); if(!w)return; w.classList.remove('ph-title','ph-proc','ph-map'); w.classList.add('ph-'+p); }
+async function simType(tok,el,text,cps){ if(!el)return; const per=1000/(cps||60);
+  for(let i=1;i<=text.length;i++){ if(!simAlive(tok))return; if(SIM.ff)break;
+    el.textContent=text.slice(0,i); if(i%3===0)await simW(tok,per*3); }
+  el.textContent=text; }
+async function simScramble(tok,el,text,ms){ if(!el)return; const G='ABCDEFGHJKLMNPQRSTUVWXYZ0123456789#%&', t0=performance.now(); ms=ms||520;
+  while(simAlive(tok)&&!SIM.ff){ const k=(performance.now()-t0)/ms; if(k>=1)break; const n=Math.floor(text.length*k);
+    el.textContent=text.slice(0,n)+Array.from(text.slice(n)).map(c=>/[\s\-.]/.test(c)?c:G[Math.floor(Math.random()*G.length)]).join('');
+    await simSleep(40); }
+  el.textContent=text; }
+async function simCount(tok,el,to,ms,fmt){ if(!el)return; const t0=performance.now();
+  while(simAlive(tok)&&!SIM.ff){ const k=Math.min(1,(performance.now()-t0)/ms); el.textContent=fmt(to*(1-Math.pow(1-k,3))); if(k>=1)break; await simSleep(30); }
+  el.textContent=fmt(to); }
+function simAge(d){ if(d==null)return '—'; if(d>=365)return (d/365).toFixed(1)+' years'; if(d>=60)return Math.round(d/30)+' months'; return Math.round(d)+' days'; }
+function simFeat(f){ const v=+f.value; switch(f.unit){
+  case 'inr': return money(v); case 'min': return v>=9000?'—':v.toFixed(1)+' min'; case 'pct': return Math.round(v*100)+'%';
+  case 'hour': return String(Math.round(v)).padStart(2,'0')+':00'; case 'km': return v.toFixed(1)+' km'; default: return String(Math.round(v)); } }
+const simNm=id=>SIM.run&&SIM.run.victim&&id===SIM.run.victim.account?'Victim'   // the victim never gets a mule codename
+  :(SIM.run&&SIM.run.names&&SIM.run.names[id])||bmName(id);
+const simSrc=s=>(s||[]).map(x=>SIM_SRC[x]||x).join(', ');
+
+// ---------- the map (the city) ----------
+const simVar=n=>{ const el=$('sim'); return el?getComputedStyle(el).getPropertyValue(n).trim():'#999'; };
+function simCentre(){ const c=HOT&&HOT.district_centroids?Object.values(HOT.district_centroids):[];
+  return c.length?[c.reduce((a,x)=>a+x.lat,0)/c.length,c.reduce((a,x)=>a+x.lon,0)/c.length]:[18.5204,73.8567]; }
+function simTiles(){ if(!SIM.map)return; SIM.map.eachLayer(l=>{ if(l instanceof L.TileLayer)SIM.map.removeLayer(l); });
+  const base=L.tileLayer(advTileUrls().base,{maxZoom:17}).addTo(SIM.map); base.bringToBack();
+  let terr=0; base.on('tileerror',()=>{ if(++terr===4&&SIM.map){ try{SIM.map.removeLayer(base);}catch(e){}
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,subdomains:'abc'}).addTo(SIM.map).bringToBack(); } }); }
+function simMapInit(){ const el=$('simMap'); if(!el||typeof L==='undefined')return;
+  SIM.map=L.map(el,{zoomControl:false,attributionControl:false,zoomSnap:.25,dragging:false,scrollWheelZoom:false,doubleClickZoom:false,
+    boxZoom:false,keyboard:false,touchZoom:false,inertia:false});
+  simTiles(); SIM.cv=L.canvas({padding:.4});
+  SIM.L={bg:L.layerGroup().addTo(SIM.map),net:L.layerGroup().addTo(SIM.map),fx:L.layerGroup().addTo(SIM.map)};
+  SIM.map.setView(simCentre(),11.25);
+  setTimeout(()=>{ try{ SIM.map&&SIM.map.invalidateSize(); }catch(e){} },150);
+  simBg(); }
+function simBg(){ if(!SIM.map||!SIM.L)return; SIM.L.bg.clearLayers(); if(!HOT)return;   // the city: every ATM the system watches
+  const col=simVar('--s-fg');
+  (HOT.atm_markers||[]).forEach(a=>L.circleMarker([a.lat,a.lon],{renderer:SIM.cv,radius:1.6,stroke:false,fillColor:col,
+    fillOpacity:SIM.bgDim?.14:.42,interactive:false}).addTo(SIM.L.bg)); }
+// the real header height (it wraps to two lines on narrow screens), so the console below always fits the window
+(function(){ const h=document.querySelector('body>header'); if(!h)return;
+  const set=()=>document.documentElement.style.setProperty('--hdr',Math.ceil(h.getBoundingClientRect().height)+'px');
+  set(); if(window.ResizeObserver)new ResizeObserver(set).observe(h); else window.addEventListener('resize',set); })();
+function simBgDim(on){ SIM.bgDim=!!on; simBg(); }
+function simTheme(){ if(!SIM.map)return; simTiles(); simBg(); }
+function simTag(ll,html,o){ o=o||{}; return L.marker(ll,{interactive:false,keyboard:false,zIndexOffset:o.z||0,
+  icon:L.divIcon({className:'s-mk',iconSize:[0,0],iconAnchor:[0,0],
+    html:`<div class="s-tagw ${o.dir||'ne'} ${o.cls||''}"><i class="s-dot"></i><i class="s-lead"></i><div class="s-tag">${html}</div></div>`})}); }
+function simIcon(ll,html,z){ return L.marker(ll,{interactive:false,keyboard:false,zIndexOffset:z||0,
+  icon:L.divIcon({className:'s-mk',iconSize:[0,0],iconAnchor:[0,0],html})}); }
+// place a tag on whichever side of its point stays on screen and overlaps the fewest tags already placed
+function simTagW(html){ const txt=s=>s.replace(/<[^>]+>/g,'').replace(/&[a-z#0-9]+;/gi,'x');
+  const m=html.match(/<small>([\s\S]*)<\/small>/), a=txt(html.replace(/<small>[\s\S]*<\/small>/,'')), b=m?txt(m[1]):'';
+  return Math.max(a.length*7.2,b.length*6.3)+20; }
+function simFree(ll,w,h){ if(!SIM.map)return 'ne'; const p=SIM.map.latLngToContainerPoint(ll), S=SIM.map.getSize(), G=24, pad=6;
+  const opts=['ne','se','nw','sw'].map(d=>({d,r:{x:d[1]==='e'?p.x-1:p.x-w+1,y:d[0]==='n'?p.y-G-h:p.y+G,w,h}}));
+  const cost=r=>{ let s=(Math.max(0,pad-r.x)+Math.max(0,r.x+r.w-(S.x-pad))+Math.max(0,pad-r.y)+Math.max(0,r.y+r.h-(S.y-pad)))*120;
+    for(const b of SIM.boxes){ const ox=Math.min(r.x+r.w,b.x+b.w)-Math.max(r.x,b.x), oy=Math.min(r.y+r.h,b.y+b.h)-Math.max(r.y,b.y); if(ox>0&&oy>0)s+=ox*oy; }
+    return s; };
+  let best=opts[0], bc=Infinity; for(const o of opts){ const c=cost(o.r); if(c<bc-1){ bc=c; best=o; } }
+  SIM.boxes.push(best.r); return best.d; }
+function simTagAuto(ll,html,o){ o=Object.assign({},o||{}); o.dir=simFree(ll,simTagW(html),o.h||36); return simTag(ll,html,o); }
+// after every camera move: forget old tag positions, keep the caption corner and any side panel clear
+function simBoxes(panel){ SIM.boxes=[]; const w=$('simWorld'); if(!w)return; const W=w.clientWidth, H=w.clientHeight;
+  SIM.boxes.push({x:0,y:H-160,w:Math.min(460,W*.45),h:160});
+  if(panel){ const pw=Math.min(410,W*.46)+28; SIM.boxes.push({x:W-pw,y:0,w:pw,h:H}); } }
+const simLL=o=>o&&o.lat!=null&&o.lon!=null?[+o.lat,+o.lon]:null;
+function simPad(){ const w=$('simWorld'), pw=w?Math.min(390,w.clientWidth*.44):380;
+  return {paddingTopLeft:[70,90],paddingBottomRight:[pw+50,150]}; }
+async function simFly(tok,ll,z,dur){ if(!SIM.map||!ll)return;
+  if(SIM.ff){ SIM.map.setView(ll,z,{animate:false}); return; }
+  SIM.map.flyTo(ll,z,{duration:dur,easeLinearity:.2}); await simW(tok,dur*1000+80);
+  if(SIM.ff&&SIM.map)SIM.map.setView(ll,z,{animate:false}); }
+async function simFit(tok,pts,dur,maxZ){ if(!SIM.map||!pts.length)return;
+  const b=L.latLngBounds(pts), opt=Object.assign({maxZoom:maxZ||14},simPad());
+  if(SIM.ff){ SIM.map.fitBounds(b,Object.assign({animate:false},opt)); return; }
+  SIM.map.flyToBounds(b,Object.assign({duration:dur||1.6},opt)); await simW(tok,(dur||1.6)*1000+80);
+  if(SIM.ff&&SIM.map)SIM.map.fitBounds(b,Object.assign({animate:false},opt)); }
+function simAnimLine(tok,a,b,ms,o){ o=o||{}; return new Promise(res=>{ if(!SIM.map||!SIM.L){ res(); return; }
+  const line=L.polyline([a,a],{className:'s-edge'+(o.cls?' '+o.cls:''),interactive:false}).addTo(SIM.L.net);
+  const head=simIcon(a,'<i class="s-head"></i>',400).addTo(SIM.L.net);
+  const t0=performance.now(); let done=false;
+  const fin=()=>{ if(done)return; done=true;
+    try{ line.setLatLngs([a,b]); SIM.L&&SIM.L.net.removeLayer(head); if(o.dashed){ const el=line.getElement(); if(el)el.classList.add('dash'); } }catch(e){}
+    res(line); };
+  const step=now=>{ if(done)return; if(!simAlive(tok)||SIM.ff){ fin(); return; }
+    const k=Math.min(1,(now-t0)/ms), e=1-Math.pow(1-k,3), p=[a[0]+(b[0]-a[0])*e,a[1]+(b[1]-a[1])*e];
+    try{ line.setLatLngs([a,p]); head.setLatLng(p); }catch(err){}
+    if(k<1)requestAnimationFrame(step); else fin(); };
+  requestAnimationFrame(step); setTimeout(fin,ms+700); }); }   // the timeout finishes it if frames are throttled
+function simHex(lat,lon,r){ const out=[]; for(let k=0;k<6;k++){ const a=Math.PI/180*(60*k+30);
+  out.push([lat+r*Math.cos(a)/111.32, lon+r*Math.sin(a)/(111.32*Math.cos(lat*Math.PI/180))]); } return out; }
+
+// ---------- open / leave the tab ----------
+function simLayout(){ const on=VIEW==='sim'; const app=document.querySelector('.app'); if(app)app.classList.toggle('simfull',on);
+  document.body.classList.toggle('simon',on);
+  if(!on){ const st=$('stage'); if(st)st.classList.remove('simstage'); simHalt(); }
+  setTimeout(()=>{ try{ if(MAP)MAP.invalidateSize(); if(OMAP)OMAP.invalidateSize(); }catch(e){} },60); }
+function simHalt(){ SIM.tok++; SIM.paused=false; SIM.ff=false; simClockStop();
+  if(SIM.gate){ const g=SIM.gate; SIM.gate=null; g.res(false); }   // release a waiting step; its chain sees the new token and stops
+  if(SIM.map){ try{ SIM.map.remove(); }catch(e){} SIM.map=null; SIM.L=null; } }
+async function showSim(){
+  VIEW='sim';
+  if(MAP){try{MAP.remove();}catch(e){}MAP=null;FLOWL=HEATL=MESHL=ATML=MKL=RETL=RSVG=null;}
+  if(OMAP){try{OMAP.remove();}catch(e){}OMAP=null;OHEAT=null;}
+  if(typeof NET_SIM!=='undefined'&&NET_SIM){try{NET_SIM.stop();}catch(e){}NET_SIM=null;}
+  if(PLAY){PLAY=null;REPLAYING=false;} try{stopVoice();}catch(e){}
+  simHalt();
+  $('stage').innerHTML=`<div class="sim" id="sim">
+    <div class="s-top">
+      <div class="s-brand">MULE<b>CONNECTION</b><span class="s-chip">Live pipeline</span></div>
+      <button class="s-advgo" id="simAdvGo" onclick="simAdvance()" hidden title="Next step (Space, Enter, right arrow or a presentation clicker)"></button>
+      <div class="s-clock" id="simClock">T+00:00.0</div>
+      <div class="s-ctl">
+        <button id="simAdvBtn" class="${SIM.advance?'on':''}" onclick="simAdvSet(!SIM.advance)" title="Advance mode: stop before each step, explain it, then continue on your click">Advance mode: ${SIM.advance?'on':'off'}</button>
+        <button id="simPause" onclick="simPause()" title="Pause or resume (Space)">&#10073;&#10073; Pause</button>
+        <button onclick="simNext()" title="Skip to the next stage (right arrow)">Skip &#9656;&#9656;</button>
+        <button onclick="simRestart()" title="Start again">&#8634; Restart</button>
+        <button id="simSnd" onclick="simSoundToggle()" title="Interface sounds">${SIM.sound?'&#9835; Sound on':'&#9835; Sound off'}</button>
+      </div></div>
+    <div class="s-rail" id="simRail">${SIM_STAGES.map((s,i)=>`<div class="s-st" data-i="${i}"><b>${String(i+1).padStart(2,'0')}</b><span>${s[1]}</span></div>`).join('')}</div>
+    <div class="s-body">
+      <div class="s-world ph-title" id="simWorld"><div id="simMap"></div><div class="s-vig"></div><div class="s-grid"></div>
+        <div class="s-scene" id="simScene"></div><div class="s-cap" id="simCap"></div><div class="s-wipe" id="simWipe"></div>
+        <div class="s-explain" id="simExplain"></div></div>
+      <aside class="s-log"><div class="s-loghead"><span>System log</span><span id="simLogN">0 lines</span></div><div class="s-logbody" id="simLog"></div></aside>
+    </div></div>`;
+  $('stage').classList.add('simstage'); setNav();
+  if(!HOT){ try{ await loadHotspots(); }catch(e){} }
+  if(VIEW!=='sim')return;
+  simMapInit(); simTitle(); simLoadEntries(); }
+function simRestart(){ showSim(); }
+function simPause(){ if(VIEW!=='sim'||SIM.stage<0||SIM.gate)return; SIM.paused=!SIM.paused; simHold('pause',SIM.paused);
+  const b=$('simPause'); if(b){ b.innerHTML=SIM.paused?'&#9654; Resume':'&#10073;&#10073; Pause'; b.classList.toggle('on',SIM.paused); }
+  const w=$('simWorld'); if(w)w.classList.toggle('paused',SIM.paused); }
+function simNext(){ if(VIEW!=='sim')return; if(SIM.gate){ simAdvance(); return; }   // waiting for the presenter: Skip = Advance
+  if(SIM.stage<0||SIM.stage===3||SIM.stage>=9)return; SIM.ff=true; if(SIM.paused)simPause(); }
+// keys: Space pauses (or advances when a step is waiting), right arrow / PageDown (presentation clickers) / Enter advance or skip
+document.addEventListener('keydown',e=>{ if(VIEW!=='sim'||UIMODE==='base')return;
+  if(/INPUT|TEXTAREA|SELECT|BUTTON/.test((e.target&&e.target.tagName)||''))return;
+  if(typeof GD!=='undefined'&&GD)return;   // the guardrail window is open: keys belong to it
+  if(SIM.gate&&[' ','Enter','ArrowRight','PageDown'].includes(e.key)){ e.preventDefault(); simAdvance(); return; }
+  if(e.key===' '){ e.preventDefault(); simPause(); } else if(e.key==='ArrowRight'||e.key==='PageDown'){ e.preventDefault(); simNext(); } });
+
+// ---------- data ----------
+async function simLoadEntries(){ const note=()=>{ const r=$('simReady'); if(!r)return;
+    if(SIM.entErr){ r.className='s-note bad'; r.innerHTML='The pipeline is offline: restart the server so it picks up the Simulation API, then reopen this tab.'; }
+    else if(SIM.entries){ const live=SIM.entries.filter(e=>e.tier!=='GREY').length;
+      r.className='s-note ok'; r.innerHTML=`Pipeline online &middot; ${SIM.entries.length} complaints &middot; ${live} with money still moving`; } };
+  if(SIM.entries){ note(); return; }
+  try{ const r=await fetch(API+'/sim/entries'); if(!r.ok)throw new Error('HTTP '+r.status); SIM.entries=(await r.json()).entries||[]; SIM.entErr=null; }
+  catch(e){ SIM.entErr=String(e.message||e); }
+  note(); if($('stList'))simTkList(); }
+
+// ---------- stage 0: title ----------
+function simTitle(){ SIM.stage=-1; simRail(-1); simCap(); simPhase('title'); simClockStop(true);
+  const nm=SIM_CALLERS[Math.floor(Math.random()*SIM_CALLERS.length)];
+  const ph='9'+(1+Math.floor(Math.random()*8))+'•••••'+(100+Math.floor(Math.random()*899));
+  $('simScene').innerHTML=`<div class="s-title">
+    <div class="s-kick">// SIH26184 &middot; Mule Connection &middot; live pipeline simulation</div>
+    <h1 class="s-h1"><span>Every rupee</span><span>leaves a <em class="s-hl">trail.</em></span></h1>
+    <p class="s-lead">Play one complaint through the whole system: the victim's call, the bank, the investigator and the ticket you file. Then the models trace the money, find the account holding it and name the ATMs it is likely to hit.</p>
+    <div class="s-callform">
+      <label>Caller<input id="simName" value="${esc(nm)}" maxlength="40" onkeydown="if(event.key==='Enter')simRaise()"></label>
+      <label>Mobile<input id="simPhone" value="${esc(ph)}" maxlength="16" onkeydown="if(event.key==='Enter')simRaise()"></label>
+      <label>What happened<select id="simScam">${Object.entries(SIM_SCAMS).map(([k,v])=>`<option value="${k}">${esc(v[0])}</option>`).join('')}</select></label>
+    </div>
+    <div class="s-actions"><button class="s-go" id="simGo" onclick="simRaise()">&#9654;&nbsp; Raise complaint</button>
+      <label class="s-advchk"><input type="checkbox" id="simAdvChk" ${SIM.advance?'checked':''} onchange="simAdvSet(this.checked)">
+        <span><b>Advance mode</b>stop and explain before each step</span></label></div>
+    <div class="s-note" id="simReady" style="margin-top:12px">Checking the pipeline&hellip;</div>
+    <div class="s-foot">Each dot on the map is one of the ${(HOT&&HOT.atm_markers||[]).length||700} ATMs the system watches across Pune. The run replays a real complaint from the test data; everything after the ticket is live model output, using only what was known when the complaint was filed.</div>
+  </div>`;
+  const b=$('simLog'); if(b)b.innerHTML='';
+  simLog('SYS','Simulation ready &middot; waiting for a complaint','dim'); }
+
+// ---------- Advance mode: stop before each stage, explain it, play it on the presenter's click ----------
+// Each card: title, what happens, three facts about how it really works, and (where known) this run's own details.
+const SIM_EXPLAIN=[
+ {t:['A victim','calls <em class="s-hl">1930</em>'],
+  what:'A fraud victim reports the loss on the 1930 national helpline (or cybercrime.gov.in). The operator registers it on CFCFRMS, the national system that links police and banks.',
+  how:['This is the real reporting process: it happens before our system starts.',
+    'The complaint gives us three facts to build on: the victim’s account, the amount and the transaction reference.',
+    'Speed decides the case: in our data victims report a median of 105 minutes after paying, while mules move money on within minutes.'],
+  run:()=>SIM.caller?`Caller <b>${esc(SIM.caller.name)}</b> &middot; ${esc((SIM_SCAMS[SIM.caller.scam]||SIM_SCAMS.kyc)[0])}`:''},
+ {t:['The bank','gets the <em class="s-hl">alert</em>'],
+  what:'CFCFRMS alerts the victim’s bank. Its fraud desk holds the reported debit and asks the receiving bank to report where the money went next.',
+  how:['Every transfer a bank reports becomes a link our system can trace.',
+    'About 15% of transfers are never reported, so the trail has gaps, as it does in real life.',
+    'Still the real-world process: our models take over once the ticket is filed.']},
+ {t:['Assigned to','an <em class="s-hl">investigator</em>'],
+  what:'The bank escalates the case to the police cyber cell, and it goes to an officer on duty.',
+  how:['The officer is picked from live Incident Desk data: whoever has the fewest open tickets right now.',
+    'From here on, every action is written to the ticket’s timeline, an audit trail for the case.']},
+ {t:['You file','the <em class="s-hl">ticket</em>'],
+  what:'You are the investigator. Record the complaint and pick the account the victim paid; the system matches it to the bank’s transaction record.',
+  how:['The list holds our 600 test complaints. “Money still moving” shows the 74 that the forecast flagged RED or AMBER when they were filed.',
+    'Filing creates a real incident ticket on the Incident Desk (MAN-…) unless you untick Save.',
+    'The run replays a real complaint from the test data, and the models only see what was known when it was filed.'],
+  run:()=>SIM.inv?`Investigator on duty <b>${esc(SIM.inv.name)}</b>`:''},
+ {t:['Who received','the <em class="s-hl">money?</em>'],
+  what:'The system looks up the account the victim named: its bank, its registered area, how it behaved before this complaint, and whether anyone has reported it before.',
+  how:['The area comes from the bank’s KYC record (registered area and PIN), never a live location.',
+    'The behaviour label comes from fixed rules on its past transactions, such as “spreads money to many accounts”. It is a lead to review, not proof.',
+    'Earlier complaints that named the same account are checked too.'],
+  run:R=>R&&R.named?`The ticket names <b>${esc(R.named.codename)}</b> &middot; ${esc(R.named.account)} &middot; ${esc(R.named.bank||'')}`:''},
+ {t:['Follow','the <em class="s-hl">money</em>'],
+  what:'Starting from the victim’s payment, the system follows every onward transfer, hop by hop, to find where the stolen money sits right now.',
+  how:['A breadth-first walk over bank-reported transfers, up to 4 hops, using only transactions made before the complaint was filed.',
+    'When an account splits the money, the stolen share is divided in proportion, so we know what each account still holds.',
+    'Transfers under 5% of the stolen amount are ignored as noise. Cash already withdrawn shows in red.'],
+  run:R=>R?`Payment of <b>${money(R.case.amount)}</b> by ${esc(R.case.channel)} at ${esc(bmTime(R.case.seed_ts))} &middot; complaint filed ${esc(bmDur(R.case.reporting_delay_min))} later`:''},
+ {t:['Where is the','money <em class="s-hl">now?</em>'],
+  what:'Every account that received stolen money is scored on how likely it is to withdraw it in the next 10 minutes. The highest score becomes the target.',
+  how:['Model M1: gradient-boosted trees (XGBoost) that forecast a cash-out within 10, 20, 30, 45 and 60 minutes.',
+    'It reads 35 facts per account: how fast it forwards money, the amounts, where it sits in the trail, its past ATM use and more.',
+    'It targets the account most likely to cash out next, not simply the one holding the most.'],
+  run:R=>R?`<b>${R.scores.length}</b> account${R.scores.length===1?'':'s'} received stolen money in this trail`:''},
+ {t:['When and how','will it <em class="s-hl">leave?</em>'],
+  what:'For the target, the system shows how the chance of a cash-out builds over the next hour, and the form it is most likely to take.',
+  how:['M1’s curve: the chance of a cash-out within 10, 20, 30, 45 and 60 minutes.',
+    'Model M2 splits the likely exit four ways: ATM, card payment, another transfer, or staying in the account.',
+    'On complaints it never trained on, M1 scores ROC-AUC 0.91 (0.885 on a separate sealed dataset). You will see 8 of its 35 inputs.'],
+  run:R=>R?`Target <b>${esc(R.target.codename)}</b> &middot; ${esc(R.target.account)} &middot; ${esc(R.target.bank||'')}`:''},
+ {t:['Which','<em class="s-hl">ATMs?</em>'],
+  what:'The system ranks the ATMs the target is most likely to use and pins them on the map for the police.',
+  how:['Up to 50 candidates come from 5 sources: its own past ATMs, ATMs near its usual ones, near its home, ATMs its group uses, and known fraud ATMs.',
+    'Model M3 ranks them. The real ATM is in its top 5 about 61% of the time, and its ~5 km area is right about 65% of the time.',
+    'If the best ATM scores under 22%, or the odds are spread too thin, it refuses to name one machine and names the area instead.'],
+  run:R=>R?`Candidate ATMs for <b>${esc(R.target.codename)}</b>, registered in ${esc(R.target.district||'Pune')}`:''},
+ {t:['The','<em class="s-hl">recommendation</em>'],
+  what:'Plain written rules, not AI, turn the forecast into one clear action that the officer can check and explain.',
+  how:['RED: at least a 60% chance of cash-out within 10 minutes and ₹5,000 or more at stake. Freeze the account now and alert the police station covering the area.',
+    'AMBER: 30–60%. Watch it and brief the district desk; no dispatch yet.',
+    'GREY: under 30%. Keep tracing. The officer always makes the final call.',
+    'Guardrails: nothing is sent until a named officer gives a reason; freezes of ₹50,000 or more need a second officer; every attempt is logged.']}];
+function simAdvSet(on){ SIM.advance=!!on; try{localStorage.setItem('simAdvance',SIM.advance?'1':'0');}catch(e){}
+  const b=$('simAdvBtn'); if(b){ b.classList.toggle('on',SIM.advance); b.innerHTML=`Advance mode: ${SIM.advance?'on':'off'}`; }
+  const c=$('simAdvChk'); if(c)c.checked=SIM.advance;
+  if(!SIM.advance&&SIM.gate)simAdvance(); }   // switched to auto-play while a step was waiting: carry on
+function simGate(tok,kind,s){ return new Promise(res=>{ if(!SIM.advance||!simAlive(tok)){ res(true); return; }
+  SIM.gate={kind,s,res}; simHold('gate',true); simGateUI(); }); }
+function simAdvance(){ const g=SIM.gate; if(!g)return; SIM.gate=null; simHold('gate',false); simGateUI();
+  try{ document.activeElement&&document.activeElement.blur(); }catch(e){} simSfx.tick(); g.res(true); }
+function simGateUI(){ const b=$('simAdvGo'), g=SIM.gate;
+  document.querySelectorAll('#simRail .s-st').forEach(e=>e.classList.toggle('next',!!g&&+e.dataset.i===g.s));
+  if(!b)return; if(!g){ b.hidden=true; return; }
+  b.hidden=false; b.innerHTML=`Advance &#9656;<small>${g.kind==='explain'?'play':'next'}: ${esc(SIM_STAGES[g.s][1])}</small>`; }
+function simExplainShow(s){ const x=$('simExplain'), E=SIM_EXPLAIN[s]; if(!x||!E)return;
+  let run=''; try{ run=E.run?E.run(SIM.run):''; }catch(e){ run=''; }
+  x.innerHTML=`<div class="s-exp-card">
+    <div class="s-exp-k"><b>Stage ${String(s+1).padStart(2,'0')} / 10</b> &middot; ${esc(SIM_STAGES[s][1])}<span>How it works</span></div>
+    <h2 class="s-exp-h"><span>${E.t[0]}</span><span>${E.t[1]}</span></h2>
+    <p class="s-exp-w">${E.what}</p>
+    <div class="s-exp-hk">Under the hood</div>
+    <ul class="s-exp-how">${E.how.map((h,i)=>`<li style="animation-delay:${(.3+i*.14).toFixed(2)}s">${h}</li>`).join('')}</ul>
+    ${run?`<div class="s-exp-run"><span>In this run</span>${run}</div>`:''}
+    <div class="s-exp-f"><span class="s-exp-hint">Space &middot; Enter &middot; &rarr; &middot; clicker</span><button class="s-go" onclick="simAdvance()">Advance &#9656;</button></div></div>`;
+  x.classList.remove('out'); x.classList.add('on'); simSfx.blip(); }
+function simExplainHide(){ const x=$('simExplain'); if(!x||!x.classList.contains('on'))return; x.classList.add('out');
+  setTimeout(()=>{ if(x.classList.contains('out')){ x.classList.remove('on','out'); x.innerHTML=''; } },320); }
+// before stage s: (Advance mode) keep the last stage's results up until the click, then explain s until the next click
+async function simBefore(tok,s,afterResult){
+  if(afterResult){ await simGate(tok,'next',s); if(!simAlive(tok))return false; }
+  if(SIM.advance){ simExplainShow(s); await simGate(tok,'explain',s); simExplainHide(); }
+  return simAlive(tok); }
+
+// ---------- the director ----------
+async function simChain(from,to,tok){
+  for(let s=from;s<=to;s++){ if(!simAlive(tok))return false;
+    if(!(await simBefore(tok,s,s>from)))return false;
+    SIM.stage=s; SIM.ff=false; simRail(s); simWipe(); simSfx.tick();
+    try{ await SIM_SCENES[SIM_STAGES[s][0]](tok); }
+    catch(err){ console.warn('simulation stage',SIM_STAGES[s][0],err); simLog('ERR',esc(String((err&&err.message)||err)),'red'); }
+    if(!simAlive(tok))return false;
+    const skipped=SIM.ff; SIM.ff=false; if(!skipped&&!SIM.advance)await simW(tok,SIM_HOLD[s]||800); }   // in Advance mode the click is the pause
+  return simAlive(tok); }
+async function simRaise(){ if(VIEW!=='sim'||SIM.stage>=0)return;
+  if(SIM.entErr){ simLoadEntries(); return; }
+  SIM.caller={name:($('simName')||{}).value||'Caller',phone:($('simPhone')||{}).value||'',scam:($('simScam')||{}).value||'kyc'};
+  SIM.caller.name=SIM.caller.name.trim()||'Caller';
+  const tok=++SIM.tok; SIM.paused=false; SIM.ff=false; SIM.pick=null; SIM.run=null; SIM.runP=null; SIM.runAck=null; SIM.ticket=null; SIM.tgtTag=null; SIM.atmTag=null; SIM.nodeTags={};
+  simTone(1,.01); simClockStart(); const b=$('simLog'); if(b)b.innerHTML='';
+  simLog('SYS',`Complaint raised by ${esc(SIM.caller.name)}${SIM.advance?' &middot; Advance mode':''}`,'hi');
+  const ok=await simChain(0,2,tok); if(!ok)return;
+  if(!(await simBefore(tok,3,true)))return;   // Advance mode: results of stage 03, then the card for the ticket
+  simTicket(tok); }
+
+const SIM_SCENES={
+ // 01 — the victim calls the 1930 helpline
+ async call(tok){ const c=SIM.caller, sc=SIM_SCAMS[c.scam]||SIM_SCAMS.kyc;
+  simPhase('proc'); simCap('01','A victim','calls <em class="s-hl">1930</em>');
+  simEnsureProc();
+  $('spDetail').innerHTML=`<div class="s-call s-in"><div class="s-callhead"><span class="s-rec"></span><b id="scState">Calling 1930 &middot; National Cyber Crime Helpline</b><span class="tm" id="scTm">00:00</span></div>
+    <div class="s-wave idle" id="scWave">${'<i></i>'.repeat(34)}</div><div class="s-tx" id="scTx"></div></div>`;
+  document.querySelectorAll('#scWave i').forEach((i,k)=>i.style.animationDelay=((k*137)%900)+'ms');
+  $('spPhone').classList.add('on','ring');
+  simLog('1930',`Incoming call &middot; ${esc(c.phone)} (${esc(c.name)})`);
+  simSfx.ring(); await simW(tok,1100); simSfx.ring(); await simW(tok,1100); if(!simAlive(tok))return;
+  $('spPhone').classList.remove('ring'); const st=$('scState'); if(st)st.textContent='Connected · 1930 helpline';
+  const wv=$('scWave'); if(wv)wv.classList.remove('idle');
+  const tc0=performance.now(); clearInterval(SIM.callT);
+  SIM.callT=setInterval(()=>{ const t=$('scTm'); if(!t){clearInterval(SIM.callT);return;} const s=Math.floor((performance.now()-tc0)/1000);
+    t.textContent=String(Math.floor(s/60)).padStart(2,'0')+':'+String(s%60).padStart(2,'0'); },250);
+  simLog('1930','Call connected','hi');
+  const lines=[['h','1930','Cyber Crime Helpline. Please tell me what happened.'],['c','Caller',sc[1]],
+    ['h','1930','When did you pay, and to which account? Keep the transaction reference ready.'],
+    ['c','Caller','Just now. The reference is in my bank app.'],
+    ['h','1930','Your complaint is registered. We are alerting your bank to hold the money.']];
+  for(const [k,who,txt] of lines){ if(!simAlive(tok))return; const box=$('scTx'); if(!box)return;
+    const row=document.createElement('div'); row.className='s-txl '+k; row.innerHTML=`<b>${who}</b><span></span>`; box.appendChild(row);
+    await simType(tok,row.querySelector('span'),txt,70); await simW(tok,320); }
+  clearInterval(SIM.callT); if(wv)wv.classList.add('idle');
+  const cl=document.querySelector('#spDetail .s-call'); if(cl)cl.insertAdjacentHTML('beforeend','<div class="s-ok">&#10003; Complaint registered on CFCFRMS</div>');
+  simLog('CFCFRMS','Complaint registered on the national fraud reporting system','hi'); await simW(tok,500); },
+
+ // 02 — the bank's fraud desk receives it
+ async bank(tok){ simPhase('proc'); simCap('02','The bank','gets the <em class="s-hl">alert</em>'); simEnsureProc();
+  $('spPhone').classList.add('on'); $('spL1').classList.add('go'); simLog('CFCFRMS','Alert pushed to the victim’s bank');
+  $('spDetail').innerHTML='';
+  await simW(tok,1200); if(!simAlive(tok))return; $('spBank').classList.add('on'); simSfx.blip();
+  $('spDetail').innerHTML=`<div class="s-card s-in"><div class="s-kick">Bank &middot; fraud desk</div>${[
+    ['Alert','received from CFCFRMS'],['Action','<em class="s-hl">hold the reported debit</em>'],
+    ['Receiving bank','asked to report every onward transfer'],['Next','escalate to the police cyber cell']]
+    .map(r=>`<div class="s-kv"><span>${r[0]}</span><b>${r[1]}</b></div>`).join('')}</div>`;
+  for(const el of document.querySelectorAll('#spDetail .s-kv')){ await simW(tok,400); el.classList.add('in'); }
+  simLog('BANK','Fraud desk acknowledged &middot; hold requested on the reported debit'); await simW(tok,300);
+  simLog('BANK','Receiving bank asked to report onward transfers'); await simW(tok,300); },
+
+ // 03 — escalated to an investigator (the officer with the fewest open tickets)
+ async inv(tok){ simPhase('proc'); simCap('03','Assigned to','an <em class="s-hl">investigator</em>'); simEnsureProc();
+  ['spPhone','spBank'].forEach(i=>$(i).classList.add('on')); $('spL1').classList.remove('go'); $('spL2').classList.add('go');
+  $('spDetail').innerHTML=''; simLog('BANK','Case escalated to the police cyber cell');
+  const who=await simPickOfficer(); await simW(tok,900); if(!simAlive(tok))return;
+  $('spCop').classList.add('on'); $('spL2').classList.remove('go'); simSfx.blip();
+  $('spDetail').innerHTML=`<div class="s-card s-in"><div class="s-kick">Investigator on duty</div><div class="s-big" id="spOff">&nbsp;</div>${[
+    ['Unit','Cyber Police Station, Pune'],['Open cases',who.open!=null?`${who.open} &middot; lightest load on shift`:'—'],['Status','<em class="s-hl">case received</em>']]
+    .map(r=>`<div class="s-kv"><span>${r[0]}</span><b>${r[1]}</b></div>`).join('')}</div>`;
+  await simScramble(tok,$('spOff'),who.name,480);
+  for(const el of document.querySelectorAll('#spDetail .s-kv')){ await simW(tok,340); el.classList.add('in'); }
+  simLog('POLICE',`Assigned to ${esc(who.name)}${who.open!=null?` (${who.open} open tickets, the lightest load)`:''}`,'hi'); await simW(tok,400); },
+
+ // 05 — identify: the account the victim paid, from bank records
+ async identify(tok){ const R=SIM.run, a=R.named||R.target;
+  simPhase('map'); simCap('05','Account','<em class="s-hl">identified</em>'); $('simScene').innerHTML=''; simBgDim(true);
+  simLog('API',`GET /sim/run/${esc(R.ack_no)} &middot; ${SIM.runMs} ms round trip`,'hi');
+  simLog('API',`server: trace ${R.server_ms.trace} ms &middot; M1 on ${R.scores.length} accounts ${R.server_ms.m1_all} ms &middot; forecast ${R.server_ms.forecast} ms &middot; inputs ${R.server_ms.features} ms`,'dim');
+  simLog('LOOKUP',`${esc(a.account)} &rarr; ${esc(a.bank||'?')} &middot; KYC ${esc(a.district||'?')} ${esc(a.pin||'')}`);
+  const ll=simLL(a); if(!ll)return;
+  const H=($('simWorld')||{}).clientHeight||600;   // frame the account low and left, so its card (above-right) fits
+  const cz=SIM.map.unproject(SIM.map.project(L.latLng(ll),13.4).add(L.point(150,-Math.round(H*.26))),13.4);
+  await simFly(tok,[cz.lat,cz.lng],13.4,2.3); if(!simAlive(tok))return;
+  simIcon(ll,'<div class="s-pulse"><i></i><i></i><i></i></div>',300).addTo(SIM.L.fx);
+  const pc=a.prior_complaints||[];
+  const rows=[['KYC area',`${esc(a.district||'—')}${a.pin?' &middot; '+esc(a.pin):''}`],['Account age',a.age_days!=null?simAge(a.age_days):'—'],
+    ['Before this',`${a.n_tx} transactions &middot; ${a.counterparties} counterparties`],['Money in / out',`${moneyC(a.inflow||0)} / ${moneyC(a.outflow||0)}`],
+    ['ATMs, 90 days',String(a.atms_90d==null?'—':a.atms_90d)],['Behaviour',`<em class="s-hl">${esc(BM_ROLE[a.role]||a.role)}</em>`],
+    ['Earlier complaints',pc.length?`${pc.length} &middot; last ${bmDate(pc[pc.length-1].filed_ts)}`:'none on record']];
+  simIcon(ll,`<div class="s-tagw ne big"><i class="s-dot"></i><i class="s-lead"></i><div class="s-pcard">
+    <div class="s-pc-k">Account located &middot; suspected mule</div><div class="s-pc-h" id="spcName">&nbsp;</div>
+    <div class="s-pc-s">${esc(a.account)} &middot; ${esc(a.bank||'')}</div>
+    ${rows.map(r=>`<div class="s-pc-r h"><span>${r[0]}</span><b>${r[1]}</b></div>`).join('')}
+    <div class="s-pc-f">As of the complaint &middot; bank-reported transactions only</div></div></div>`,600).addTo(SIM.L.fx);
+  simSfx.lock(); await simScramble(tok,$('spcName'),a.codename,620);
+  for(const el of document.querySelectorAll('.s-pc-r.h')){ await simW(tok,170); el.classList.remove('h'); }
+  simLog('LOOKUP',`${a.n_tx} earlier transactions &middot; ${a.counterparties} counterparties &middot; ${a.atms_90d} ATMs in 90 days`);
+  simLog('RULES',`Behaviour before the complaint: ${esc(BM_ROLE[a.role]||a.role)}`);
+  simLog('NCRP',pc.length?`${pc.length} earlier complaint${pc.length===1?'':'s'} name this account`:'No earlier complaint names this account',pc.length?'hi':'dim');
+  await simW(tok,500); },
+
+ // 06 — trace: the account's history, then the money trail as known at filing time
+ async trace(tok){ const R=SIM.run, a=R.named, T=R.trail;
+  simCap('06','Follow','the <em class="s-hl">money</em>');
+  SIM.L.fx.eachLayer(l=>{ const el=l.getElement&&l.getElement(); if(el&&el.querySelector('.s-pcard'))SIM.L.fx.removeLayer(l); });   // keep the pulse, drop the card
+  if(a&&a.recent&&a.recent.length){ await bmNames(a.recent.map(x=>x.counterparty).filter(Boolean)); if(!simAlive(tok))return;
+    const mx=Math.max(1,...a.recent.map(x=>x.amount)), seed=R.case.seed_ts, vic=R.victim.account;
+    $('simScene').innerHTML=`<div class="s-panel left" id="spHist"><div class="s-ph">History before the complaint<small>${esc(a.codename)} &middot; latest first</small></div>
+      <div class="s-hist">${a.recent.map(x=>{ const cur=x.ts>=seed, who=x.atm_id?'cash at '+esc(x.atm_id)
+          :x.counterparty?(x.direction==='in'?'from ':'to ')+(x.counterparty===vic?'the victim':esc(bmName(x.counterparty))):'';
+        return `<div class="s-hr h${cur?' cur':''}"><span class="t">${esc(bmWhen(x.ts))}</span><span class="d">${x.direction==='in'?'IN':'OUT'}</span>
+          <span class="b"><i style="width:${Math.max(4,x.amount/mx*100).toFixed(1)}%"></i></span><span class="a">${money(x.amount)}</span>
+          <span class="c">${esc(x.channel)} ${who}${cur?'<em>this fraud</em>':''}</span></div>`; }).join('')}</div></div>`;
+    for(const el of document.querySelectorAll('.s-hr.h')){ await simW(tok,140); el.classList.remove('h'); }
+    simLog('HISTORY',`Read the latest ${a.recent.length} of ${a.n_tx} transactions &middot; ${a.recent.filter(x=>x.ts>=seed).length} belong to this fraud`);
+    await simW(tok,1700); if(!simAlive(tok))return;
+    const hp=$('spHist'); if(hp)hp.classList.add('out'); await simW(tok,260); }
+  $('simScene').innerHTML=''; SIM.L.fx.clearLayers();
+  const byId={}; T.nodes.forEach(n=>byId[n.account_id]=n);
+  const pos=id=>simLL(byId[id]);
+  const pts=T.nodes.map(simLL).filter(Boolean); T.edges.forEach(e=>{ if(!e.dst_account&&e.atm_id&&ATMXY[e.atm_id])pts.push(ATMXY[e.atm_id]); });
+  await simFit(tok,pts,1.6,14); if(!simAlive(tok))return;
+  simBoxes(false); const sw=($('simWorld')||{}).clientWidth||900; SIM.boxes.push({x:sw-420,y:0,w:420,h:80});   // the summary strip, top right
+  SIM.nodeTags={};
+  const vic=T.nodes.find(n=>n.is_victim), vll=simLL(vic);
+  if(vll){ simIcon(vll,'<i class="s-nd vic"></i>',200).addTo(SIM.L.net);
+    simTagAuto(vll,`Victim<small>${esc(vic.district||'')} &middot; ${esc(R.victim.bank||'')}</small>`,{cls:'vic tr'}).addTo(SIM.L.net); }
+  const edges=T.edges.slice().sort((x,y)=>x.ts<y.ts?-1:x.ts>y.ts?1:x.hop-y.hop);
+  const seen=new Set(); let co=0;
+  for(const e of edges){ if(!simAlive(tok))return;
+    const a1=pos(e.src_account), b1=e.dst_account?pos(e.dst_account):(e.atm_id?ATMXY[e.atm_id]:null);
+    simLog('TRACE',`${esc(String(e.ts).slice(11,19))} &middot; ${esc(simNm(e.src_account))} &rarr; ${e.dst_account?esc(simNm(e.dst_account)):'<b>cash</b> at '+esc(e.atm_id||'?')} &middot; ${money(e.tainted_amount)} ${esc(e.channel)} &middot; hop ${e.hop}${e.observed?'':' &middot; from the complaint'}`,e.dst_account?'':'red');
+    if(a1&&b1)await simAnimLine(tok,a1,b1,540,{cls:e.dst_account?'':'co',dashed:!e.observed});
+    if(e.dst_account&&b1&&!seen.has(e.dst_account)){ seen.add(e.dst_account);
+      simIcon(b1,'<i class="s-nd"></i>',200).addTo(SIM.L.net);
+      SIM.nodeTags[e.dst_account]=simTagAuto(b1,`${esc(simNm(e.dst_account))}<small>hop ${e.hop} &middot; ${money(e.tainted_amount)} &middot; ${esc(bmTime(e.ts))}</small>`,
+        {cls:'tr'+(a&&e.dst_account===a.account?' named':'')}).addTo(SIM.L.net); }
+    if(!e.dst_account&&b1){ co++; simIcon(b1,'<i class="s-atmsq"></i>',210).addTo(SIM.L.net);
+      simTagAuto(b1,`Cash out &middot; ${esc(e.atm_id||'ATM')}<small>${money(e.tainted_amount)} withdrawn at ${esc(bmTime(e.ts))}</small>`,{cls:'co tr'}).addTo(SIM.L.net); }
+    simSfx.blip(); await simW(tok,180); }
+  const hops=Math.max(0,...T.nodes.map(n=>n.hop_from_victim)), accts=T.nodes.filter(n=>!n.is_victim).length;
+  simLog('TRACE',`${hops} hop${hops===1?'':'s'} &middot; ${accts} account${accts===1?'':'s'} &middot; ${money(T.total_tainted)} traced${co?` &middot; ${co} cash withdrawal${co===1?'':'s'} already made`:''}`,'hi');
+  $('simScene').innerHTML=`<div class="s-sum s-in"><span><b>${hops}</b>hops</span><span><b>${accts}</b>accounts</span><span><b>${moneyC(T.total_tainted)}</b>traced</span><span><b>${co}</b>already withdrawn</span></div>`;
+  await simW(tok,700); },
+
+ // 07 — final mule: M1 scores every account that received stolen money
+ async final(tok){ const R=SIM.run, tgt=R.target.account;
+  simCap('07','Where is the','money <em class="s-hl">now?</em>');
+  const order=R.scores.slice().sort((x,y)=>x.hop-y.hop||y.received-x.received);
+  $('simScene').innerHTML=`<div class="s-panel" id="spFinal"><div class="s-ph">Where is the money now?<small>M1 &middot; ${order.length} account${order.length===1?'':'s'}</small></div>
+    <div class="s-psub">Chance each account that received stolen money withdraws it within 10 minutes, scored as of the complaint.</div>
+    <div id="spRows">${order.map(s=>`<div class="s-sr h" data-a="${esc(s.account)}"><div class="nm">${esc(s.codename)}<small>hop ${s.hop}</small></div><div class="pv">&mdash;</div>
+      <div class="bar"><i></i></div><div class="meta">holds ${money(s.holding)} of ${money(s.received)} received${s.sent_on>0?` &middot; sent on ${money(s.sent_on)}`:''}</div></div>`).join('')}</div>
+    <div class="s-pnote" id="spFinalNote"></div></div>`;
+  simLog('M1',`Scoring ${order.length} account${order.length===1?'':'s'} that received stolen money &middot; ${R.server_ms.m1_all} ms on the server`);
+  for(const s of order){ if(!simAlive(tok))return;
+    const row=[...document.querySelectorAll('#spRows .s-sr')].find(r=>r.dataset.a===s.account); if(!row)continue;
+    row.classList.remove('h'); row.classList.add('scan');
+    const p=simLL(s), ring=p?simIcon(p,'<div class="s-scanring"></div>',100).addTo(SIM.L.fx):null;
+    await simW(tok,330); row.querySelector('.bar i').style.width=(s.p10*100).toFixed(1)+'%';
+    await simCount(tok,row.querySelector('.pv'),s.p10*100,480,v=>Math.round(v)+'%');
+    row.classList.remove('scan'); if(ring&&SIM.L)SIM.L.fx.removeLayer(ring);
+    simLog('M1',`${esc(s.codename)} &middot; P(cash-out &le; 10 min) = ${s.p10.toFixed(2)} &middot; holds ${money(s.holding)}`); await simW(tok,110); }
+  const T=R.scores.find(s=>s.account===tgt)||R.scores[0]; if(!T)return;
+  const row=[...document.querySelectorAll('#spRows .s-sr')].find(r=>r.dataset.a===tgt);
+  if(row){ row.classList.add('tgt'); row.querySelector('.nm').insertAdjacentHTML('beforeend','<small>&#9650; target</small>'); }
+  const same=R.named&&tgt===R.named.account, note=$('spFinalNote');
+  if(note)note.innerHTML=same?'The money is still with the account the victim paid.'
+    :`The money has moved on: <b>${esc(T.codename)}</b> is ${T.hop-1} hop${T.hop-1===1?'':'s'} past the account the victim named.`;
+  simLog('TARGET',`${esc(T.codename)} is the most likely to cash out next &middot; holds ${money(T.holding)}`,'hi');
+  const tll=simLL(R.target)||simLL(T);
+  const w=$('simWorld'); if(w)w.classList.add('quiet');   // the traced trail steps back; the target takes over
+  const old=SIM.nodeTags[tgt]; if(old&&SIM.L){ SIM.L.net.removeLayer(old); delete SIM.nodeTags[tgt]; }
+  if(tll){ const W=w?w.clientWidth:900, pw=Math.min(370,W*.42);   // centre it in the map area left of the panel
+    const c=SIM.map.unproject(SIM.map.project(L.latLng(tll),14).add(L.point(Math.round((pw+14)/2),0)),14);
+    await simFly(tok,[c.lat,c.lng],14,1.5); if(!simAlive(tok))return; simBoxes(true);
+    simIcon(tll,'<div class="s-xh"><i></i><i></i><i></i><i></i></div>',900).addTo(SIM.L.fx); simSfx.lock();
+    SIM.tgtTag=simTagAuto(tll,`Target &middot; ${esc(T.codename)}<small>${Math.round(T.p10*100)}% in 10 min &middot; holds ${money(T.holding)}</small>`,{cls:'hot',z:950}).addTo(SIM.L.fx); }
+  await simW(tok,600); },
+
+ // 08 — predict: M1 hazard curve + M2 channel + the inputs behind them
+ async predict(tok){ const R=SIM.run, P=R.prediction, cp=P.cashout, ch=P.channel;
+  simCap('08','Cash-out within',`10 min: <em class="s-hl">${Math.round(cp.p_10m*100)}%</em>`);
+  const sev={imminent:'Imminent',soon:'Soon',later:'Later',unlikely:'Unlikely'}[cp.severity]||cp.severity;
+  const chs=[['ATM withdrawal',ch.ATM],['Card / shop (POS)',ch.POS],['Sent on to another account',ch.onward_transfer],['Stays in the account',ch.dormant]];
+  const mx=Math.max(...chs.map(c=>c[1]));
+  $('simScene').innerHTML=`<div class="s-panel wide" id="spPred"><div class="s-ph">Cash-out forecast<small>${esc(simNm(P.account_id))}</small></div>
+    <div class="s-sub2">M1 &middot; chance the money is withdrawn within&hellip;</div>${simHazardSVG(cp)}
+    <div class="s-sevrow"><span class="s-sev ${esc(cp.severity)}">${esc(sev)}</span><span>steepest rise: ${cp.window_minutes[0]}&ndash;${cp.window_minutes[1]} min</span></div>
+    <div class="s-sub2">M2 &middot; how it will leave</div>
+    <div>${chs.map(([k,v])=>`<div class="s-chr${v===mx?' top':''}"><span>${k}</span><span class="bar"><i data-w="${(v*100).toFixed(1)}"></i></span><b>${pct(v)}</b></div>`).join('')}</div>
+    <div class="s-sub2">What the model saw &middot; ${R.features.length} of its ${R.n_features} inputs</div>
+    <div class="s-fx">${R.features.map(f=>`<div class="s-f h"><div class="k">${esc(f.label)}</div><div class="v">${simFeat(f)}</div></div>`).join('')}</div></div>`;
+  simLog('M1',`XGBoost hazard &middot; ${R.n_features} inputs + horizon &middot; P(&le;10) ${cp.p_10m.toFixed(2)} &middot; P(&le;30) ${cp.p_30m.toFixed(2)} &middot; P(&le;60) ${cp.p_60m.toFixed(2)}`,'hi');
+  await simW(tok,1300); if(!simAlive(tok))return;
+  document.querySelectorAll('#spPred .s-chr .bar i').forEach(i=>i.style.width=i.dataset.w+'%');
+  const best=chs.slice().sort((x,y)=>y[1]-x[1])[0];
+  simLog('M2',`Channel &middot; ATM ${ch.ATM.toFixed(2)} &middot; POS ${ch.POS.toFixed(2)} &middot; sent on ${ch.onward_transfer.toFixed(2)} &middot; stays ${ch.dormant.toFixed(2)} &rarr; ${esc(best[0].toLowerCase())}`);
+  await simW(tok,650);
+  for(const el of document.querySelectorAll('#spPred .s-f.h')){ await simW(tok,100); el.classList.remove('h'); }
+  simLog('INPUTS',R.features.map(f=>`${esc(f.key)}=${(+f.value).toFixed(f.unit==='pct'?2:f.unit==='n'?0:1)}`).join(' &middot; '),'dim');
+  await simW(tok,400); },
+
+ // 09 — top 5 ATMs from the M3 ranker, with its abstention rule
+ async atms(tok){ const R=SIM.run, loc=R.prediction.location, A=R.atms||[], cell=(loc.cells||[])[0];
+  simCap('09','Top 5','<em class="s-hl">ATMs</em>');
+  const tll=simLL(R.target), pts=A.map(a=>[a.lat,a.lon]); if(tll)pts.push(tll); if(cell)pts.push([cell.lat,cell.lon]);
+  $('simScene').innerHTML=`<div class="s-panel" id="spAtm"><div class="s-ph">Top 5 ATMs<small>M3 ranker &middot; answer at ${esc(loc.granularity)} level</small></div>
+    <div class="s-psub">Ranked from up to 50 candidates proposed by 5 sources: its own past ATMs, near its usual ATMs, near its home, its group's ATMs and known fraud ATMs.</div>
+    <div class="s-abst" id="spAbst"></div><div id="spAtmRows"></div></div>`;
+  if(pts.length)await simFit(tok,pts,1.5,15); if(!simAlive(tok))return;
+  simBoxes(true); if(SIM.tgtTag&&SIM.L){ SIM.L.fx.removeLayer(SIM.tgtTag); SIM.tgtTag=null; }
+  A.forEach(a=>{ const p=SIM.map.latLngToContainerPoint([a.lat,a.lon]); SIM.boxes.push({x:p.x-15,y:p.y-15,w:30,h:30}); });   // labels keep clear of every ATM marker
+  if(tll){ const p=SIM.map.latLngToContainerPoint(tll); SIM.boxes.push({x:p.x-32,y:p.y-32,w:64,h:64}); }
+  if(tll)SIM.tgtTag=simTagAuto(tll,`Target &middot; ${esc(R.target.codename)}<small>the account to freeze</small>`,{cls:'hot',z:950}).addTo(SIM.L.fx);
+  if(cell){ L.polygon(simHex(cell.lat,cell.lon,1.3),{className:'s-cellhex',interactive:false}).addTo(SIM.L.fx);
+    simTagAuto([cell.lat,cell.lon],`Predicted area<small>${esc(cell.district)} &middot; ${cell.n_terminals} ATMs &middot; ${pct(cell.p)}</small>`,{cls:'area'}).addTo(SIM.L.fx); }
+  simLog('M3',`Ranker scored the candidate ATMs &middot; spread ${(+loc.entropy).toFixed(2)} nats &middot; answers at ${esc(loc.granularity)} level`);
+  const top0=Math.max(.01,A.length?A[0].p:.01);
+  for(let i=0;i<A.length;i++){ const a=A[i]; if(!simAlive(tok))return; const ll=[a.lat,a.lon];
+    if(tll)L.polyline([tll,ll],{className:'s-ray',interactive:false}).addTo(SIM.L.fx);
+    simIcon(ll,`<div class="s-atm r${i}"><b>${i+1}</b></div>`,800-i).addTo(SIM.L.fx);
+    if(i<3){ const tg=simTagAuto(ll,`#${i+1} ${esc(a.atm_id)}<small>${esc(a.operator||'')} &middot; ${pct(a.p)}</small>`,{cls:i===0?'hot':'',z:700-i}).addTo(SIM.L.fx);
+      if(i===0)SIM.atmTag=tg; }
+    const rows=$('spAtmRows'); if(rows)rows.insertAdjacentHTML('beforeend',`<div class="s-ar${i===0?' top':''}"><b class="rk">${i+1}</b>
+      <div class="nm">${esc(a.atm_id)}<small>${esc(a.operator||'')} &middot; ${esc(a.district)} ${esc(a.pin||'')}</small></div><div class="pv">${pct(a.p)}</div>
+      <div class="bar"><i style="width:${Math.max(3,a.p/top0*100).toFixed(1)}%"></i></div>
+      <div class="meta">from ${esc(simSrc(a.sources))}${a.distance_km!=null?' &middot; '+(+a.distance_km).toFixed(1)+' km':''} &middot; limit ${money(a.limit)}</div></div>`);
+    simSfx.blip(); simLog('M3',`#${i+1} ${esc(a.atm_id)} (${esc(a.operator||'')}, ${esc(a.district)}) &middot; p ${a.p.toFixed(3)} &middot; ${esc((a.sources||[]).join('+'))}`);
+    await simW(tok,400); }
+  const t0=A[0], ab=$('spAbst');
+  if(ab&&t0)ab.innerHTML=loc.granularity==='terminal'
+    ?`<em class="s-hl">Confident enough to name the machine:</em> ${esc(t0.atm_id)} at ${pct(t0.p)} (it needs 22%).`
+    :`<em class="s-hl">Won't guess one machine.</em> The best ATM has only ${pct(t0.p)} (it needs 22%), so the model names the ${cell?'~5 km area':'district'} instead.`;
+  simLog('M3',loc.granularity==='terminal'?`Names ATM ${esc(t0?t0.atm_id:'')} &middot; p ${t0?t0.p.toFixed(2):'?'} &ge; 0.22`:`Abstains at ATM level: ${esc(loc.abstain_reason||'')}`,'hi');
+  await simW(tok,700); },
+
+ // 10 — the recommendation handed to the officer (plain decision rules), then the end card
+ async verdict(tok){ const R=SIM.run, P=R.prediction, rec=P.recommendation, tgt=R.target, A=R.atms||[], cell=(P.location.cells||[])[0];
+  const T=R.scores.find(s=>s.account===P.account_id)||{}, st=R.station||{}, tier=rec.tier, name=tgt.codename;
+  simCap(); simClockStop(); const took=simElapsed();
+  const nb=esc(name).replace(/-/g,'‑');   // non-breaking hyphen: the codename never splits across lines
+  const head=tier==='RED'?`Freeze <em class="s-hl">${nb}</em>`:tier==='AMBER'?`Watch <em class="s-hl">${nb}</em>`:`Keep <em class="s-hl">tracing</em>`;
+  const sub=tier==='RED'?`${esc(tgt.account)} &middot; ${esc(tgt.bank||'')} &middot; freeze before ${esc(String(rec.freeze_deadline||'').slice(11,19))}, 10 minutes from the complaint`
+    :tier==='AMBER'?`${esc(tgt.account)} &middot; ${esc(tgt.bank||'')} &middot; email brief to the ${esc(rec.target_district||'')} desk; no dispatch yet`
+    :'No account is likely to cash out in the next 10 minutes. Keep following the money.';
+  const where=P.location.granularity==='terminal'&&A[0]?`${esc(A[0].atm_id)} (${esc(A[0].operator||'')}, ${pct(A[0].p)}), then #2&ndash;#5`
+    :cell?`the ~5 km area in ${esc(cell.district)} (${cell.n_terminals} ATMs), led by ${esc(A[0]?A[0].atm_id:'')}`:esc(rec.target_district||'—');
+  const p10=pct(rec.p_cashout_10m), amt=money(rec.tainted_amount);
+  const ch=P.channel, exits=[['an ATM withdrawal',ch.ATM,'ATM'],['card / shop payments (POS)',ch.POS,'POS'],
+    ['a transfer to another account',ch.onward_transfer,'MOVE'],['staying in the account',ch.dormant,'STAY']].sort((x,y)=>y[1]-x[1]);
+  const why=tier==='RED'?`${p10} chance of cash-out within 10 min (&ge; 60%) and ${amt} at stake (&ge; &#8377;5,000)`
+    :tier==='AMBER'?(rec.p_cashout_10m>=.6?`${p10} chance within 10 min, but only ${amt} at stake (&lt; &#8377;5,000)`:`${p10} chance within 10 min (between 30% and 60%)`)
+    :`${p10} chance within 10 min (below 30%)`;
+  const tk=SIM.ticket;
+  $('simScene').innerHTML=`<div class="s-verdict" id="spVerdict">
+    <div class="s-vt"><span class="s-vtier ${tier}">${tier}</span><span>Recommendation to ${esc((tk&&tk.who)||'the officer')}</span>
+      <span class="s-vend">End of pipeline &middot; run<b>${simFmtT(took)}</b> models<b>${R.server_ms.m1_all+R.server_ms.forecast+R.server_ms.features} ms</b></span></div>
+    <div class="s-vh">${head}</div><div class="s-vsub">${sub}</div>
+    <div class="s-vr"><span>Money at risk</span><b>${money(T.holding!=null?T.holding:rec.tainted_amount)} still in the account<small>it received ${amt} of the victim's ${money(R.case.amount)}</small></b></div>
+    ${tier!=='GREY'?`<div class="s-vr"><span>Alert</span><b>${esc(rec.target_station||st.station||'—')}${st.sho_phone?' &middot; '+esc(st.sho_phone):''}</b></div>`:''}
+    <div class="s-vr"><span>Likely exit</span><b>${exits[0][0]} (${pct(exits[0][1])})<small>then ${exits[1][0]} (${pct(exits[1][1])}) &middot; M2 channel model</small></b></div>
+    <div class="s-vr"><span>Watch</span><b>${exits[0][2]==='ATM'?'':'If it is withdrawn as cash: '}${where}</b></div>
+    <div class="s-vr"><span>Why</span><b>${why}<small>rule: ${esc(rec.reason)}</small></b></div>
+    <div class="s-vr"><span>Guardrails</span><b>${(R.cautions||[]).filter(x=>x.code!=='lead').slice(0,2).map(x=>esc(x.text).replace(/Rs(?=[\d,])/g,'&#8377;')).join('<br>')||'no warnings for this case'}
+      <small>${R.needs_approver?'a second officer must approve this freeze &middot; ':''}a named officer and a reason are required &middot; every attempt is logged</small></b></div>
+    <div class="s-vr"><span>Ticket</span><b>${tk&&tk.saved?`${esc(tk.ack_no)} &middot; ${esc(tk.who)} &middot; ${esc(tk.pri)}`:'draft, not saved'}<small>replays complaint ${esc(R.ack_no)}</small></b></div>
+    <div class="s-vbtns">
+      ${tier==='RED'?`<button class="s-btn red" id="svFreeze" onclick="simFreeze()">&#10052; Freeze request</button>`:''}
+      <button class="s-btn pri" onclick="selectCase('${esc(R.ack_no)}')">Full case &#9656;</button>
+      ${tk&&tk.saved?`<button class="s-btn" onclick="openTicketModal('${esc(tk.ack_no)}')" title="Open the ticket on the Incident Desk">Ticket ${esc(tk.ack_no)}</button>`:''}
+      <button class="s-btn" onclick="simRestart()">&#8634; Run another</button></div>
+    <div class="s-vmsg" id="svMsg"></div></div>`;
+  simSfx.stamp(); simRail(10); const vw=$('simWorld'); if(vw)vw.classList.add('final');
+  const vp=$('spVerdict'), vpts=A.map(a=>[a.lat,a.lon]), tll=simLL(tgt); if(tll)vpts.push(tll);   // re-frame the map beside the panel
+  if(SIM.map&&vpts.length)try{ SIM.map.flyToBounds(L.latLngBounds(vpts),{paddingTopLeft:[(vp?vp.offsetWidth:600)+60,70],paddingBottomRight:[50,70],maxZoom:15,duration:1.2}); }catch(e){}
+  setTimeout(()=>{ if(!simAlive(tok)||!SIM.map||!SIM.L)return;   // once the camera settles, re-place the two labels still shown
+    const w=$('simWorld'); SIM.boxes=[{x:0,y:0,w:(vp?vp.offsetWidth:600)+30,h:w?w.clientHeight:700}];
+    A.forEach(a=>{ const p=SIM.map.latLngToContainerPoint([a.lat,a.lon]); SIM.boxes.push({x:p.x-15,y:p.y-15,w:30,h:30}); });
+    if(tll){ const p=SIM.map.latLngToContainerPoint(tll); SIM.boxes.push({x:p.x-32,y:p.y-32,w:64,h:64});
+      if(SIM.tgtTag)SIM.L.fx.removeLayer(SIM.tgtTag);
+      SIM.tgtTag=simTagAuto(tll,`${tier==='RED'?'Freeze':tier==='AMBER'?'Watch':'Target'} &middot; ${esc(name)}<small>${money(T.holding!=null?T.holding:rec.tainted_amount)} still in the account</small>`,{cls:'hot',z:950}).addTo(SIM.L.fx); }
+    if(A[0]){ if(SIM.atmTag)SIM.L.fx.removeLayer(SIM.atmTag);
+      SIM.atmTag=simTagAuto([A[0].lat,A[0].lon],`#1 ${esc(A[0].atm_id)}<small>${esc(A[0].operator||'')} &middot; ${pct(A[0].p)}</small>`,{cls:'hot',z:700}).addTo(SIM.L.fx); } },1400);
+  simLog('RULES',`${tier} &middot; ${esc(rec.reason)}`,tier==='RED'?'red':'hi');
+  simLog('DONE',`Call to recommendation in ${simFmtT(took)} &middot; models ${R.server_ms.m1_all+R.server_ms.forecast+R.server_ms.features} ms`,'hi');
+  if(SIM.map){ SIM.map.dragging.enable(); SIM.map.scrollWheelZoom.enable(); SIM.map.doubleClickZoom.enable(); }   // explore freely now
+  if(tk&&tk.saved){ try{ await jpostB(`/tickets/${encodeURIComponent(tk.ack_no)}/note`,{actor:'simulation',
+    text:`Pipeline result: ${tier} / ${rec.action} for ${name} (${tgt.account}); P(cash-out <= 10 min) ${rec.p_cashout_10m.toFixed(2)}; `+
+      `${P.location.granularity==='terminal'&&A[0]?'ATM '+A[0].atm_id:(cell?'area '+cell.cell+' ('+cell.district+')':'district '+(rec.target_district||'?'))}. Replay of complaint ${R.ack_no}.`});
+    simLog('TICKET',`Result noted on ${esc(tk.ack_no)}`); }catch(e){} } }
+};
+function simHazardSVG(cp){ const W=360,H=128,l=34,r=12,t=16,b=22, X=m=>l+(W-l-r)*m/60, Y=p=>t+(H-t-b)*(1-p);
+  const pts=[[0,0]].concat((cp.hazard||[]).map(h=>[h.horizon_min,h.p_cumulative]));
+  const d=pts.map((p,i)=>(i?'L':'M')+X(p[0]).toFixed(1)+' '+Y(p[1]).toFixed(1)).join(' ');
+  const last=pts[pts.length-1], area=`${d} L${X(last[0]).toFixed(1)} ${Y(0)} L${X(0)} ${Y(0)} Z`, w=cp.window_minutes||[0,10];
+  return `<svg class="s-chart" viewBox="0 0 ${W} ${H}">
+    <rect class="win" x="${X(w[0]).toFixed(1)}" y="${t}" width="${Math.max(2,X(w[1])-X(w[0])).toFixed(1)}" height="${H-t-b}"/>
+    ${[0,.5,1].map(p=>`<line class="ax" x1="${l}" x2="${W-r}" y1="${Y(p)}" y2="${Y(p)}"/><text x="${l-6}" y="${Y(p)+3}" text-anchor="end">${p*100}%</text>`).join('')}
+    ${[10,20,30,45,60].map(m=>`<text x="${X(m).toFixed(1)}" y="${H-7}" text-anchor="middle">${m} min</text>`).join('')}
+    <path class="ar" d="${area}"/><path class="ln" pathLength="1" d="${d}"/>
+    ${pts.slice(1).map((p,i)=>`<circle class="pt" style="animation-delay:${(.35+i*.2).toFixed(2)}s" cx="${X(p[0]).toFixed(1)}" cy="${Y(p[1]).toFixed(1)}" r="3.6"/>
+      <text class="pl" style="animation-delay:${(.35+i*.2).toFixed(2)}s" x="${X(p[0]).toFixed(1)}" y="${(Y(p[1])-8).toFixed(1)}" text-anchor="middle">${Math.round(p[1]*100)}%</text>`).join('')}
+  </svg>`; }
+function simEnsureProc(){ if($('spProc'))return; const c=SIM.caller||{};
+  $('simScene').innerHTML=`<div class="s-proc" id="spProc">
+    <div class="s-node" id="spPhone"><div class="s-ico">${SIM_SVG_PHONE}</div><div class="s-nl">Victim<small>${esc(c.name||'')}</small></div></div>
+    <div class="s-link" id="spL1"><i></i><span>1930 &middot; CFCFRMS</span></div>
+    <div class="s-node" id="spBank"><div class="s-ico">${_SVG_BANK}</div><div class="s-nl">Bank<small>fraud desk</small></div></div>
+    <div class="s-link" id="spL2"><i></i><span>escalation</span></div>
+    <div class="s-node" id="spCop"><div class="s-ico">${SIM_SVG_SHIELD}</div><div class="s-nl">Cyber cell<small>investigator</small></div></div>
+  </div><div class="s-detail" id="spDetail"></div>`; }
+async function simPickOfficer(){ let open={};
+  try{ const l=await Promise.race([jget('/tickets'),simSleep(1800).then(()=>null)]);
+    if(Array.isArray(l)) l.forEach(t=>{ if(t.assignee&&['NEW','ASSIGNED','INVESTIGATING','FREEZE_SENT'].includes(t.status))open[t.assignee]=(open[t.assignee]||0)+1; });
+    else open=null; }catch(e){ open=null; }
+  SIM.inv=open?ANALYSTS.map(a=>({name:a,open:open[a]||0})).sort((x,y)=>x.open-y.open)[0]:{name:ANALYSTS[0],open:null};
+  return SIM.inv; }
+
+// ---------- 04 — the ticket (the presenter's turn) ----------
+function simTicket(tok){ if(!simAlive(tok))return; SIM.stage=3; SIM.ff=false; simRail(3); simWipe(); simCap(); simPhase('proc');
+  simHold('form',true);   // the run clock waits while the investigator types
+  const c=SIM.caller, sc=SIM_SCAMS[c.scam]||SIM_SCAMS.kyc, inv=(SIM.inv&&SIM.inv.name)||ANALYSTS[0];
+  $('simScene').innerHTML=`<div class="s-form s-in">
+    <div class="s-fhead"><span class="s-kick">Stage 04 / 10 &middot; your turn &middot; you are the investigator</span><h3>File the ticket</h3>
+      <span class="s-fh-r">${esc(inv)} &middot; Cyber Police Station, Pune</span></div>
+    <div class="s-fgrid">
+      <div class="s-fcol">
+        <label>Title<input id="stTitle" data-auto="1" value="${esc(sc[0])} &middot; ${esc(c.name)}" oninput="this.dataset.auto='0'"></label>
+        <div class="s-row2"><label>Complainant<input id="stName" value="${esc(c.name)}"></label><label>Mobile<input id="stPhone" value="${esc(c.phone)}"></label></div>
+        <div class="s-row2"><label>Assign to<select id="stWho">${ANALYSTS.map(a=>`<option${a===inv?' selected':''}>${esc(a)}</option>`).join('')}</select></label>
+          <label>Priority<select id="stPri"><option value="P1">P1 &middot; urgent</option><option value="P2" selected>P2 &middot; normal</option><option value="P3">P3 &middot; low</option></select></label></div>
+        <label>What the caller said<textarea id="stNote">${esc(sc[1])}</textarea></label>
+        <div class="s-match" id="stMatch">Pick the account the victim paid from the list &rarr;</div>
+        <label class="s-chk"><input type="checkbox" id="stSave" checked> Save the ticket to the Incident Desk (untick for a rehearsal)</label>
+        <button class="s-go" id="stFile" disabled onclick="simFile()">File ticket &amp; run the pipeline &#9656;</button>
+      </div>
+      <div class="s-fcol">
+        <div class="s-pickhead"><b>Money sent to</b><span>the account the victim paid, as the bank reports it</span></div>
+        <div class="s-seg" id="stSeg"><span data-f="live" onclick="simTkFilter('live')">Money still moving <b id="stNLive"></b></span><span data-f="all" onclick="simTkFilter('all')">All complaints <b id="stNAll"></b></span></div>
+        <input id="stQ" placeholder="Search: mule name (e.g. NOMAD), account, bank, area" oninput="SIM.q=this.value;simTkList()">
+        <div class="s-picklist" id="stList"><div class="s-empty">Loading accounts from bank records&hellip;</div></div>
+      </div></div></div>`;
+  SIM.q=''; simTkFilter(SIM.filter||'live'); if(!SIM.entries)simLoadEntries();
+  bmLoadTickets().then(()=>{ if($('stList'))simTkList(); });   // mark complaints whose case is already closed
+  simLog('POLICE','Ticket form open &middot; waiting for the investigator','dim'); }
+function simTkFilter(f){ SIM.filter=f; document.querySelectorAll('#stSeg span').forEach(s=>s.classList.toggle('on',s.dataset.f===f)); simTkList(); }
+function simTkList(){ const box=$('stList'); if(!box)return;
+  if(SIM.entErr){ box.innerHTML='<div class="s-empty">Could not load accounts. Restart the server so it picks up the Simulation API.</div>'; return; }
+  const E=SIM.entries; if(!E)return;
+  const live=E.filter(e=>e.tier!=='GREY'), nl=$('stNLive'), na=$('stNAll'); if(nl)nl.textContent=live.length; if(na)na.textContent=E.length;
+  const q=SIM.q.trim().toLowerCase();
+  let rows=SIM.filter==='live'?live:E;
+  if(q)rows=rows.filter(e=>(e.codename+' '+e.account+' '+(e.bank||'')+' '+(e.district||'')+' '+e.ack_no+' '+bmType(e.fraud_category)).toLowerCase().includes(q));
+  box.innerHTML=rows.slice(0,250).map(e=>`<div class="s-pick${SIM.pick&&SIM.pick.ack_no===e.ack_no?' on':''}" data-ack="${esc(e.ack_no)}" onclick="simPick('${esc(e.ack_no)}')">
+      <div class="nm">${esc(e.codename)}<small>${esc(e.account)}</small></div><span class="s-tier ${e.tier}">${e.tier}</span>
+      <div class="mt">${esc(e.bank||'—')} &middot; ${esc(e.district||'—')} &middot; ${money(e.amount)} by ${esc(e.channel)} &middot; ${esc(bmWhen(e.txn_ts))}${['RESOLVED','CLOSED'].includes(BM_TK[e.ack_no])?' &middot; <b>case already closed</b>':''}</div></div>`).join('')
+    ||`<div class="s-empty">No account matches &ldquo;${esc(SIM.q)}&rdquo;${SIM.filter==='live'?' among live complaints: try All complaints.':'.'}</div>`; }
+function simPick(ack){ const e=(SIM.entries||[]).find(x=>x.ack_no===ack); if(!e||SIM.stage!==3)return;
+  SIM.pick=e; simSfx.blip();
+  document.querySelectorAll('#stList .s-pick').forEach(r=>r.classList.toggle('on',r.dataset.ack===ack));
+  const m=$('stMatch'); if(m){ m.classList.add('ok'); m.innerHTML=`<div class="s-kick">&#10003; Bank record matched</div>
+    <div><b>${esc(e.txn_id)}</b> &middot; ${money(e.amount)} by ${esc(e.channel)} &middot; ${esc(bmWhen(e.txn_ts))}</div>
+    <div>Victim's account ${esc(e.victim_account||'')} &rarr; <b>${esc(e.codename)}</b> (${esc(e.account)}, ${esc(e.bank||'')}, ${esc(e.district||'')})</div>
+    <div style="color:var(--s-dim)">Replays complaint ${esc(e.ack_no)}, filed ${esc(bmDur(e.report_delay_min))} after the payment</div>`; }
+  const t=$('stTitle'), c=SIM.caller||{}, sc=SIM_SCAMS[c.scam]||SIM_SCAMS.kyc;
+  if(t&&t.dataset.auto==='1')t.value=`${sc[0]} · ${money(e.amount)} to ${e.codename}`;
+  const b=$('stFile'); if(b)b.disabled=false;
+  simLog('BANK',`Transaction ${esc(e.txn_id)} matched &middot; ${money(e.amount)} to ${esc(e.codename)}`);
+  SIM.runAck=ack; const t0=performance.now();   // fetch the pipeline's answer now, so the cut-scene never waits
+  SIM.runP=fetch(API+'/sim/run/'+encodeURIComponent(ack)).then(r=>{ if(!r.ok)throw new Error('HTTP '+r.status); return r.json(); })
+    .then(d=>{ if(SIM.runAck===ack)SIM.runMs=Math.round(performance.now()-t0); return d; });
+  SIM.runP.catch(()=>{}); }
+async function simFile(){ const e=SIM.pick, tok=SIM.tok; if(!e||SIM.stage!==3||!simAlive(tok))return;
+  const b=$('stFile'); if(b){ b.disabled=true; b.textContent='Filing…'; } simHold('form',false);
+  const v=id=>(($(id)||{}).value||'').trim();
+  const f={title:v('stTitle')||`Complaint · ${e.codename}`,name:v('stName'),phone:v('stPhone'),who:v('stWho')||ANALYSTS[0],pri:v('stPri')||'P2',
+    note:v('stNote'),save:!!($('stSave')&&$('stSave').checked)};
+  let tk={saved:false,ack_no:'DRAFT',who:f.who,pri:f.pri};
+  if(f.save){ try{ const r=await jpostB('/tickets',{title:f.title,priority:f.pri,fraud_category:e.fraud_category,disputed_amount:e.amount,
+      victim_account:e.victim_account,suspect_account:e.account,assignee:f.who,actor:'simulation',
+      description:`${f.note}\nComplainant: ${f.name}${f.phone?' ('+f.phone+')':''}.\nFiled from the Simulation tab; replays complaint ${e.ack_no}.`});
+      if(r&&r.ack_no){ tk={saved:true,ack_no:r.ack_no,who:f.who,pri:f.pri}; simLog('TICKET',`POST /tickets &rarr; ${esc(r.ack_no)} &middot; assigned to ${esc(f.who)} &middot; ${esc(f.pri)}`,'hi'); }
+      else simLog('TICKET',`Not saved: ${esc((r&&r.detail)||'unknown error')}`,'red'); }
+    catch(err){ simLog('TICKET','Not saved: the server did not answer','red'); } }
+  else simLog('TICKET','Draft only (not saved to the Incident Desk)','dim');
+  if(!simAlive(tok))return; SIM.ticket=tk;
+  $('simScene').innerHTML=`<div class="s-stamp"><span>Ticket filed</span><b>${esc(tk.ack_no)}</b><small>${esc(f.who)} &middot; ${esc(f.pri)} &middot; ${esc(e.codename)}</small></div>`;
+  simSfx.stamp(); await simW(tok,1300); if(!simAlive(tok))return;
+  try{ SIM.run=await SIM.runP; }catch(err){ SIM.run=null; }
+  if(!SIM.run||!SIM.run.trail){ $('simScene').innerHTML=`<div class="s-title"><div class="s-kick">Pipeline error</div>
+      <h1 class="s-h1" style="font-size:44px"><span>The pipeline</span><span>did not <em class="s-hl">answer.</em></span></h1>
+      <p class="s-lead">Restart the server so it picks up the Simulation API, then press Restart.</p></div>`;
+    simLog('ERR','GET /sim/run failed','red'); simClockStop(); return; }
+  await bmNames(Object.keys(SIM.run.names||{}));
+  const ok=await simChain(4,9,tok); if(!ok)return; }
+// the verdict's freeze button goes through the same guardrails as everywhere else
+function simFreeze(){ const R=SIM.run; if(!R)return;
+  simLog('GUARD','Freeze request opened: officer, reason and checks required','dim');
+  // a replay is filed under the ticket this run created (a draft has none), not the old complaint's ticket
+  guardOpen({ack:R.ack_no, account:R.prediction.account_id, officer:SIM.ticket&&SIM.ticket.who,
+    ticket:SIM.ticket&&SIM.ticket.saved?SIM.ticket.ack_no:'SIM-DRAFT', onDone:async r=>{
+    const b=$('svFreeze'), m=$('svMsg'); if(m)m.textContent=r.message; if(b&&(r.dispatched||[]).length){ b.disabled=true; b.textContent='Freeze sent'; }
+    if(SIM.ticket&&SIM.ticket.saved&&(r.dispatched||[]).length){ try{ await jpatch(`/tickets/${encodeURIComponent(SIM.ticket.ack_no)}?status=FREEZE_SENT&actor=${encodeURIComponent(r.officer)}`); }catch(e){} }
+    simLog('ALERT',esc(r.message)+` &middot; by ${esc(r.officer)}${r.approver?', approved by '+esc(r.approver):''}`,'hi'); }}); }
+
+// ===================== GUARDRAILS — every freeze / alert request is confirmed here =====================
+// The server enforces the rules (/alerts/dispatch refuses anything that breaks them); this window shows what
+// would be sent and the warnings, and collects the officer, a reason and, for big freezes, a second officer.
+const GD_REASONS=['Forecast: cash-out likely within 10 minutes','Victim confirmed the payment on the call',
+  'Bank flagged the receiving account','Account linked to earlier complaints','Other (write it below)'];
+let GD=null;
+async function guardOpen(o){ GD=Object.assign({},o); const m=$('guardModal'), b=$('guardBox'); if(!m||!b)return;
+  m.classList.add('on'); b.innerHTML='<div class="gd-load">Running the guardrail checks&hellip;</div>';
+  let c; try{ const r=await fetch(API+`/guardrails/check?ack_no=${encodeURIComponent(o.ack)}${o.account?'&account='+encodeURIComponent(o.account):''}${o.ticket?'&ticket='+encodeURIComponent(o.ticket):''}`);
+    c=await r.json(); if(!r.ok)throw new Error(c.detail||('HTTP '+r.status)); }
+  catch(e){ b.innerHTML=`<div class="gd-load">Could not run the checks (${esc(e.message||e)}), so nothing was sent.</div>
+    <div class="gd-f"><button class="gd-btn" onclick="guardClose()">Close</button></div>`; return; }
+  if(!GD)return; GD.chk=c;
+  const def=o.officer||(c.ticket&&c.ticket.assignee)||'', act=c.tier==='RED'?'freeze request':c.tier==='AMBER'?'monitoring alert':'review';
+  const what=c.tier==='RED'?`SMS to ${esc(c.station||'the police station')} and a freeze request to the bank`
+    :c.tier==='AMBER'?`an email brief to the ${esc(c.district||'district')} desk (no freeze)`:'nothing; the review is logged';
+  const opts=sel=>['',...ANALYSTS].map(a=>`<option value="${esc(a)}"${a===sel?' selected':''}>${a?esc(a):'Choose an officer'}</option>`).join('');
+  b.innerHTML=`<div class="gd-hd"><span class="gd-tier ${c.tier}">${c.tier}</span><h3>Confirm ${act}</h3><span class="gd-x" onclick="guardClose()" title="Cancel">&#10005;</span></div>
+    <div class="gd-sum">
+      <div><span>Account</span><b>${esc(c.codename)}</b> &middot; ${esc(c.account)}</div>
+      <div><span>Money at stake</span><b>${money(c.tainted_amount)}</b></div>
+      <div><span>Cash-out within 10 min</span><b>${pct(c.p_cashout_10m)}</b></div>
+      <div><span>Will send</span>${what}</div></div>
+    ${c.blocked?`<div class="gd-block">&#9940; ${esc(c.blocked)}</div>`:''}
+    <div class="gd-h">Check before sending</div>
+    <ul class="gd-cau">${(c.cautions||[]).map(x=>`<li class="${esc(x.code)}">${esc(x.text).replace(/Rs(?=[\d,])/g,'&#8377;')}</li>`).join('')}</ul>
+    <div class="gd-form">
+      <label>Officer sending this<select id="gdOff">${opts(def)}</select></label>
+      ${c.needs_approver?`<label>Second officer approving <small>(${money(c.four_eyes_amount)} or more at stake)</small><select id="gdApp">${opts('')}</select></label>`:'<span></span>'}
+      <label class="wide">Reason<select id="gdWhy">${GD_REASONS.map(r=>`<option>${esc(r)}</option>`).join('')}</select></label>
+      <label class="wide">Details <small>(needed if the reason is Other)</small><textarea id="gdTxt" maxlength="250" placeholder="What you saw that supports this"></textarea></label>
+      <label class="gd-chk wide"><input type="checkbox" id="gdAck"> I have looked at the evidence. This is a lead to act on, not proof that the account holder is a criminal.</label>
+    </div>
+    <div class="gd-msg" id="gdMsg"></div>
+    <div class="gd-f"><button class="gd-btn" onclick="guardClose()">Cancel</button>
+      <button class="gd-btn pri" id="gdSend" onclick="guardSend()" disabled>Send ${act}</button></div>`;
+  ['gdOff','gdApp','gdWhy','gdTxt','gdAck'].forEach(id=>{ const el=$(id); if(el){ el.addEventListener('input',guardValid); el.addEventListener('change',guardValid); } });
+  guardValid(); }
+function guardValid(){ const c=GD&&GD.chk, s=$('gdSend'); if(!c||!s)return false;
+  const v=id=>(($(id)||{}).value||'').trim(), off=v('gdOff'), app=v('gdApp'), why=v('gdWhy'), txt=v('gdTxt'), ok=!!($('gdAck')||{}).checked;
+  const miss=!off?'choose the officer sending it':c.needs_approver&&!app?'a second officer must approve':c.needs_approver&&app===off?'the approver must be a different officer'
+    :why.startsWith('Other')&&txt.length<5?'write the reason in Details':!ok?'tick the review box':'';
+  s.disabled=!!c.blocked||!!miss; const m=$('gdMsg'); if(m&&!m.dataset.done)m.textContent=c.blocked?'':miss?`To send: ${miss}.`:'Ready. The request and your name go into the case timeline.';
+  return !miss&&!c.blocked; }
+async function guardSend(){ if(!GD||!guardValid())return; const c=GD.chk, s=$('gdSend'), m=$('gdMsg'), label=s.textContent;
+  const v=id=>(($(id)||{}).value||'').trim(), off=v('gdOff'), app=v('gdApp'), why=v('gdWhy'), txt=v('gdTxt');
+  const reason=why.startsWith('Other')?txt:(txt?`${why}. ${txt}`:why);
+  s.disabled=true; s.textContent='Sending…';
+  let r,d; try{ r=await fetch(API+`/alerts/dispatch?ack_no=${encodeURIComponent(GD.ack)}&account=${encodeURIComponent(c.account)}&officer=${encodeURIComponent(off)}`
+      +`&reason=${encodeURIComponent(reason)}${app?'&approver='+encodeURIComponent(app):''}${GD.ticket?'&ticket='+encodeURIComponent(GD.ticket):''}`,{method:'POST'}); d=await r.json(); }
+  catch(e){ m.className='gd-msg bad'; m.textContent='Could not reach the server; nothing was sent.'; s.disabled=false; s.textContent=label; return; }
+  m.dataset.done='1';
+  if(!r.ok){ m.className='gd-msg bad'; m.textContent='Refused by the guardrails: '+String(d.detail||r.status).replace(/Rs(?=[\d,])/g,'₹')+'. This attempt was logged.';
+    s.disabled=false; s.textContent=label; delete m.dataset.done; return; }
+  const sent=(d.dispatched||[]).map(a=>`${a.channel} to ${a.recipient}`);
+  const msg=d.deduped?'Already sent for this account in the last 15 minutes, so nothing new went out.'
+    :sent.length?'✓ Sent (simulated): '+sent.join(' · '):'Logged as reviewed; nothing needs sending at this tier.';
+  m.className='gd-msg ok'; m.textContent=msg+' Recorded in the case timeline.'; s.textContent='Done';
+  const done=GD.onDone; try{ done&&done(Object.assign({},d,{message:msg,officer:off,approver:app||null})); }catch(e){}
+  setTimeout(()=>{ if(GD&&GD.chk===c)guardClose(); },1900); }
+function guardClose(){ const m=$('guardModal'); if(m)m.classList.remove('on'); GD=null; }
+document.addEventListener('keydown',e=>{ if(e.key==='Escape'&&GD)guardClose(); });
+// the Guardrails panel (Command Centre badge): the rules in force, straight from the server
+async function showGuardrails(){ const m=$('guardModal'), b=$('guardBox'); if(!m||!b)return; GD={panel:true};
+  m.classList.add('on'); b.innerHTML='<div class="gd-load">Loading&hellip;</div>';
+  let g; try{ g=(await jget('/guardrails')).guardrails||[]; }catch(e){ b.innerHTML='<div class="gd-load">Could not load the guardrails.</div>'; return; }
+  b.innerHTML=`<div class="gd-hd"><h3>&#128737; Guardrails in force</h3><span class="gd-x" onclick="guardClose()">&#10005;</span></div>
+    <p style="margin:0 0 12px;color:var(--g-dim);font-size:13px">The server enforces these on every request, from every screen (Base, Advanced and the Simulation). Refused attempts are logged too.</p>
+    <ul class="gd-list">${g.map(x=>`<li><div><b>${esc(x.name)}</b><span>${esc(x.rule).replace(/Rs(?=[\d,])/g,'&#8377;')}</span></div></li>`).join('')}</ul>
+    <div class="gd-f"><button class="gd-btn pri" onclick="guardClose()">Close</button></div>`; }
+// Advanced case view: the warnings for this case, next to its action, with the guarded send button
+async function caseGuard(ack, acc){ const box=$('caseGuard'); if(!box)return;
+  let c; try{ c=await jget(`/guardrails/check?ack_no=${encodeURIComponent(ack)}${acc?'&account='+encodeURIComponent(acc):''}`); }catch(e){ box.innerHTML=''; return; }
+  if(SEL!==ack||!$('caseGuard'))return;
+  const btn=c.blocked?`<span class="cap" style="margin:0">${esc(c.blocked)}</span>`
+    :`<button class="btn sm" onclick="dispatch('${esc(ack)}','${esc(c.account)}')">${c.tier==='RED'?'&#10052; Send freeze request&hellip;':c.tier==='AMBER'?'Send monitoring alert&hellip;':'Log a review&hellip;'}</button>`;
+  box.innerHTML=`<div class="gdc-h">&#128737; Guardrails &middot; check before acting<span style="margin-left:auto;cursor:pointer;color:var(--dim)" onclick="showGuardrails()">all rules &rsaquo;</span></div>
+    <ul>${(c.cautions||[]).map(x=>`<li>${esc(x.text).replace(/Rs(?=[\d,])/g,'&#8377;')}</li>`).join('')}</ul>
+    <div class="gdc-f">${btn}${c.needs_approver?`<span class="cap" style="margin:0">needs a second officer (${money(c.four_eyes_amount)}+ at stake)</span>`:''}</div>`; }
 </script>
 </body>
 </html>

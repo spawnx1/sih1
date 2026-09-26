@@ -9,7 +9,9 @@ Endpoints:
   GET  /predict/{ack_no}?as_of=&account=   M1 + M2 + M3 in one response
   GET  /hotspots?from=&to=&min_amt=&channel=   GIS heatmap cells + ATM markers
   POST /alerts/dispatch   GET /alerts  simulated SMS/email/webhook + delivery log
+  GET  /guardrails  GET /guardrails/check   the checks every request passes + pre-flight warnings
   GET  /replay/state?case=&t=         full render state at a simulated instant
+  GET  /sim/entries  GET /sim/run/{ack_no}   the Simulation tab: one complaint, every stage
 
 The DECISION LAYER is plain rules, not ML -- an officer must be able to read why
 an alert fired. The primary recommendation is FREEZE (stop the debit clearing);
@@ -22,6 +24,7 @@ import hashlib
 import os
 import re
 import threading
+import time
 import uuid
 from datetime import datetime, timedelta
 
@@ -361,17 +364,31 @@ def get_hotspots(from_: str | None = Query(None, alias="from"),
 
 
 @app.post("/alerts/dispatch")
-def dispatch_alert(ack_no: str, account: str | None = None, as_of: str | None = None):
+def dispatch_alert(ack_no: str, account: str | None = None, as_of: str | None = None,
+                   officer: str | None = None, reason: str | None = None,
+                   approver: str | None = None, ticket: str | None = None):
+    """`ticket`: the ticket this request is filed under, if not the complaint's own (the Simulation
+    replays an old complaint under a freshly filed ticket). The closed-case check and the audit
+    record use that ticket."""
     r = _case_row(ack_no)
     if r is None:
         raise HTTPException(status_code=404, detail=f"unknown ack_no: {ack_no}")
     aof = _parse_as_of(as_of, pd.Timestamp(r["filed_ts"]).to_pydatetime())
     pred = _predict(ack_no, aof, account)
     rec = pred.recommendation
+    officer = _clean(officer, 60, "officer")
+    reason = _clean(reason, 300, "reason")
+    approver = _clean(approver, 60, "approver")
+    tk = _clean(ticket, 40, "ticket") or ack_no
+    block = _dispatch_block(tk, rec, officer, reason, approver)
+    if block:   # refused: say why, and keep a record of the attempt
+        _audit(tk, "guardrail", f"Request for {pred.account_id} refused: {block[1]}", officer or "unknown")
+        raise HTTPException(status_code=block[0], detail=block[1])
     # dedup: one alert per account per 15 minutes
     bucket = int(aof.timestamp() // (config.ALERT_DEDUP_MINUTES * 60))
     key = f"{pred.account_id}:{bucket}"
     if key in STATE["dedup"]:
+        _audit(tk, "alert", f"Repeat request for {pred.account_id} not sent (one per 15 minutes)", officer)
         return {"deduped": True, "recommendation": rec.model_dump(mode="json")}
     made = []
     if rec.tier == "RED":
@@ -398,8 +415,171 @@ def dispatch_alert(ack_no: str, account: str | None = None, as_of: str | None = 
     if made:
         STATE["dedup"].add(key)
         STATE["alerts"].extend(made)
+        STATE.setdefault("sent_log", []).append((time.time(), officer))
+        _audit(tk, "alert", f"{rec.tier} {rec.action} request for {pred.account_id} sent "
+               f"({', '.join(a.channel for a in made)}). Reason: {reason}"
+               + (f". Approved by {approver}" if approver else ""), officer)
+    else:
+        _audit(tk, "alert", f"Reviewed {pred.account_id}: tier {rec.tier}, nothing to send. Reason: {reason}", officer)
     return {"deduped": False, "dispatched": [a.model_dump(mode="json") for a in made],
-            "recommendation": rec.model_dump(mode="json")}
+            "recommendation": rec.model_dump(mode="json"), "officer": officer, "approver": approver}
+
+
+# --------------------------------------------------------------------------
+# GUARDRAILS -- checks every outgoing request must pass, and the warnings an
+# officer sees before sending. The server enforces them; screens only explain.
+# --------------------------------------------------------------------------
+_CTRL = re.compile(r"[\x00-\x08\x0b-\x1f\x7f]")
+
+
+def _clean(v, limit: int, what: str, multiline: bool = False):
+    """Trim, drop control characters, refuse over-long input. Empty -> None."""
+    if v is None:
+        return None
+    v = _CTRL.sub("", str(v)) if multiline else _CTRL.sub("", str(v)).replace("\n", " ")
+    v = v.strip()
+    if len(v) > limit:
+        raise HTTPException(status_code=400, detail=f"{what} is too long (at most {limit} characters)")
+    return v or None
+
+
+def _ticket_brief(ack_no: str):
+    try:
+        con = _tdb()
+        row = con.execute("SELECT status, assignee FROM tickets WHERE ack_no=?", (ack_no,)).fetchone()
+        con.close()
+        return {"status": row[0], "assignee": row[1]} if row else None
+    except Exception:
+        return None
+
+
+def _audit(ack_no: str, kind: str, detail: str, actor: str | None):
+    """Write to the case's ticket timeline (never lets a logging problem break the request)."""
+    try:
+        con = _tdb()
+        if con.execute("SELECT 1 FROM tickets WHERE ack_no=?", (ack_no,)).fetchone():
+            _log(con, ack_no, kind, detail, actor or "unknown")
+            con.execute("UPDATE tickets SET updated=? WHERE ack_no=?", (_now(), ack_no))
+            con.commit()
+        con.close()
+    except Exception:
+        pass
+
+
+def _dispatch_block(ack_no: str, rec, officer, reason, approver):
+    """(http status, why) if this request must not go out, else None."""
+    if not officer:
+        return 400, "a named officer must send this request"
+    if not reason or len(reason) < 5:
+        return 400, "give a reason for this request (at least 5 characters)"
+    t = _ticket_brief(ack_no)
+    if t and t["status"] in ("RESOLVED", "CLOSED"):
+        return 409, f"this case is already {t['status'].lower()}; reopen it before sending anything"
+    if rec.tier == "RED" and rec.tainted_amount >= config.FOUR_EYES_AMOUNT:
+        if not approver:
+            return 403, (f"Rs{rec.tainted_amount:,.0f} is at or above Rs{config.FOUR_EYES_AMOUNT:,}: "
+                         f"a second officer must approve this freeze")
+        if approver.lower() == officer.lower():
+            return 403, "the approving officer must be a different person"
+    now, win = time.time(), config.DISPATCH_RATE_WINDOW_MIN * 60
+    recent = [(ts, who) for ts, who in STATE.get("sent_log", []) if now - ts < win]
+    STATE["sent_log"] = recent
+    if sum(1 for _, who in recent if (who or "").lower() == officer.lower()) >= config.DISPATCH_RATE_PER_OFFICER:
+        return 429, (f"{officer} has sent {config.DISPATCH_RATE_PER_OFFICER} requests in the last "
+                     f"{config.DISPATCH_RATE_WINDOW_MIN} minutes; wait before sending more")
+    if len(recent) >= config.DISPATCH_RATE_TOTAL:
+        return 429, (f"{config.DISPATCH_RATE_TOTAL} requests went out in the last "
+                     f"{config.DISPATCH_RATE_WINDOW_MIN} minutes; the limit protects against bulk freezes")
+    return None
+
+
+_CHANNEL_WORDS = {"ATM": "at an ATM", "POS": "by card payment at a shop",
+                  "onward_transfer": "by another transfer", "dormant": "by staying in the account"}
+
+
+def _cautions(pred, trail, case_row, as_of) -> list[dict]:
+    """Plain warnings an officer should weigh before acting on this forecast."""
+    out = []
+    edges = list(trail.edges)
+    if edges:
+        seen = sum(1 for e in edges if e.observed)
+        if seen / len(edges) < config.CAUTION_MIN_REPORTED:
+            out.append({"code": "thin_data", "text": f"Banks reported only {seen} of the {len(edges)} transfers in this "
+                        f"trail, so the picture may be incomplete."})
+    p = pred.recommendation.p_cashout_10m
+    for cut in (config.TIER_RED_P, config.TIER_AMBER_P):
+        if abs(p - cut) < config.CAUTION_BORDERLINE:
+            out.append({"code": "borderline", "text": f"The score ({p:.2f}) is within {config.CAUTION_BORDERLINE:.2f} of "
+                        f"the {cut:.2f} cut-off, so the tier is borderline."})
+            break
+    g = pred.location.granularity
+    if g != "terminal":
+        out.append({"code": "area_only", "text": "The model is not sure of a single ATM; it only names the "
+                    + ("~5 km area." if g == "cell" else "district.")})
+    ch = pred.channel.model_dump()
+    top = max(ch, key=ch.get)
+    if top != "ATM":
+        out.append({"code": "not_atm", "text": f"The money is more likely to leave {_CHANNEL_WORDS[top]} "
+                    f"({ch[top]:.0%}) than at an ATM ({ch['ATM']:.0%}); watching ATMs alone may miss it."})
+    delay = float(case_row["reporting_delay_min"])
+    if delay > 60:
+        out.append({"code": "late", "text": f"The complaint came {delay / 60:.1f} hours after the payment; "
+                    f"some of the money may already be gone."})
+    gone = sum(e.tainted_amount for e in edges if not e.dst_account)
+    if gone > 0:
+        out.append({"code": "cashed", "text": f"Rs{gone:,.0f} was already withdrawn before the complaint."})
+    out.append({"code": "lead", "text": "A score is a lead for review, not proof that the account holder is a criminal."})
+    return out
+
+
+@app.get("/guardrails/check")
+def guardrails_check(ack_no: str, account: str | None = None, as_of: str | None = None,
+                     ticket: str | None = None):
+    """Pre-flight for a freeze request: what would be sent, the warnings, and whether a second
+    officer is needed or the case is closed. The dispatch endpoint enforces the same rules."""
+    r = _case_row(ack_no)
+    if r is None:
+        raise HTTPException(status_code=404, detail=f"unknown ack_no: {ack_no}")
+    aof = _parse_as_of(as_of, pd.Timestamp(r["filed_ts"]).to_pydatetime())
+    with _CTX_LOCK:
+        pred = _predict_locked(ack_no, aof, account)
+        trail = expand_trail(r["seed_txn_id"], aof, STATE["ctx"])
+    rec, t = pred.recommendation, _ticket_brief(_clean(ticket, 40, "ticket") or ack_no)
+    return {"ack_no": ack_no, "account": pred.account_id, "codename": _codename(pred.account_id),
+            "tier": rec.tier, "action": rec.action, "p_cashout_10m": round(rec.p_cashout_10m, 4),
+            "tainted_amount": rec.tainted_amount, "station": rec.target_station, "district": rec.target_district,
+            "rule": rec.reason, "cautions": _cautions(pred, trail, r, aof),
+            "needs_approver": rec.tier == "RED" and rec.tainted_amount >= config.FOUR_EYES_AMOUNT,
+            "four_eyes_amount": config.FOUR_EYES_AMOUNT, "ticket": t,
+            "blocked": (f"This case is already {t['status'].lower()}; reopen it before sending anything."
+                        if t and t["status"] in ("RESOLVED", "CLOSED") else None)}
+
+
+@app.get("/guardrails")
+def guardrails_list():
+    """The guardrails in force, in plain words (the console's Guardrails panel reads this)."""
+    return {"guardrails": [
+        {"name": "Human in the loop", "rule": "Nothing is sent automatically. An officer presses send, "
+         "names themself and gives a reason, every time."},
+        {"name": "Two officers for big freezes", "rule": f"At or above Rs{config.FOUR_EYES_AMOUNT:,} at stake, a second, "
+         "different officer must approve the freeze (maker-checker)."},
+        {"name": "No action on closed cases", "rule": "Requests for resolved or closed cases are refused."},
+        {"name": "No repeats", "rule": f"One request per account per {config.ALERT_DEDUP_MINUTES} minutes; "
+         "repeats are held back."},
+        {"name": "Rate limits", "rule": f"At most {config.DISPATCH_RATE_PER_OFFICER} requests per officer and "
+         f"{config.DISPATCH_RATE_TOTAL} in total every {config.DISPATCH_RATE_WINDOW_MIN} minutes, "
+         "so nobody can freeze accounts in bulk."},
+        {"name": "Full audit trail", "rule": "Every request, whether sent, repeated or refused, is written to the case "
+         "timeline with the officer's name, the reason and any approver."},
+        {"name": "Warnings before acting", "rule": "Thin bank data, borderline scores, area-only locations, non-ATM exits, "
+         "late complaints and money already withdrawn are flagged before sending."},
+        {"name": "Honest uncertainty", "rule": f"The model refuses to name one ATM below "
+         f"{config.ABSTAIN_MIN_P_TERMINAL:.0%} confidence and names the area instead."},
+        {"name": "Written rules decide", "rule": f"The tier comes from fixed thresholds ({config.TIER_RED_P:.0%} and "
+         f"{config.TIER_AMBER_P:.0%}, Rs{config.TIER_RED_AMOUNT:,}), not from the AI directly."},
+        {"name": "Only past data", "rule": "Every forecast uses only transactions made before the complaint time."},
+        {"name": "Checked inputs", "rule": "Ticket fields have length and amount limits, and a recovery can never "
+         "exceed the disputed amount."}]}
 
 
 def _mk_alert(pred, channel, recipient, subject, body) -> Alert:
@@ -643,12 +823,18 @@ def create_ticket(title: str = Body(..., embed=True), priority: str = Body("P2",
                   assignee: str | None = Body(None, embed=True),
                   actor: str = Body("analyst", embed=True)):
     """Open a ticket by hand: a new complaint or lead that is not in the forecast queue."""
-    title = (title or "").strip()
+    title = _clean(title, 140, "the title") or ""
     if not title:
         raise HTTPException(status_code=400, detail="a title is required")
     if priority not in _TPRIO:
         raise HTTPException(status_code=400, detail=f"bad priority; use {list(_TPRIO)}")
-    clean = lambda v: (v or "").strip() or None
+    if not 0 <= float(disputed_amount or 0) <= 1e10:
+        raise HTTPException(status_code=400, detail="the amount must be between 0 and Rs1,000 crore")
+    description = _clean(description, 4000, "the description", multiline=True)
+    for v, what in ((fraud_category, "the fraud type"), (victim_account, "the victim account"),
+                    (suspect_account, "the suspect account"), (assignee, "the officer name"), (actor, "the actor")):
+        _clean(v, 60, what)
+    clean = lambda v: _CTRL.sub("", v or "").strip() or None
     con = _tdb(); _seed_tickets(con)
     ack = clean(ack_no) or _new_ack(con)
     if not re.fullmatch(r"[A-Za-z0-9_-]{1,40}", ack):   # it is used in URLs and links
@@ -706,6 +892,10 @@ def update_ticket(ack_no: str, status: str | None = None,
 
 @app.post("/tickets/{ack_no}/note")
 def add_note(ack_no: str, text: str = Body(..., embed=True), actor: str = Body("analyst", embed=True)):
+    text = _clean(text, 2000, "the note", multiline=True)
+    actor = _clean(actor, 60, "the actor") or "analyst"
+    if not text:
+        raise HTTPException(status_code=400, detail="the note is empty")
     con = _tdb(); _seed_tickets(con)
     if not con.execute("SELECT 1 FROM tickets WHERE ack_no=?", (ack_no,)).fetchone():
         con.close(); raise HTTPException(status_code=404, detail="no ticket")
@@ -724,9 +914,16 @@ def resolve_ticket(ack_no: str, outcome: str = Body(..., embed=True),
                    note: str | None = Body(None, embed=True), actor: str = Body("analyst", embed=True)):
     if outcome not in _TOUTCOME:
         raise HTTPException(status_code=400, detail=f"bad outcome; use {_TOUTCOME}")
+    note = _clean(note, 2000, "the note", multiline=True)
+    actor = _clean(actor, 60, "the actor") or "analyst"
     con = _tdb(); _seed_tickets(con)
-    if not con.execute("SELECT 1 FROM tickets WHERE ack_no=?", (ack_no,)).fetchone():
+    row = con.execute("SELECT disputed_amount FROM tickets WHERE ack_no=?", (ack_no,)).fetchone()
+    if not row:
         con.close(); raise HTTPException(status_code=404, detail="no ticket")
+    rec_amt, disputed = float(recovered_amount or 0), float(row[0] or 0)
+    if rec_amt < 0 or (disputed > 0 and rec_amt > disputed):   # can't recover more than was taken
+        con.close()
+        raise HTTPException(status_code=400, detail=f"the recovered amount must be between 0 and the disputed Rs{disputed:,.0f}")
     final = "CLOSED" if outcome in ("CASHED_OUT", "FALSE_POSITIVE") else "RESOLVED"
     con.execute("UPDATE tickets SET status=?,outcome=?,recovered_amount=?,updated=? WHERE ack_no=?",
                 (final, outcome, recovered_amount, _now(), ack_no))
@@ -996,6 +1193,222 @@ def mule_database():
                      "for review, not proof of criminal intent.")}
     STATE["mules_cache"] = data
     return data
+
+
+# ==========================================================================
+# LIVE SIMULATION -- the console's "Simulation" tab plays one real complaint end to end,
+# from the victim's call to the officer's recommendation. Read-only, and cut at the moment
+# the complaint was filed (R1), with the same models and rules as /predict, so every number
+# the cut-scene shows is a real output of the pipeline, not an animation value.
+#   GET /sim/entries      the accounts a victim can name in the ticket (the account they paid)
+#   GET /sim/run/{ack}    every stage's output for one complaint, in one call
+# ==========================================================================
+from ml.features import build_feature_vector
+
+# 8 of M1's 35 inputs, shown for the account it flags (name, label, unit)
+_SIM_FEATS = [("taint_amt", "Stolen money received", "inr"),
+              ("mins_since_taint", "Minutes since it arrived", "min"),
+              ("hop_from_victim", "Hops from the victim", "n"),
+              ("n_tx_10m", "Transactions in the last 10 min", "n"),
+              ("pct_forwarded_10m", "Share sent on within 10 min", "pct"),
+              ("prior_atm_count_90d", "Cash withdrawals in 90 days", "n"),
+              ("modal_withdrawal_hour", "Usual withdrawal hour", "hour"),
+              ("dist_kyc_to_centroid_km", "Usual ATMs, distance from home", "km")]
+
+
+def _role_asof(ctx, acc: str, as_of: datetime) -> str:
+    """_archetype, from the bank-reported transactions before as_of only."""
+    out_pos, in_pos = ctx.out_positions(acc, as_of), ctx.in_positions(acc, as_of)
+    n_out = len(out_pos)
+    co_ratio = float(ctx.is_cashout[out_pos].sum()) / n_out if n_out else 0.0
+    in_cp = len({str(s) for s in ctx.src[in_pos] if s is not None and not pd.isna(s)})
+    out_cp = len({str(d) for d in ctx.dst[out_pos] if d is not None and not pd.isna(d)})
+    if co_ratio >= 0.6:
+        return "CASHER"
+    if out_cp > in_cp and out_cp >= 4:
+        return "DISTRIBUTOR"
+    if in_cp >= out_cp and in_cp >= 4:
+        return "COLLECTOR"
+    return "RELAY"
+
+
+def _sim_seed_dst():
+    """complaint -> the account the victim paid (receiver of the reported transfer)."""
+    if "sim_seed_dst" not in STATE:
+        ctx, m = STATE["ctx"], {}
+        for _, c in STATE["complaints"].iterrows():
+            p = ctx.txn_pos.get(c["seed_txn_id"])
+            d = ctx.dst[p] if p is not None else None
+            if d is not None and not pd.isna(d):
+                m[c["ack_no"]] = str(d)
+        STATE["sim_seed_dst"] = m
+    return STATE["sim_seed_dst"]
+
+
+@app.get("/sim/entries")
+def sim_entries():
+    """One row per complaint: the account the victim paid, with its alias, bank and area, the
+    reported transfer, and the complaint's forecast at filing time (the same numbers as /queue).
+    Live complaints (RED, then AMBER) first."""
+    if STATE.get("sim_entries") is not None:
+        return STATE["sim_entries"]
+    ctx = STATE["ctx"]
+    q = {x.ack_no: x for x in _build_queue()}
+    out = []
+    for _, c in STATE["complaints"].iterrows():
+        ack = c["ack_no"]
+        acc = _sim_seed_dst().get(ack)
+        if acc is None:
+            continue
+        p = ctx.txn_pos[c["seed_txn_id"]]
+        info, qi = ctx.account_info(acc), q.get(ack)
+        out.append({"ack_no": ack, "account": acc, "codename": _codename(acc),
+                    "victim_account": str(c["victim_account"]),
+                    "bank": info.get("bank_code"), "district": info.get("kyc_district"),
+                    "amount": round(float(c["disputed_amount"]), 2), "channel": str(ctx.channel[p]),
+                    "txn_id": str(c["seed_txn_id"]), "txn_ts": _iso_ts(ctx.ts[p]),
+                    "filed_ts": _iso_ts(c["filed_ts"]),
+                    "report_delay_min": round(float(c["reporting_delay_min"]), 1),
+                    "fraud_category": str(c["fraud_category"]),
+                    "tier": qi.tier if qi else "GREY",
+                    "p10": round(float(qi.p_cashout_10m), 4) if qi else 0.0})
+    rank = {"RED": 0, "AMBER": 1, "GREY": 2}
+    out.sort(key=lambda e: (rank[e["tier"]], -e["p10"], -e["amount"]))
+    STATE["sim_entries"] = {"entries": out}
+    return STATE["sim_entries"]
+
+
+@app.get("/sim/run/{ack_no}")
+def sim_run(ack_no: str):
+    """Everything the cut-scene shows for one complaint, as of the moment it was filed:
+    the named account's history, the traced money trail, the M1 score of every account that
+    received stolen money, the full forecast (M1 + M2 + M3 + decision rules) for the account
+    most likely to cash out, and the model inputs behind it. Server timings are real."""
+    r = _case_row(ack_no)
+    if r is None:
+        raise HTTPException(status_code=404, detail=f"unknown ack_no: {ack_no}")
+    ctx, models = STATE["ctx"], STATE["models"]
+    if r["seed_txn_id"] not in ctx.txn_pos:
+        raise HTTPException(status_code=404, detail=f"no reported transaction on record for {ack_no}")
+    filed = pd.Timestamp(r["filed_ts"]).to_pydatetime()
+    sp = ctx.txn_pos[r["seed_txn_id"]]
+    named = _sim_seed_dst().get(ack_no)
+    ms = {}
+
+    with _CTX_LOCK:
+        t0 = time.perf_counter()
+        trail = expand_trail(r["seed_txn_id"], filed, ctx)
+        trail.ack_no = ack_no
+        ms["trace"] = round((time.perf_counter() - t0) * 1000)
+        ctx.bind(trail=trail, case=r)
+        got, sent = {}, {}
+        for e in trail.edges:
+            if e.dst_account:
+                got[e.dst_account] = got.get(e.dst_account, 0.0) + e.tainted_amount
+            sent[e.src_account] = sent.get(e.src_account, 0.0) + e.tainted_amount
+        t0 = time.perf_counter()
+        scores = []
+        for n in trail.nodes:
+            if n.is_victim or n.tainted_amount <= 0:
+                continue
+            cp = predict_cashout(n.account_id, filed, ctx, models)
+            scores.append({"account": n.account_id, "codename": _codename(n.account_id),
+                           "hop": n.hop_from_victim, "district": n.district,
+                           "lat": n.lat, "lon": n.lon, "is_leaf": n.is_leaf,
+                           "received": round(got.get(n.account_id, n.tainted_amount), 2),
+                           "sent_on": round(sent.get(n.account_id, 0.0), 2),
+                           "holding": round(max(0.0, got.get(n.account_id, n.tainted_amount)
+                                                - sent.get(n.account_id, 0.0)), 2),
+                           "p10": round(cp.p_10m, 4), "p30": round(cp.p_30m, 4),
+                           "p60": round(cp.p_60m, 4), "severity": cp.severity})
+        scores.sort(key=lambda s: -s["p10"])
+        ms["m1_all"] = round((time.perf_counter() - t0) * 1000)
+        t0 = time.perf_counter()
+        pred = _predict_locked(ack_no, filed, None)
+        ms["forecast"] = round((time.perf_counter() - t0) * 1000)
+        t0 = time.perf_counter()
+        ctx.bind(trail=trail, case=r)
+        fv = build_feature_vector(pred.account_id, filed, ctx)
+        ms["features"] = round((time.perf_counter() - t0) * 1000)
+
+    def _who(acc):
+        info = ctx.account_info(acc) or {}
+        od = info.get("open_date")
+        age = (filed - pd.Timestamp(od).to_pydatetime()).total_seconds() / 86400 if od is not None else None
+        return {"account": acc, "codename": _codename(acc), "bank": info.get("bank_code"),
+                "district": info.get("kyc_district"),
+                "pin": None if info.get("kyc_pin") is None else str(info.get("kyc_pin")),
+                "lat": info.get("kyc_lat"), "lon": info.get("kyc_lon"),
+                "open_date": _iso_ts(od) if od is not None else None,
+                # a few synthetic accounts are dated after their first activity: show no age then
+                "age_days": round(age, 1) if age is not None and age >= 0 else None,
+                "role": _role_asof(ctx, acc, filed)}
+
+    # the named account's history, as far as the bank had reported it at filing time
+    first = _who(named) if named else None
+    if first:
+        inp, outp = ctx.in_positions(named, filed), ctx.out_positions(named, filed)
+        allp = np.sort(np.concatenate([inp, outp])) if len(inp) + len(outp) else np.empty(0, dtype=int)
+        seeds = _sim_seed_dst()
+        prior = []
+        for _, c in STATE["complaints"].iterrows():
+            if c["ack_no"] != ack_no and seeds.get(c["ack_no"]) == named \
+                    and pd.Timestamp(c["filed_ts"]).to_pydatetime() < filed:
+                prior.append({"ack_no": c["ack_no"], "filed_ts": _iso_ts(c["filed_ts"]),
+                              "amount": round(float(c["disputed_amount"]), 2)})
+        prior.sort(key=lambda c: c["filed_ts"])
+        recent = []
+        for p in allp[-6:][::-1]:
+            out_dir = str(ctx.src[p]) == named
+            other = ctx.dst[p] if out_dir else ctx.src[p]
+            other = None if other is None or pd.isna(other) else str(other)
+            atm = ctx.atm_id[p]
+            recent.append({"ts": _iso_ts(ctx.ts[p]), "direction": "out" if out_dir else "in",
+                           "counterparty": other, "amount": round(float(ctx.amount[p]), 2),
+                           "channel": str(ctx.channel[p]),
+                           "atm_id": None if atm is None or pd.isna(atm) else str(atm)})
+        first.update({"n_tx": int(len(allp)), "n_in": int(len(inp)), "n_out": int(len(outp)),
+                      "inflow": round(float(ctx.amount[inp].sum()) if len(inp) else 0.0, 2),
+                      "outflow": round(float(ctx.amount[outp].sum()) if len(outp) else 0.0, 2),
+                      "counterparties": len({str(x) for x in np.concatenate([ctx.src[inp], ctx.dst[outp]])
+                                             if x is not None and not pd.isna(x)} - {named}),
+                      "first_seen": _iso_ts(ctx.ts[allp[0]]) if len(allp) else None,
+                      "atms_90d": len(set(ctx.withdrawal_atms(named, filed, days=90))),
+                      "prior_complaints": prior, "recent": recent})
+
+    atms = []
+    for t in pred.location.terminals[:5]:
+        a = t.atm_id
+        atms.append({**t.model_dump(mode="json"), "operator": ctx._atm_operator.get(a),
+                     "pin": str(ctx._atm_pin.get(a)), "limit": int(ctx._atm_limit.get(a) or 0),
+                     "standalone": bool(ctx._atm_standalone.get(a)),
+                     "fraud_rate": round(float(ctx.atm_fraud_rate(a)), 3)})
+    rec = pred.recommendation
+    victim = next((n for n in trail.nodes if n.is_victim), None)
+    return {"ack_no": ack_no,
+            "case": {"filed_ts": _iso_ts(filed), "seed_ts": _iso_ts(ctx.ts[sp]),
+                     "reporting_delay_min": round(float(r["reporting_delay_min"]), 1),
+                     "amount": round(float(r["disputed_amount"]), 2),
+                     "fraud_category": str(r["fraud_category"]), "txn_id": str(r["seed_txn_id"]),
+                     "channel": str(ctx.channel[sp])},
+            "victim": {"account": str(r["victim_account"]),
+                       "bank": (ctx.account_info(str(r["victim_account"])) or {}).get("bank_code"),
+                       "district": victim.district if victim else None,
+                       "lat": victim.lat if victim else None, "lon": victim.lon if victim else None},
+            "named": first,
+            "target": _who(pred.account_id),
+            "names": {n.account_id: _codename(n.account_id) for n in trail.nodes},
+            "trail": trail.model_dump(mode="json"),
+            "scores": scores,
+            "prediction": pred.model_dump(mode="json"),
+            "atms": atms,
+            "station": config.JURISDICTION_SHO.get(rec.target_district, {}),
+            "features": [{"key": k, "label": lab, "unit": u, "value": round(float(fv.get(k, 0.0)), 4)}
+                         for k, lab, u in _SIM_FEATS],
+            "n_features": len([f for f in models["m1_features"] if f != "horizon_min"]),
+            "cautions": _cautions(pred, trail, r, filed),
+            "needs_approver": rec.tier == "RED" and rec.tainted_amount >= config.FOUR_EYES_AMOUNT,
+            "server_ms": ms}
 
 
 # serve the officer console at / (mount last so API routes win)

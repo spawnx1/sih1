@@ -86,6 +86,18 @@ TIER_AMBER_P = 0.30        # middle band -> AMBER
 ALERT_DEDUP_MINUTES = 15   # one alert per account per 15 minutes
 
 # --------------------------------------------------------------------------
+# Guardrails on outgoing requests (api/main.py). Nothing is sent without a
+# named officer and a reason; big freezes need a second officer; nobody can
+# fire requests in bulk; every attempt lands in the case's audit timeline.
+# --------------------------------------------------------------------------
+FOUR_EYES_AMOUNT = 50000         # rupees in the account to freeze: at/above this a second officer must approve
+DISPATCH_RATE_WINDOW_MIN = 10    # rate-limit window (minutes, wall clock)
+DISPATCH_RATE_PER_OFFICER = 10   # requests one officer may send per window
+DISPATCH_RATE_TOTAL = 40         # requests everyone together may send per window
+CAUTION_MIN_REPORTED = 0.75      # warn when banks reported fewer than this share of the trail's transfers
+CAUTION_BORDERLINE = 0.05        # warn when the score is this close to a tier cut-off
+
+# --------------------------------------------------------------------------
 # Columns that must NEVER reach the model. The feature loader drops these on
 # sight (belt-and-braces alongside the `label_` prefix rule, R2/R3).
 # home_lat/home_lon are the generator's ground-truth home location.
