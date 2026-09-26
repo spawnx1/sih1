@@ -263,7 +263,7 @@
   .maphold.hero::before{top:10px;left:10px;border-right:0;border-bottom:0;z-index:5}
   .maphold.hero .mapfx::after{bottom:10px;right:10px;border-left:0;border-top:0}
   .maphold .mapbtn,.maphold .maplist,.maphold .legend{z-index:6}
-  .maphold.hero{height:56vh;min-height:400px}
+  .maphold.hero{height:500px;min-height:420px}
   .maphold.hero .legend{bottom:60px}
   /* ---- CINEMATIC replay mode ---- */
   .cinebar{position:absolute;left:0;right:0;height:46px;background:#000;z-index:8;pointer-events:none;
@@ -920,6 +920,77 @@
     #baseApp .bm-table .hm{display:none}
     #baseApp .bm-table th,#baseApp .bm-table td{padding:11px 10px}
   }
+
+  /* ===== REFERENCE CASE-VIEW UI =====
+     Light Advanced mode, compact map, clean officer-console spacing. */
+  body.advlight .stagehead{
+    color:#1d2938;
+  }
+  body.advlight .stagehead .cid{
+    color:#162234;
+  }
+  body.advlight .stagehead .ftype,
+  body.advlight .stagehead .mulelink{
+    color:#5b6878;
+  }
+  body.advlight .card{
+    background:rgba(255,255,255,.72);
+    border-color:#d7e0e8;
+    box-shadow:0 2px 10px rgba(35,55,75,.06);
+  }
+  body.advlight .card h3{
+    color:#263342;
+  }
+  body.advlight .maphold.hero{
+    border-color:#d2dbe4;
+    box-shadow:0 2px 12px rgba(30,50,70,.08);
+  }
+  body.advlight .maphold.coded .tgtpanel{
+    background:rgba(255,255,255,.96);
+    border-color:#cfd9e3;
+    box-shadow:0 3px 12px rgba(30,50,70,.12);
+  }
+  body.advlight .tgtrow:hover{
+    background:rgba(224,94,114,.08);
+  }
+  body.advlight .tgtrow .id{
+    color:#253241;
+  }
+  body.advlight .tgtrow .id .sub{
+    color:#687586;
+  }
+  body.advlight .mapnarr{
+    background:rgba(255,255,255,.96);
+    border-color:#d2dbe4;
+    color:#253241;
+    box-shadow:0 2px 10px rgba(30,50,70,.10);
+  }
+  body.advlight .mapnarr .txt{
+    color:#536274;
+  }
+  body.advlight .maphold.coded .cd-coord,
+  body.advlight .maphold.coded .cd-place{
+    color:#455364;
+    text-shadow:0 1px 2px rgba(255,255,255,.9);
+  }
+  body.advlight .maphold.coded .mapbtn{
+    background:rgba(255,255,255,.94);
+    color:#273544;
+    border-color:#cfd9e3;
+  }
+  body.advlight .maphold.coded .legend{
+    background:rgba(255,255,255,.94);
+    border-color:#cfd9e3;
+    color:#4d5c6d;
+    box-shadow:0 2px 10px rgba(30,50,70,.10);
+  }
+  body.advlight .mglegend{
+    color:#627081;
+  }
+  body.advlight .mglegend i{
+    box-shadow:0 0 6px currentColor;
+  }
+
 </style>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
@@ -1173,8 +1244,8 @@ function setMode(m){
     }
   }
 }
-// ===================== ADVANCED light / dark theme (Advanced defaults to dark; remembered separately from Base) =====================
-let ADV_THEME=(()=>{try{return localStorage.getItem('themeAdv')||'dark';}catch(e){return 'dark';}})();
+// ===================== ADVANCED light / dark theme (reference UI defaults to light) =====================
+let ADV_THEME=(()=>{try{return localStorage.getItem('themeAdv')||'light';}catch(e){return 'light';}})();
 function advTileUrls(){ const t=ADV_THEME==='light'?'Light':'Dark';
   return {base:`https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_${t}_Gray_Base/MapServer/tile/{z}/{y}/{x}`,
           ref:`https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_${t}_Gray_Reference/MapServer/tile/{z}/{y}/{x}`}; }
@@ -2929,7 +3000,7 @@ function trailSVG(tr){if(!tr||!tr.nodes.length)return '<div class="cap">no trail
 // big interactive money-mule NETWORK graph (victim -> mules -> cash-out)
 function muleGraphSVG(tr){
   if(!tr||!tr.nodes||!tr.nodes.length)return '<div class="cap">building network&hellip;</div>';
-  const W=820,H=300,padX=64,padY=30;
+  const W=820,H=220,padX=64,padY=24;
   const byh={}; tr.nodes.forEach(n=>(byh[n.hop_from_victim]=byh[n.hop_from_victim]||[]).push(n));
   const hops=Object.keys(byh).map(Number).sort((a,b)=>a-b);
   const cashouts=(tr.edges||[]).filter(e=>e.atm_id);
@@ -2965,7 +3036,7 @@ function muleGraphSVG(tr){
         <title>${role} · ${n.account_id} · ${money(n.tainted_amount)} held · hop ${n.hop_from_victim}${n.district?' · '+n.district:''}${n.pin?' · PIN '+n.pin:''}</title></circle>
       <text x="${p.x}" y="${(p.y+p.r+13).toFixed(1)}" text-anchor="middle" font-size="9.5" font-weight="700" fill="#dfeaf3" font-family="ui-monospace,monospace">${nm}</text>
       <text x="${p.x}" y="${(p.y+p.r+24).toFixed(1)}" text-anchor="middle" font-size="8.5" fill="#8598ab" font-family="ui-monospace,monospace">${money(n.tainted_amount)}</text></g>`;});
-  return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" style="width:100%;height:302px">${edges}${cash}${nodes}</svg>
+  return `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid meet" style="width:100%;height:222px">${edges}${cash}${nodes}</svg>
     <div class="mglegend">
       <span><i style="background:#4aa3ff;color:#4aa3ff"></i>victim</span>
       <span><i style="background:#ffbe4d;color:#ffbe4d"></i>mule (pass-through)</span>
